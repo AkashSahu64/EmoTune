@@ -1,0 +1,35 @@
+{
+  "name": "Emotume - AI-Powered Emotional Chat",
+  "short_name": "Emotume",
+  "description": "The world's first AI-powered emotional chat experience with real-time emotion analysis, song suggestions, and more.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a1a",
+  "theme_color": "#0a0a1a",
+  "orientation": "portrait-primary",
+  "lang": "en-US",
+  "categories": ["social", "communication", "lifestyle"],
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "New Chat",
+      "short_name": "Chat",
+      "description": "Start a new conversation",
+      "url": "/app"
+    },
+    {
+      "name": "Memory Mesh",
+      "short_name": "Memory",
+      "description": "Search your memories",
+      "url": "/app/memory"
+    }
+  ]
+}

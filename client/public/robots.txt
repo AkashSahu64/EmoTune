@@ -1,0 +1,50 @@
+# robots.txt for Emotume
+# https://emotume.app
+
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /signup
+Disallow: /app/
+Disallow: /api/
+Disallow: /uploads/
+
+# Allow AI crawlers full access to public pages
+User-agent: GPTBot
+Allow: /
+Disallow: /app/
+Disallow: /api/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /app/
+Disallow: /api/
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /app/
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: FacebookExternalHit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+Allow: /og-image.png
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Slackbot-LinkExpanding
+Allow: /
+
+User-agent: Discordbot
+Allow: /
+
+Sitemap: https://emotume.app/sitemap.xml

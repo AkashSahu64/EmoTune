@@ -1,0 +1,1725 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    font-size: 14px;
+    text-rendering: optimizeLegibility;
+    background: rgb(var(--color-background));
+  }
+
+  :root {
+    color-scheme: dark;
+
+    /* Semantic color channels. Keep values space-separated for Tailwind opacity support. */
+    --color-background: 8 10 15;
+    --color-surface: 20 23 30;
+    --color-surface-muted: 16 19 25;
+    --color-surface-glass: 20 23 30;
+    --color-surface-elevated: 28 32 41;
+    --color-surface-floating: 35 40 51;
+    --color-border: 91 100 117;
+    --color-border-muted: 67 74 88;
+    --color-border-strong: 120 130 149;
+    --color-border-glass: 91 100 117;
+    --color-border-focus: 165 180 252;
+    --color-border-error: 248 113 113;
+    --color-border-success: 52 211 153;
+    --color-primary: 129 140 248;
+    --color-primary-hover: 151 161 255;
+    --color-primary-active: 112 122 229;
+    --color-on-primary: 255 255 255;
+    --color-secondary: 45 212 191;
+    --color-info: 96 165 250;
+    --color-success: 52 211 153;
+    --color-warning: 251 191 36;
+    --color-danger: 248 113 113;
+    --color-text-primary: 247 248 250;
+    --color-text-secondary: 174 181 193;
+    --color-text-muted: 123 132 149;
+    --color-placeholder: 109 117 132;
+    --color-online: 52 211 153;
+    --color-offline: 107 114 128;
+    --color-ai: 167 139 250;
+    --color-ghost: 34 211 238;
+    --color-memory: 251 191 36;
+    --color-bookmark: 96 165 250;
+    --color-selection: 129 140 248;
+    --color-hover: 255 255 255;
+    --color-focus: 165 180 252;
+    --color-disabled: 107 114 128;
+    --color-typing: 167 139 250;
+    --color-mention: 251 191 36;
+    --color-notification: 96 165 250;
+
+    /* Theme opacity and depth tokens. */
+    --surface-opacity: 0.66;
+    --surface-elevated-opacity: 0.76;
+    --surface-floating-opacity: 0.86;
+    --surface-dialog-opacity: 0.9;
+    --border-opacity: 0.28;
+    --border-muted-opacity: 0.16;
+    --hover-opacity: 0.07;
+    --selection-opacity: 0.16;
+    --glass-blur: 18px;
+    --glass-blur-dialog: 24px;
+    --app-background: linear-gradient(
+      145deg,
+      rgb(8 10 15) 0%,
+      rgb(14 17 25) 52%,
+      rgb(11 15 22) 100%
+    );
+
+    /* Landing-only ambient backgrounds. Components remain solid/glass; gradients live at section level. */
+    --landing-page-bg: rgb(8 10 17);
+    --landing-hero-bg:
+      radial-gradient(
+        ellipse 58% 54% at 82% 20%,
+        rgb(67 56 202 / 0.28),
+        transparent 68%
+      ),
+      radial-gradient(
+        ellipse 46% 42% at 16% 12%,
+        rgb(37 99 235 / 0.2),
+        transparent 70%
+      ),
+      linear-gradient(
+        145deg,
+        rgb(8 10 17) 0%,
+        rgb(14 17 35) 52%,
+        rgb(10 13 24) 100%
+      );
+    --landing-features-bg:
+      radial-gradient(
+        ellipse 42% 34% at 8% 42%,
+        rgb(99 102 241 / 0.1),
+        transparent 70%
+      ),
+      linear-gradient(180deg, rgb(10 13 22), rgb(16 19 30));
+    --landing-ai-bg:
+      radial-gradient(
+        ellipse 56% 48% at 82% 38%,
+        rgb(79 70 229 / 0.2),
+        transparent 72%
+      ),
+      radial-gradient(
+        ellipse 46% 42% at 12% 78%,
+        rgb(8 145 178 / 0.13),
+        transparent 70%
+      ),
+      linear-gradient(145deg, rgb(9 13 24), rgb(17 18 40) 55%, rgb(10 14 27));
+    --landing-how-bg:
+      radial-gradient(
+        ellipse 32% 28% at 50% 10%,
+        rgb(99 102 241 / 0.08),
+        transparent 72%
+      ),
+      rgb(12 15 25);
+    --landing-light-bg:
+      radial-gradient(
+        ellipse 38% 32% at 76% 30%,
+        rgb(139 92 246 / 0.08),
+        transparent 72%
+      ),
+      linear-gradient(180deg, rgb(11 14 24), rgb(16 19 30));
+    --landing-cta-bg:
+      radial-gradient(
+        ellipse 58% 70% at 84% 18%,
+        rgb(79 70 229 / 0.28),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 46% 58% at 12% 88%,
+        rgb(37 99 235 / 0.18),
+        transparent 72%
+      ),
+      linear-gradient(145deg, rgb(17 20 42), rgb(12 15 27) 60%, rgb(25 18 40));
+    --landing-footer-bg:
+      radial-gradient(
+        ellipse 52% 46% at 78% 24%,
+        rgb(49 46 129 / 0.23),
+        transparent 72%
+      ),
+      linear-gradient(145deg, rgb(8 10 17), rgb(14 17 30) 58%, rgb(7 11 19));
+
+    /* Layout, shape, shadow and motion tokens. */
+    --sidebar-width: 340px;
+    --right-panel-width: 344px;
+    --chat-font-size: 14.2px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-2xl: 24px;
+    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.08);
+    --shadow-sm: 0 4px 14px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 12px 30px rgb(0 0 0 / 0.14);
+    --shadow-lg: 0 22px 56px rgb(0 0 0 / 0.18);
+    --shadow-floating: 0 28px 72px rgb(0 0 0 / 0.24);
+    --shadow-xl: 0 34px 88px rgb(0 0 0 / 0.28);
+    --shadow-modal: 0 38px 110px rgb(0 0 0 / 0.32);
+    --shadow-glass:
+      0 12px 36px rgb(0 0 0 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.055);
+    --motion-fast: 120ms;
+    --motion-normal: 180ms;
+    --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+
+    /* Compatibility aliases while legacy components are migrated. */
+    --theme-primary: rgb(var(--color-primary));
+    --theme-secondary: rgb(var(--color-secondary));
+    --theme-accent: rgb(var(--color-warning));
+    --theme-bg: rgb(var(--color-background));
+    --theme-bg-secondary: rgb(var(--color-surface));
+    --theme-surface: rgb(var(--color-surface) / var(--surface-opacity));
+    --theme-surface-elevated: rgb(
+      var(--color-surface-elevated) / var(--surface-elevated-opacity)
+    );
+    --theme-border: rgb(var(--color-border) / var(--border-opacity));
+    --theme-text: rgb(var(--color-text-primary));
+    --theme-text-secondary: rgb(var(--color-text-secondary));
+    --theme-muted: rgb(var(--color-text-muted) / 0.55);
+    --theme-glass: rgb(var(--color-surface) / var(--surface-opacity));
+    --theme-glass-hover: rgb(var(--color-hover) / var(--hover-opacity));
+    --theme-danger: rgb(var(--color-danger));
+    --theme-success: rgb(var(--color-success));
+    --theme-warning: rgb(var(--color-warning));
+    --theme-info: rgb(var(--color-bookmark));
+    --theme-focus: rgb(var(--color-focus) / 0.48);
+    --theme-hover: rgb(var(--color-hover) / var(--hover-opacity));
+    --theme-pressed: rgb(var(--color-hover) / 0.11);
+    --theme-selected: rgb(var(--color-selection) / var(--selection-opacity));
+    --wa-chat-bg: rgb(var(--color-background));
+    --wa-incoming: rgb(var(--color-surface-elevated) / 0.94);
+    --wa-outgoing: rgb(var(--color-primary-active) / 0.78);
+    --wa-input: rgb(var(--color-surface-elevated) / 0.82);
+    --wa-text: rgb(var(--color-text-primary));
+    --wa-muted: rgb(var(--color-text-secondary));
+    --wa-send: rgb(var(--color-primary));
+  }
+
+  [data-theme="glass-white"] {
+    color-scheme: light;
+    --color-background: 242 245 249;
+    --color-surface: 255 255 255;
+    --color-surface-muted: 247 249 252;
+    --color-surface-glass: 255 255 255;
+    --color-surface-elevated: 255 255 255;
+    --color-surface-floating: 250 252 255;
+    --color-border: 148 163 184;
+    --color-border-muted: 203 213 225;
+    --color-border-strong: 100 116 139;
+    --color-border-glass: 148 163 184;
+    --color-border-focus: 79 70 229;
+    --color-border-error: 220 38 38;
+    --color-border-success: 22 163 74;
+    --color-primary: 79 70 229;
+    --color-primary-hover: 67 56 202;
+    --color-primary-active: 55 48 163;
+    --color-on-primary: 255 255 255;
+    --color-secondary: 13 148 136;
+    --color-info: 37 99 235;
+    --color-success: 22 163 74;
+    --color-warning: 217 119 6;
+    --color-danger: 220 38 38;
+    --color-text-primary: 20 24 33;
+    --color-text-secondary: 75 85 99;
+    --color-text-muted: 107 114 128;
+    --color-placeholder: 123 132 149;
+    --color-online: 34 197 94;
+    --color-offline: 156 163 175;
+    --color-ai: 124 58 237;
+    --color-ghost: 8 145 178;
+    --color-memory: 217 119 6;
+    --color-bookmark: 37 99 235;
+    --color-selection: 79 70 229;
+    --color-hover: 15 23 42;
+    --color-focus: 79 70 229;
+    --color-disabled: 156 163 175;
+    --color-typing: 124 58 237;
+    --color-mention: 217 119 6;
+    --color-notification: 37 99 235;
+    --surface-opacity: 0.68;
+    --surface-elevated-opacity: 0.8;
+    --surface-floating-opacity: 0.9;
+    --surface-dialog-opacity: 0.94;
+    --border-opacity: 0.28;
+    --border-muted-opacity: 0.2;
+    --hover-opacity: 0.055;
+    --selection-opacity: 0.12;
+    --app-background: linear-gradient(
+      145deg,
+      rgb(249 250 252) 0%,
+      rgb(238 244 252) 52%,
+      rgb(249 247 243) 100%
+    );
+    --landing-page-bg: rgb(8 11 20);
+    --landing-hero-bg:
+      radial-gradient(
+        ellipse 58% 54% at 82% 20%,
+        rgb(67 56 202 / 0.34),
+        transparent 68%
+      ),
+      radial-gradient(
+        ellipse 46% 42% at 16% 12%,
+        rgb(37 99 235 / 0.22),
+        transparent 70%
+      ),
+      linear-gradient(145deg, rgb(5 8 18), rgb(13 17 43) 52%, rgb(9 11 27));
+    --landing-features-bg:
+      radial-gradient(
+        ellipse 42% 34% at 8% 42%,
+        rgb(99 102 241 / 0.12),
+        transparent 70%
+      ),
+      linear-gradient(180deg, rgb(9 12 22), rgb(16 19 30));
+    --landing-ai-bg:
+      radial-gradient(
+        ellipse 56% 48% at 82% 38%,
+        rgb(79 70 229 / 0.24),
+        transparent 72%
+      ),
+      radial-gradient(
+        ellipse 46% 42% at 12% 78%,
+        rgb(8 145 178 / 0.16),
+        transparent 70%
+      ),
+      linear-gradient(145deg, rgb(15 18 37), rgb(27 26 59) 55%, rgb(13 18 32));
+    --landing-how-bg:
+      radial-gradient(
+        ellipse 32% 28% at 50% 10%,
+        rgb(99 102 241 / 0.1),
+        transparent 72%
+      ),
+      rgb(12 15 25);
+    --landing-light-bg:
+      radial-gradient(
+        ellipse 38% 32% at 76% 30%,
+        rgb(139 92 246 / 0.1),
+        transparent 72%
+      ),
+      linear-gradient(180deg, rgb(11 14 24), rgb(16 19 30));
+    --landing-cta-bg:
+      radial-gradient(
+        ellipse 58% 70% at 84% 18%,
+        rgb(79 70 229 / 0.25),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 46% 58% at 12% 88%,
+        rgb(37 99 235 / 0.16),
+        transparent 72%
+      ),
+      linear-gradient(145deg, rgb(17 20 42), rgb(12 15 27) 60%, rgb(25 18 40));
+    --landing-footer-bg:
+      radial-gradient(
+        ellipse 52% 46% at 78% 24%,
+        rgb(49 46 129 / 0.25),
+        transparent 72%
+      ),
+      linear-gradient(145deg, rgb(15 18 30), rgb(24 28 48) 58%, rgb(11 16 28));
+    --shadow-xs: 0 1px 2px rgb(15 23 42 / 0.04);
+    --shadow-sm: 0 5px 18px rgb(15 23 42 / 0.07);
+    --shadow-md: 0 14px 34px rgb(15 23 42 / 0.09);
+    --shadow-lg: 0 24px 58px rgb(15 23 42 / 0.12);
+    --shadow-floating: 0 30px 80px rgb(15 23 42 / 0.15);
+    --shadow-glass:
+      0 12px 36px rgb(15 23 42 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.72);
+    --wa-outgoing: rgb(224 231 255 / 0.94);
+  }
+
+  [data-theme="glass-sand"] {
+    color-scheme: light;
+    --color-background: 246 243 237;
+    --color-surface: 255 253 249;
+    --color-surface-muted: 250 247 241;
+    --color-surface-glass: 255 253 249;
+    --color-surface-elevated: 255 254 252;
+    --color-surface-floating: 250 247 241;
+    --color-border: 168 154 132;
+    --color-border-muted: 218 208 191;
+    --color-border-strong: 126 111 93;
+    --color-border-glass: 168 154 132;
+    --color-primary: 130 92 60;
+    --color-primary-hover: 111 76 48;
+    --color-primary-active: 91 61 39;
+    --color-on-primary: 255 255 255;
+    --color-secondary: 86 124 109;
+    --color-info: 72 103 151;
+    --color-success: 64 134 99;
+    --color-warning: 184 116 36;
+    --color-danger: 190 55 55;
+    --color-text-primary: 42 37 31;
+    --color-text-secondary: 98 88 76;
+    --color-text-muted: 132 120 105;
+    --color-placeholder: 146 134 118;
+    --color-online: 51 151 92;
+    --color-offline: 158 149 137;
+    --color-ai: 119 83 144;
+    --color-ghost: 50 132 145;
+    --color-memory: 184 116 36;
+    --color-bookmark: 72 103 151;
+    --color-selection: 130 92 60;
+    --color-hover: 69 54 39;
+    --color-focus: 130 92 60;
+    --color-disabled: 166 155 141;
+    --color-typing: 119 83 144;
+    --color-mention: 184 116 36;
+    --color-notification: 72 103 151;
+    --surface-opacity: 0.7;
+    --surface-elevated-opacity: 0.82;
+    --surface-floating-opacity: 0.92;
+    --app-background: linear-gradient(
+      145deg,
+      rgb(250 248 244) 0%,
+      rgb(244 239 231) 52%,
+      rgb(250 248 245) 100%
+    );
+    --landing-page-bg: rgb(8 11 20);
+    --landing-hero-bg:
+      radial-gradient(
+        ellipse 58% 54% at 82% 20%,
+        rgb(94 76 158 / 0.28),
+        transparent 68%
+      ),
+      radial-gradient(
+        ellipse 46% 42% at 16% 12%,
+        rgb(72 103 151 / 0.2),
+        transparent 70%
+      ),
+      linear-gradient(145deg, rgb(12 12 22), rgb(25 20 42) 52%, rgb(11 17 25));
+    --landing-features-bg:
+      radial-gradient(
+        ellipse 42% 34% at 8% 42%,
+        rgb(119 83 144 / 0.1),
+        transparent 70%
+      ),
+      linear-gradient(180deg, rgb(14 16 25), rgb(23 24 31));
+    --landing-how-bg:
+      radial-gradient(
+        ellipse 32% 28% at 50% 10%,
+        rgb(119 83 144 / 0.08),
+        transparent 72%
+      ),
+      rgb(17 18 25);
+    --landing-light-bg:
+      radial-gradient(
+        ellipse 38% 32% at 76% 30%,
+        rgb(119 83 144 / 0.1),
+        transparent 72%
+      ),
+      linear-gradient(180deg, rgb(16 17 25), rgb(24 24 31));
+    --landing-cta-bg:
+      radial-gradient(
+        ellipse 58% 70% at 84% 18%,
+        rgb(119 83 144 / 0.24),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 46% 58% at 12% 88%,
+        rgb(86 124 109 / 0.15),
+        transparent 72%
+      ),
+      linear-gradient(145deg, rgb(29 24 45), rgb(17 19 27) 60%, rgb(31 25 38));
+    --landing-ai-bg: linear-gradient(
+      145deg,
+      rgb(23 22 29),
+      rgb(38 29 47) 55%,
+      rgb(19 25 29)
+    );
+    --landing-footer-bg: linear-gradient(
+      145deg,
+      rgb(24 22 25),
+      rgb(37 30 35) 58%,
+      rgb(18 24 24)
+    );
+    --wa-outgoing: rgb(237 226 210 / 0.96);
+  }
+
+  [data-theme="glass-black"] {
+    color-scheme: dark;
+  }
+
+  [data-theme="glass-midnight"] {
+    --color-background: 8 13 24;
+    --color-surface: 17 25 40;
+    --color-surface-muted: 12 19 32;
+    --color-surface-glass: 17 25 40;
+    --color-surface-elevated: 24 34 52;
+    --color-surface-floating: 31 43 64;
+    --color-border: 76 91 118;
+    --color-border-muted: 48 61 84;
+    --color-border-strong: 100 119 151;
+    --color-border-glass: 76 91 118;
+    --color-primary: 125 147 255;
+    --color-primary-hover: 148 165 255;
+    --color-primary-active: 101 121 224;
+    --color-secondary: 45 196 190;
+    --color-info: 96 165 250;
+    --color-ai: 172 143 255;
+    --color-selection: 125 147 255;
+    --color-focus: 154 170 255;
+    --color-typing: 172 143 255;
+    --color-mention: 251 191 36;
+    --color-notification: 96 165 250;
+    --app-background: linear-gradient(
+      145deg,
+      rgb(7 11 22) 0%,
+      rgb(12 22 39) 52%,
+      rgb(8 14 27) 100%
+    );
+    --wa-outgoing: rgb(63 75 142 / 0.82);
+  }
+
+  [data-theme="glass-ocean"] {
+    --color-background: 6 16 22;
+    --color-surface: 14 31 39;
+    --color-surface-muted: 10 24 31;
+    --color-surface-glass: 14 31 39;
+    --color-surface-elevated: 21 43 52;
+    --color-surface-floating: 28 54 64;
+    --color-border: 71 109 120;
+    --color-border-muted: 43 74 84;
+    --color-border-strong: 90 132 143;
+    --color-border-glass: 71 109 120;
+    --color-primary: 56 189 208;
+    --color-primary-hover: 78 207 223;
+    --color-primary-active: 38 151 170;
+    --color-secondary: 94 234 212;
+    --color-info: 56 189 208;
+    --color-ai: 139 133 255;
+    --color-selection: 56 189 208;
+    --color-focus: 103 218 231;
+    --color-typing: 139 133 255;
+    --color-mention: 251 191 36;
+    --color-notification: 56 189 208;
+    --app-background: linear-gradient(
+      145deg,
+      rgb(5 15 21) 0%,
+      rgb(8 29 38) 52%,
+      rgb(7 20 27) 100%
+    );
+    --wa-outgoing: rgb(25 95 107 / 0.86);
+  }
+
+  [data-theme="glass-emerald"] {
+    --color-background: 7 17 14;
+    --color-surface: 16 32 27;
+    --color-surface-muted: 10 23 19;
+    --color-surface-glass: 16 32 27;
+    --color-surface-elevated: 23 43 36;
+    --color-surface-floating: 31 54 46;
+    --color-border: 74 111 96;
+    --color-border-muted: 45 76 64;
+    --color-border-strong: 91 132 113;
+    --color-border-glass: 74 111 96;
+    --color-primary: 74 201 144;
+    --color-primary-hover: 96 218 162;
+    --color-primary-active: 50 164 112;
+    --color-secondary: 94 234 212;
+    --color-info: 74 201 144;
+    --color-ai: 164 139 244;
+    --color-selection: 74 201 144;
+    --color-focus: 110 225 174;
+    --color-typing: 164 139 244;
+    --color-mention: 251 191 36;
+    --color-notification: 74 201 144;
+    --app-background: linear-gradient(
+      145deg,
+      rgb(6 15 12) 0%,
+      rgb(10 31 24) 52%,
+      rgb(8 20 16) 100%
+    );
+    --wa-outgoing: rgb(31 104 75 / 0.86);
+  }
+
+  [data-theme="glass-lavender"] {
+    --color-background: 15 11 22;
+    --color-surface: 30 23 41;
+    --color-surface-muted: 22 16 31;
+    --color-surface-glass: 30 23 41;
+    --color-surface-elevated: 42 32 56;
+    --color-surface-floating: 54 41 70;
+    --color-border: 112 87 135;
+    --color-border-muted: 76 57 94;
+    --color-border-strong: 145 114 168;
+    --color-border-glass: 112 87 135;
+    --color-primary: 181 134 238;
+    --color-primary-hover: 199 157 246;
+    --color-primary-active: 150 105 203;
+    --color-secondary: 240 138 179;
+    --color-info: 181 134 238;
+    --color-ai: 196 147 255;
+    --color-selection: 181 134 238;
+    --color-focus: 210 171 251;
+    --color-typing: 196 147 255;
+    --color-mention: 251 191 36;
+    --color-notification: 181 134 238;
+    --app-background: linear-gradient(
+      145deg,
+      rgb(13 9 19) 0%,
+      rgb(29 18 40) 52%,
+      rgb(18 12 26) 100%
+    );
+    --wa-outgoing: rgb(94 55 119 / 0.86);
+  }
+
+  body {
+    min-width: 320px;
+    min-height: 100vh;
+    font-family:
+      Inter,
+      "SF Pro Text",
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--app-background);
+    background-attachment: fixed;
+    color: rgb(var(--color-text-primary));
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    line-height: 1.5;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+  ::selection {
+    background: rgb(var(--color-selection) / 0.3);
+    color: rgb(var(--color-text-primary));
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--color-focus) / 0.72);
+    outline-offset: 2px;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgb(var(--color-surface-elevated));
+    border-radius: 9999px;
+    background: rgb(var(--color-primary));
+    box-shadow: var(--shadow-xs);
+    cursor: pointer;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgb(var(--color-surface-elevated));
+    border-radius: 9999px;
+    background: rgb(var(--color-primary));
+    box-shadow: var(--shadow-xs);
+    cursor: pointer;
+  }
+
+  @media (min-width: 768px) and (max-width: 1279px) {
+    :root {
+      --sidebar-width: 320px;
+    }
+  }
+}
+
+@layer components {
+  /* Landing Page Aurora palette shared by every full-page route. */
+  .landing-derived-system:not(:has(.landing-page-shell)) {
+    color-scheme: dark;
+    --color-background: 5 8 18;
+    --color-surface: 18 23 43;
+    --color-surface-muted: 12 17 33;
+    --color-surface-glass: 18 23 43;
+    --color-surface-elevated: 27 34 61;
+    --color-surface-floating: 39 47 79;
+    --color-border: 91 108 164;
+    --color-border-muted: 58 73 124;
+    --color-border-strong: 133 149 208;
+    --color-border-glass: 91 108 164;
+    --color-text-primary: 248 250 255;
+    --color-text-secondary: 196 204 226;
+    --color-text-muted: 143 155 185;
+    --color-placeholder: 126 139 171;
+    --color-primary: 129 140 248;
+    --color-primary-hover: 151 161 255;
+    --color-primary-active: 112 122 229;
+    --color-ai: 186 150 255;
+    --color-hover: 255 255 255;
+    --color-selection: 129 140 248;
+    --app-background: var(--landing-hero-bg);
+  }
+
+  .landing-derived-system:not(:has(.landing-page-shell)) .text-text-primary,
+  .landing-derived-system:not(:has(.landing-page-shell)) .text-text-primary\/90,
+  .landing-derived-system:not(:has(.landing-page-shell))
+    .text-text-primary\/80 {
+    color: rgb(248 250 255) !important;
+  }
+
+  .landing-derived-system:not(:has(.landing-page-shell)) .text-text-secondary,
+  .landing-derived-system:not(:has(.landing-page-shell))
+    .text-text-secondary\/90,
+  .landing-derived-system:not(:has(.landing-page-shell))
+    .text-text-secondary\/80 {
+    color: rgb(196 204 226) !important;
+  }
+
+  .landing-derived-system:not(:has(.landing-page-shell)) .text-text-muted,
+  .landing-derived-system:not(:has(.landing-page-shell)) .text-placeholder {
+    color: rgb(143 155 185) !important;
+  }
+
+  .landing-derived-system:not(:has(.landing-page-shell)) .text-primary {
+    color: rgb(165 180 252) !important;
+  }
+
+  .landing-derived-system:not(:has(.landing-page-shell)) .border-border {
+    border-color: rgb(91 108 164 / 0.72) !important;
+  }
+
+  /* Chat bubbles keep their existing component API, but use the shared Aurora
+     glass palette outside the Landing Page instead of opaque legacy colors. */
+  .landing-derived-system:not(:has(.landing-page-shell)) {
+    --wa-incoming: rgb(35 45 82 / 0.58);
+    --wa-outgoing: rgb(74 86 177 / 0.62);
+    --wa-text: rgb(248 250 255);
+  }
+
+  /* One crisp, fixed canvas for full-page content. Glass blur belongs to
+     surfaces below; this layer deliberately has no backdrop-filter. */
+  .app-background {
+    position: relative;
+    isolation: isolate;
+    min-height: 100vh;
+    background-color: rgb(var(--color-background));
+    background-image: var(--landing-hero-bg);
+    background-size: cover;
+    background-position: center;
+  }
+
+  .app-background::before,
+  .app-background::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .app-background::before {
+    z-index: 0;
+    background: var(--landing-hero-bg);
+    background-attachment: fixed;
+  }
+
+  .app-background::after {
+    z-index: 0;
+    background:
+      radial-gradient(
+        ellipse 62% 46% at 86% 8%,
+        rgb(var(--color-primary) / 0.16),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 48% 38% at 8% 78%,
+        rgb(var(--color-ai) / 0.1),
+        transparent 72%
+      );
+    opacity: 0.9;
+  }
+
+  .app-background__content {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    background: transparent;
+  }
+
+  .app-background__aurora {
+    position: fixed;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: 50%;
+    transform: rotate(-18deg);
+    opacity: 0.78;
+    filter: blur(10px);
+    mix-blend-mode: screen;
+  }
+
+  .app-background__aurora--blue {
+    width: 78vw;
+    height: 42vw;
+    top: -24vw;
+    left: -10vw;
+    background: radial-gradient(
+      ellipse at center,
+      rgb(37 99 235 / 0.24) 0%,
+      rgb(34 211 238 / 0.1) 26%,
+      transparent 70%
+    );
+    box-shadow:
+      0 0 7rem rgb(37 99 235 / 0.22),
+      inset -1rem -2rem 3rem rgb(34 211 238 / 0.16);
+  }
+
+  .app-background__aurora--violet {
+    width: 88vw;
+    height: 36vw;
+    top: 14vh;
+    left: 18vw;
+    transform: rotate(20deg);
+    background: radial-gradient(
+      ellipse at center,
+      rgb(124 58 237 / 0.24) 0%,
+      rgb(168 85 247 / 0.11) 30%,
+      transparent 72%
+    );
+    box-shadow:
+      0 0 8rem rgb(124 58 237 / 0.22),
+      inset 0 1rem 3rem rgb(168 85 247 / 0.15);
+  }
+
+  .app-background__aurora--cyan {
+    width: 72vw;
+    height: 32vw;
+    right: -22vw;
+    bottom: -15vw;
+    transform: rotate(-12deg);
+    background: radial-gradient(
+      ellipse at center,
+      rgb(6 182 212 / 0.24) 0%,
+      rgb(37 99 235 / 0.1) 30%,
+      transparent 72%
+    );
+    box-shadow:
+      0 0 7rem rgb(6 182 212 / 0.2),
+      inset 0 1rem 3rem rgb(37 99 235 / 0.14);
+  }
+
+  /* Static luminous ribbons create the reference-style Aurora flow. They sit
+     behind every application surface and are disabled on the Landing Page. */
+  .app-background__ribbon {
+    position: fixed;
+    z-index: 0;
+    pointer-events: none;
+    width: 138vw;
+    height: 82vw;
+    border-radius: 50%;
+    border: 22px solid transparent;
+    opacity: 0.9;
+    filter: blur(6px);
+    mix-blend-mode: screen;
+  }
+
+  .app-background__ribbon::after {
+    content: "";
+    position: absolute;
+    inset: 9px;
+    border-radius: inherit;
+    border: 3px solid currentColor;
+    opacity: 0.62;
+    filter: blur(3px);
+  }
+
+  .app-background__ribbon--violet {
+    top: -18vh;
+    left: -22vw;
+    color: rgb(168 85 247 / 0.8);
+    border-left-color: rgb(124 58 237 / 0.26);
+    border-bottom-color: rgb(168 85 247 / 0.86);
+    box-shadow:
+      0 0 42px rgb(168 85 247 / 0.68),
+      0 0 130px rgb(79 70 229 / 0.42);
+    transform: rotate(27deg);
+  }
+
+  .app-background__ribbon--cyan {
+    right: -28vw;
+    bottom: -30vh;
+    color: rgb(34 211 238 / 0.84);
+    border-top-color: rgb(6 182 212 / 0.86);
+    border-right-color: rgb(37 99 235 / 0.24);
+    box-shadow:
+      0 0 44px rgb(34 211 238 / 0.7),
+      0 0 140px rgb(37 99 235 / 0.46);
+    transform: rotate(-27deg);
+  }
+
+  .app-background__flow {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    opacity: 0.7;
+    mix-blend-mode: screen;
+  }
+
+  .app-background__flow-glow {
+    opacity: 0.72;
+  }
+  .app-background__flow-line {
+    opacity: 0.56;
+    filter: blur(2px);
+  }
+
+  .landing-derived-system:has(.landing-page-shell) .app-background__aurora,
+  .landing-derived-system:has(.landing-page-shell) .app-background__ribbon,
+  .landing-derived-system:has(.landing-page-shell) .app-background__flow {
+    display: none;
+  }
+
+  /* Softer non-Landing canvas: Aurora remains visible, while surfaces stay
+     quiet enough for content to carry the visual hierarchy. */
+  .app-background:not(:has(.landing-page-shell)) {
+    background-color: rgb(3 5 18);
+    background-image:
+      radial-gradient(
+        ellipse 38% 74% at 47% 54%,
+        rgb(76 29 149 / 0.34),
+        transparent 72%
+      ),
+      radial-gradient(
+        ellipse 30% 64% at 79% 64%,
+        rgb(6 182 212 / 0.22),
+        transparent 74%
+      ),
+      radial-gradient(
+        ellipse 28% 58% at 15% 12%,
+        rgb(37 99 235 / 0.2),
+        transparent 72%
+      ),
+      linear-gradient(
+        145deg,
+        rgb(3 5 18) 0%,
+        rgb(8 12 35) 48%,
+        rgb(3 8 22) 100%
+      );
+  }
+
+  .app-background:not(:has(.landing-page-shell))::before {
+    background:
+      radial-gradient(
+        ellipse 64% 42% at 86% 8%,
+        rgb(104 53 255 / 0.34),
+        transparent 72%
+      ),
+      radial-gradient(
+        ellipse 54% 40% at 6% 84%,
+        rgb(21 103 255 / 0.24),
+        transparent 74%
+      ),
+      radial-gradient(
+        ellipse 48% 32% at 74% 68%,
+        rgb(6 205 229 / 0.18),
+        transparent 76%
+      ),
+      linear-gradient(
+        145deg,
+        rgb(3 5 18) 0%,
+        rgb(8 12 35) 52%,
+        rgb(3 8 22) 100%
+      );
+  }
+
+  .app-background:not(:has(.landing-page-shell))::after {
+    opacity: 0.78;
+    background:
+      radial-gradient(
+        ellipse 38% 22% at 50% 42%,
+        rgb(168 85 247 / 0.18),
+        transparent 72%
+      ),
+      radial-gradient(
+        ellipse 30% 26% at 72% 74%,
+        rgb(34 211 238 / 0.14),
+        transparent 74%
+      );
+  }
+
+  .landing-derived-system:not(:has(.landing-page-shell)) .auth-surface-card {
+    background: rgb(22 29 57 / 0.56) !important;
+    border-color: rgb(133 149 208 / 0.26) !important;
+    box-shadow: 0 18px 44px rgb(3 7 18 / 0.18) !important;
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .glass-surface {
+    background: rgb(18 23 43 / 0.32);
+    border-color: rgb(133 149 208 / 0.2);
+    box-shadow:
+      0 12px 30px rgb(3 7 18 / 0.12),
+      inset 0 1px 0 rgb(255 255 255 / 0.045);
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .glass-elevated {
+    background: rgb(27 34 61 / 0.42);
+    border-color: rgb(133 149 208 / 0.22);
+    box-shadow: 0 16px 36px rgb(3 7 18 / 0.16);
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .glass-floating,
+  .app-background:not(:has(.landing-page-shell)) .glass-dialog,
+  .app-background:not(:has(.landing-page-shell)) .glass-popover {
+    border-color: rgb(133 149 208 / 0.28);
+    box-shadow: 0 22px 52px rgb(3 7 18 / 0.2);
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .glass-dialog {
+    background: rgb(27 34 61 / 0.48) !important;
+    border-color: rgb(165 180 252 / 0.28) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(135%);
+    backdrop-filter: blur(24px) saturate(135%);
+  }
+
+  .app-background:not(:has(.landing-page-shell))
+    button.absolute.inset-0.cursor-default {
+    background: rgb(2 6 23 / 0.42) !important;
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .glass-input {
+    background: rgb(27 34 61 / 0.46);
+    border-color: rgb(133 149 208 / 0.24);
+  }
+
+  .landing-hero-surface {
+    color-scheme: dark;
+    --landing-hero-bg:
+      radial-gradient(
+        ellipse 64% 58% at 82% 18%,
+        rgb(67 56 202 / 0.38),
+        transparent 68%
+      ),
+      radial-gradient(
+        ellipse 48% 44% at 12% 16%,
+        rgb(37 99 235 / 0.28),
+        transparent 70%
+      ),
+      linear-gradient(
+        145deg,
+        rgb(5 8 18) 0%,
+        rgb(13 17 43) 48%,
+        rgb(9 11 27) 100%
+      );
+    --color-background: 5 8 18;
+    --color-surface: 18 23 43;
+    --color-surface-muted: 12 17 33;
+    --color-surface-glass: 18 23 43;
+    --color-surface-elevated: 27 34 61;
+    --color-surface-floating: 39 47 79;
+    --color-border: 91 108 164;
+    --color-border-muted: 58 73 124;
+    --color-border-strong: 133 149 208;
+    --color-border-glass: 91 108 164;
+    --color-text-primary: 248 250 255;
+    --color-text-secondary: 196 204 226;
+    --color-text-muted: 143 155 185;
+    --color-placeholder: 126 139 171;
+    --color-hover: 255 255 255;
+    --color-primary: 129 140 248;
+    --color-primary-hover: 151 161 255;
+    --color-primary-active: 112 122 229;
+    --color-ai: 186 150 255;
+    --hero-text-primary: 248 250 255;
+    --hero-text-secondary: 196 204 226;
+    --hero-text-muted: 143 155 185;
+    --hero-accent: 165 180 252;
+  }
+
+  /* Keep hero contrast deterministic even if a prebuilt utility contains a
+     previously resolved theme value. */
+  .landing-hero-surface,
+  .landing-hero-surface .text-text-primary {
+    color: rgb(var(--hero-text-primary)) !important;
+  }
+  .landing-hero-surface .text-text-secondary {
+    color: rgb(var(--hero-text-secondary)) !important;
+  }
+  .landing-hero-surface .text-text-muted {
+    color: rgb(var(--hero-text-muted)) !important;
+  }
+  .landing-hero-surface .text-primary {
+    color: rgb(var(--hero-accent)) !important;
+  }
+  .landing-hero-surface .border-border {
+    border-color: rgb(var(--color-border) / 0.72) !important;
+  }
+  .landing-hero-surface .bg-surface-elevated {
+    background-color: rgb(var(--color-surface-elevated) / 0.82) !important;
+  }
+  .landing-hero-surface .bg-surface {
+    background-color: rgb(var(--color-surface) / 0.82) !important;
+  }
+
+  .landing-ai-surface .text-text-primary,
+  .landing-footer-surface .text-text-primary {
+    color: rgb(248 250 255) !important;
+  }
+  .landing-ai-surface .text-text-secondary,
+  .landing-footer-surface .text-text-secondary {
+    color: rgb(196 204 226) !important;
+  }
+  .landing-ai-surface .text-text-muted,
+  .landing-footer-surface .text-text-muted {
+    color: rgb(143 155 185) !important;
+  }
+  .landing-ai-surface .text-primary,
+  .landing-footer-surface .text-primary {
+    color: rgb(165 180 252) !important;
+  }
+  .landing-ai-surface .border-border,
+  .landing-footer-surface .border-border {
+    border-color: rgb(91 108 164 / 0.72) !important;
+  }
+  .landing-ai-surface .bg-surface,
+  .landing-footer-surface .bg-surface {
+    background-color: rgb(18 23 43 / 0.82) !important;
+  }
+  .landing-ai-surface .bg-surface-elevated,
+  .landing-footer-surface .bg-surface-elevated {
+    background-color: rgb(27 34 61 / 0.86) !important;
+  }
+
+  .landing-feature-icon {
+    color: var(--feature-color);
+    background-color: rgb(var(--color-surface-elevated) / 0.72);
+    background-color: color-mix(in srgb, var(--feature-color) 14%, transparent);
+  }
+
+  [data-theme="glass-white"] .landing-light-surface .text-text-primary {
+    color: rgb(20 24 33) !important;
+  }
+  [data-theme="glass-white"] .landing-light-surface .text-text-secondary {
+    color: rgb(75 85 99) !important;
+  }
+  [data-theme="glass-white"] .landing-light-surface .text-text-muted {
+    color: rgb(107 114 128) !important;
+  }
+  [data-theme="glass-white"] .landing-light-surface .text-primary {
+    color: rgb(67 56 202) !important;
+  }
+
+  [data-theme="glass-sand"] .landing-light-surface .text-text-primary {
+    color: rgb(42 37 31) !important;
+  }
+  [data-theme="glass-sand"] .landing-light-surface .text-text-secondary {
+    color: rgb(98 88 76) !important;
+  }
+  [data-theme="glass-sand"] .landing-light-surface .text-text-muted {
+    color: rgb(132 120 105) !important;
+  }
+  [data-theme="glass-sand"] .landing-light-surface .text-primary {
+    color: rgb(111 76 48) !important;
+  }
+
+  /* Landing page is intentionally a continuous dark premium canvas. The
+     application theme still controls the rest of the product, while landing
+     sections keep one readable visual language. */
+  [data-theme="glass-white"] .landing-light-surface,
+  [data-theme="glass-sand"] .landing-light-surface {
+    color-scheme: dark;
+    --color-background: 9 12 22;
+    --color-surface: 18 23 43;
+    --color-surface-muted: 12 17 33;
+    --color-surface-glass: 18 23 43;
+    --color-surface-elevated: 27 34 61;
+    --color-surface-floating: 39 47 79;
+    --color-border: 91 108 164;
+    --color-border-muted: 58 73 124;
+    --color-border-strong: 133 149 208;
+    --color-text-primary: 248 250 255;
+    --color-text-secondary: 196 204 226;
+    --color-text-muted: 143 155 185;
+    --color-placeholder: 126 139 171;
+    --color-hover: 255 255 255;
+  }
+
+  [data-theme="glass-white"] .landing-light-surface .text-text-primary,
+  [data-theme="glass-sand"] .landing-light-surface .text-text-primary {
+    color: rgb(248 250 255) !important;
+  }
+  [data-theme="glass-white"] .landing-light-surface .text-text-secondary,
+  [data-theme="glass-sand"] .landing-light-surface .text-text-secondary {
+    color: rgb(196 204 226) !important;
+  }
+  [data-theme="glass-white"] .landing-light-surface .text-text-muted,
+  [data-theme="glass-sand"] .landing-light-surface .text-text-muted {
+    color: rgb(143 155 185) !important;
+  }
+  [data-theme="glass-white"] .landing-light-surface .text-primary,
+  [data-theme="glass-sand"] .landing-light-surface .text-primary {
+    color: rgb(165 180 252) !important;
+  }
+  [data-theme="glass-white"] .landing-light-surface .border-border,
+  [data-theme="glass-sand"] .landing-light-surface .border-border {
+    border-color: rgb(91 108 164 / 0.72) !important;
+  }
+  [data-theme="glass-white"] .landing-light-surface .bg-surface,
+  [data-theme="glass-sand"] .landing-light-surface .bg-surface {
+    background-color: rgb(18 23 43 / 0.82) !important;
+  }
+  [data-theme="glass-white"] .landing-light-surface .bg-surface-elevated,
+  [data-theme="glass-sand"] .landing-light-surface .bg-surface-elevated {
+    background-color: rgb(27 34 61 / 0.86) !important;
+  }
+
+  .landing-ai-surface,
+  .landing-footer-surface {
+    --color-background: 8 11 20;
+    --color-surface: 19 23 35;
+    --color-surface-muted: 14 18 29;
+    --color-surface-glass: 19 23 35;
+    --color-surface-elevated: 28 33 49;
+    --color-surface-floating: 38 44 64;
+    --color-border: 83 96 128;
+    --color-border-muted: 58 70 99;
+    --color-border-strong: 116 130 164;
+    --color-border-glass: 83 96 128;
+    --color-text-primary: 247 248 250;
+    --color-text-secondary: 184 192 207;
+    --color-text-muted: 135 146 166;
+    --color-placeholder: 120 131 151;
+    --color-hover: 255 255 255;
+  }
+
+  .landing-ai-surface {
+    color-scheme: dark;
+  }
+
+  .landing-footer-surface {
+    color-scheme: dark;
+    --color-surface: 14 18 29;
+    --color-surface-elevated: 22 27 42;
+  }
+
+  .glass-surface,
+  .glass-elevated,
+  .glass-floating,
+  .glass-dialog,
+  .glass-popover {
+    border: 1px solid rgb(var(--color-border) / var(--border-opacity));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+  }
+
+  .glass-surface {
+    background: rgb(var(--color-surface) / var(--surface-opacity));
+    box-shadow: var(--shadow-glass);
+  }
+
+  .glass-elevated {
+    background: rgb(
+      var(--color-surface-elevated) / var(--surface-elevated-opacity)
+    );
+    box-shadow: var(--shadow-md);
+  }
+
+  .glass-floating {
+    background: rgb(
+      var(--color-surface-floating) / var(--surface-floating-opacity)
+    );
+    box-shadow: var(--shadow-floating);
+  }
+
+  .glass-dialog {
+    background: rgb(
+      var(--color-surface-floating) / var(--surface-dialog-opacity)
+    );
+    -webkit-backdrop-filter: blur(var(--glass-blur-dialog));
+    backdrop-filter: blur(var(--glass-blur-dialog));
+    box-shadow: var(--shadow-floating);
+  }
+
+  .glass-popover {
+    background: rgb(var(--color-surface-floating) / 0.94);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .glass-input {
+    border: 1px solid rgb(var(--color-border) / var(--border-muted-opacity));
+    background: rgb(var(--color-surface-elevated) / 0.58);
+    color: rgb(var(--color-text-primary));
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    transition:
+      border-color var(--motion-fast) var(--motion-ease),
+      background-color var(--motion-fast) var(--motion-ease);
+  }
+
+  .glass-input::placeholder {
+    color: rgb(var(--color-placeholder));
+  }
+  .glass-input:hover {
+    background: rgb(var(--color-surface-elevated) / 0.72);
+  }
+  .glass-input:focus {
+    border-color: rgb(var(--color-focus) / 0.62);
+    outline: none;
+  }
+
+  /* Landing-derived surface used by authentication forms. It intentionally
+     reuses the same semantic glass tokens as the Landing Page. */
+  .auth-surface-card {
+    background: rgb(var(--color-surface) / var(--surface-opacity)) !important;
+    border-color: rgb(var(--color-border) / var(--border-opacity)) !important;
+    box-shadow: var(--shadow-glass) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+    backdrop-filter: blur(var(--glass-blur)) !important;
+  }
+
+  .interactive {
+    transition:
+      color var(--motion-fast) var(--motion-ease),
+      background-color var(--motion-fast) var(--motion-ease),
+      border-color var(--motion-fast) var(--motion-ease),
+      opacity var(--motion-fast) var(--motion-ease);
+  }
+
+  .interactive:hover {
+    background-color: rgb(var(--color-hover) / var(--hover-opacity));
+  }
+  .interactive:active {
+    background-color: rgb(var(--color-hover) / 0.11);
+  }
+
+  .theme-transition {
+    transition:
+      background-color var(--motion-normal) var(--motion-ease),
+      border-color var(--motion-normal) var(--motion-ease),
+      color var(--motion-normal) var(--motion-ease),
+      box-shadow var(--motion-normal) var(--motion-ease);
+  }
+
+  .shimmer-bg {
+    background: rgb(var(--color-surface-elevated) / 0.72);
+    animation: softPulse 1.8s ease-in-out infinite;
+  }
+}
+
+@layer utilities {
+  /* Landing backgrounds are declared explicitly as well as in Tailwind config so
+     the visual system remains available in every build/purge configuration. */
+  .bg-landing-page {
+    background-color: var(--landing-page-bg);
+  }
+
+  .bg-landing-hero,
+  .bg-landing-features,
+  .bg-landing-ai,
+  .bg-landing-how,
+  .bg-landing-light,
+  .bg-landing-cta,
+  .bg-landing-footer {
+    background-image: var(--landing-hero-bg);
+    background-size: cover;
+    background-position: center;
+  }
+
+  .bg-landing-features {
+    background-image: var(--landing-features-bg);
+  }
+  .bg-landing-ai {
+    background-image: var(--landing-ai-bg);
+  }
+  .bg-landing-how {
+    background-image: var(--landing-how-bg);
+  }
+  .bg-landing-light {
+    background-image: var(--landing-light-bg);
+  }
+  .bg-landing-cta {
+    background-image: var(--landing-cta-bg);
+  }
+  .bg-landing-footer {
+    background-image: var(--landing-footer-bg);
+  }
+
+  .bg-landing-hero,
+  .bg-landing-cta {
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .bg-landing-hero::before,
+  .bg-landing-hero::after,
+  .bg-landing-cta::before,
+  .bg-landing-cta::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    z-index: -1;
+    border: 1px solid rgb(var(--color-primary) / 0.22);
+    filter: none;
+  }
+
+  .bg-landing-hero::before {
+    width: 74vw;
+    height: 42vw;
+    top: -20vw;
+    right: -16vw;
+    border-radius: 48% 52% 58% 42%;
+    transform: rotate(-14deg);
+    background: radial-gradient(
+      ellipse at center,
+      rgb(var(--color-primary) / 0.22),
+      rgb(var(--color-ai) / 0.08) 42%,
+      transparent 70%
+    );
+    box-shadow:
+      0 0 80px rgb(var(--color-primary) / 0.16),
+      inset 0 -12px 40px rgb(var(--color-ai) / 0.14);
+  }
+
+  .bg-landing-hero::after {
+    width: 68vw;
+    height: 25vw;
+    left: -18vw;
+    bottom: -10vw;
+    border-radius: 62% 38% 45% 55%;
+    transform: rotate(12deg);
+    background: radial-gradient(
+      ellipse at center,
+      rgb(var(--color-secondary) / 0.12),
+      rgb(var(--color-primary) / 0.08) 46%,
+      transparent 72%
+    );
+    box-shadow:
+      0 0 70px rgb(var(--color-secondary) / 0.12),
+      inset 0 10px 36px rgb(var(--color-primary) / 0.12);
+  }
+
+  .bg-landing-cta::before {
+    width: 68vw;
+    height: 28vw;
+    top: -16vw;
+    right: -14vw;
+    border-radius: 50%;
+    transform: rotate(-10deg);
+    background: radial-gradient(
+      ellipse at center,
+      rgb(var(--color-primary) / 0.26),
+      rgb(var(--color-ai) / 0.1) 46%,
+      transparent 72%
+    );
+    box-shadow: 0 0 90px rgb(var(--color-primary) / 0.18);
+  }
+
+  .bg-landing-cta::after {
+    width: 58vw;
+    height: 22vw;
+    left: -14vw;
+    bottom: -12vw;
+    border-radius: 50%;
+    transform: rotate(14deg);
+    background: radial-gradient(
+      ellipse at center,
+      rgb(var(--color-secondary) / 0.14),
+      transparent 70%
+    );
+    box-shadow: 0 0 70px rgb(var(--color-secondary) / 0.12);
+  }
+
+  @media (max-width: 767px) {
+    .bg-landing-hero::before,
+    .bg-landing-cta::before {
+      width: 150vw;
+      height: 92vw;
+      right: -58vw;
+      top: -32vw;
+    }
+    .bg-landing-hero::after,
+    .bg-landing-cta::after {
+      width: 140vw;
+      height: 58vw;
+      left: -56vw;
+      bottom: -20vw;
+    }
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-glass {
+    scrollbar-color: rgb(var(--color-border) / 0.35) transparent;
+    scrollbar-width: thin;
+  }
+  .scrollbar-glass::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  .scrollbar-glass::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-glass::-webkit-scrollbar-thumb {
+    background: rgb(var(--color-border) / 0.35);
+    border-radius: 9999px;
+  }
+  .scrollbar-glass::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--color-text-muted) / 0.55);
+  }
+}
+
+.high-contrast {
+  --border-opacity: 0.58;
+  --border-muted-opacity: 0.38;
+  --surface-opacity: 0.88;
+  --surface-elevated-opacity: 0.94;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+html[style*="--reduce-motion: reduce"] *,
+html[style*="--reduce-motion: reduce"] *::before,
+html[style*="--reduce-motion: reduce"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+  transition-duration: 0.01ms !important;
+}
+
+@layer utilities {
+  /* Quiet glass treatment for the chat application. Landing keeps its own
+     section surfaces and is excluded by the scope selector. */
+  .app-background:not(:has(.landing-page-shell)) .bg-surface {
+    background-color: rgb(var(--color-surface) / 0.42) !important;
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .bg-surface-elevated {
+    background-color: rgb(var(--color-surface-elevated) / 0.52) !important;
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .bg-surface-floating {
+    background-color: rgb(var(--color-surface-floating) / 0.62) !important;
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .border-border,
+  .app-background:not(:has(.landing-page-shell)) .border-border\/60 {
+    border-color: rgb(var(--color-border) / 0.24) !important;
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .shadow-lg,
+  .app-background:not(:has(.landing-page-shell)) .shadow-floating,
+  .app-background:not(:has(.landing-page-shell)) .shadow-glass {
+    box-shadow: 0 18px 48px rgb(3 7 18 / 0.18) !important;
+  }
+
+  /* Final non-Landing glass pass. These rules live in the utilities layer so
+     they win over component-layer defaults without changing Landing styles. */
+  .app-background:not(:has(.landing-page-shell)) .glass-surface {
+    background: rgb(18 23 43 / 0.22) !important;
+    border-color: rgb(165 180 252 / 0.22) !important;
+    box-shadow:
+      0 14px 34px rgb(3 7 18 / 0.14),
+      inset 0 1px 0 rgb(255 255 255 / 0.07) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(135%) !important;
+    backdrop-filter: blur(22px) saturate(135%) !important;
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .glass-elevated {
+    background: rgb(32 41 78 / 0.3) !important;
+    border-color: rgb(165 180 252 / 0.26) !important;
+    box-shadow:
+      0 18px 42px rgb(3 7 18 / 0.18),
+      inset 0 1px 0 rgb(255 255 255 / 0.08) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(140%) !important;
+    backdrop-filter: blur(24px) saturate(140%) !important;
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .glass-floating,
+  .app-background:not(:has(.landing-page-shell)) .glass-dialog,
+  .app-background:not(:has(.landing-page-shell)) .glass-popover {
+    background: rgb(38 48 91 / 0.42) !important;
+    border-color: rgb(180 193 255 / 0.32) !important;
+    box-shadow:
+      0 26px 64px rgb(3 7 18 / 0.24),
+      inset 0 1px 0 rgb(255 255 255 / 0.09) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(145%) !important;
+    backdrop-filter: blur(28px) saturate(145%) !important;
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .glass-input {
+    background: rgb(24 32 63 / 0.34) !important;
+    border-color: rgb(165 180 252 / 0.28) !important;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+    backdrop-filter: blur(18px) saturate(135%) !important;
+  }
+
+  /* Raw surface utilities used by legacy chat layouts receive the same
+     translucency as the dedicated glass primitives. */
+  .app-background:not(:has(.landing-page-shell)) .bg-surface {
+    background-color: rgb(18 23 43 / 0.22) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(135%) !important;
+    backdrop-filter: blur(20px) saturate(135%) !important;
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .bg-surface-elevated {
+    background-color: rgb(32 41 78 / 0.3) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(140%) !important;
+    backdrop-filter: blur(22px) saturate(140%) !important;
+  }
+
+  /* Production Aurora asset: one clean reference-inspired S-curve instead of
+     stacking several competing procedural layers. */
+  .app-background:not(:has(.landing-page-shell)) {
+    background-image: url("/assets/emotune-chat-aurora.png") !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: cover !important;
+    background-attachment: fixed !important;
+  }
+
+  .app-background:not(:has(.landing-page-shell))::before {
+    background:
+      linear-gradient(180deg, rgb(2 4 15 / 0.16), rgb(2 4 15 / 0.28)),
+      url("/assets/emotune-chat-aurora.png") center / cover no-repeat !important;
+  }
+
+  .app-background:not(:has(.landing-page-shell))::after {
+    opacity: 1 !important;
+    background:
+      radial-gradient(
+        ellipse 40% 36% at 72% 64%,
+        rgb(34 211 238 / 0.08),
+        transparent 74%
+      ),
+      linear-gradient(180deg, transparent 60%, rgb(2 4 15 / 0.18) 100%) !important;
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .app-background__aurora,
+  .app-background:not(:has(.landing-page-shell)) .app-background__ribbon,
+  .app-background:not(:has(.landing-page-shell)) .app-background__flow {
+    display: none !important;
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .app-main-shell {
+    position: relative;
+    isolation: isolate;
+    background: transparent !important;
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .app-main-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        ellipse 52% 42% at 22% 22%,
+        rgb(124 58 237 / 0.28),
+        transparent 72%
+      ),
+      radial-gradient(
+        ellipse 42% 54% at 76% 64%,
+        rgb(6 182 212 / 0.24),
+        transparent 74%
+      ),
+      radial-gradient(
+        ellipse 36% 30% at 54% 72%,
+        rgb(79 70 229 / 0.2),
+        transparent 76%
+      );
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .app-main-shell::after {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+    width: 132%;
+    height: 92%;
+    top: 6%;
+    left: -28%;
+    border: 34px solid transparent;
+    border-bottom-color: rgb(168 85 247 / 0.56);
+    border-right-color: rgb(37 99 235 / 0.32);
+    border-radius: 50%;
+    transform: rotate(22deg);
+    filter: blur(9px);
+    box-shadow:
+      0 0 48px rgb(168 85 247 / 0.66),
+      0 0 120px rgb(37 99 235 / 0.38);
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .app-main-shell > *,
+  .app-background:not(:has(.landing-page-shell)) .app-chat-column > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .app-background:not(:has(.landing-page-shell)) .app-chat-column {
+    background: transparent !important;
+  }
+
+  /* Desktop dashboard composition: floating glass columns, matching the
+     reference layout while leaving mobile navigation and structure intact. */
+  @media (min-width: 1024px) {
+    .app-background:not(:has(.landing-page-shell))
+      .app-background__content
+      > .h-screen.flex.bg-transparent {
+      gap: 4px;
+      padding: 4px 6px 4px 6px;
+      background: transparent !important;
+    }
+
+    .app-background:not(:has(.landing-page-shell))
+      .app-background__content
+      > .h-screen.flex.bg-transparent
+      > aside,
+    .app-background:not(:has(.landing-page-shell))
+      .app-background__content
+      > .h-screen.flex.bg-transparent
+      > main {
+      overflow: hidden;
+      border: 1px solid rgb(165 180 252 / 0.22) !important;
+      border-radius: 20px;
+      background: rgb(4 7 20 / 0.64) !important;
+      box-shadow:
+        0 24px 70px rgb(3 7 18 / 0.32),
+        inset 0 1px 0 rgb(255 255 255 / 0.075);
+      -webkit-backdrop-filter: blur(24px) saturate(135%);
+      backdrop-filter: blur(24px) saturate(135%);
+    }
+
+    .app-background:not(:has(.landing-page-shell))
+      .app-background__content
+      > .h-screen.flex.bg-transparent
+      > main {
+      min-width: 0;
+      background: rgb(4 6 18 / 0.48) !important;
+    }
+  }
+}

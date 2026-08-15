@@ -1,0 +1,61 @@
+# Emotume - AI-Powered Emotional Chat Experience
+> The world's first AI-powered emotional chat platform with real-time emotion analysis, song suggestions, shayari, memory mesh, and intelligent conversations.
+
+## Overview
+Emotume is a full-stack MERN application that combines real-time messaging with AI-driven emotional analysis, semantic memory search, fact-checking, persona-based tone transfer, and group decision-making features.
+
+## Products
+- **Emotume Chat** - AI-powered real-time messaging with emotion analysis
+- **Memory Mesh** - Semantic search across conversations using AI embeddings
+- **Intent Streams** - Auto-classified messages by purpose (task, social, question, idea, reminder)
+- **TruthSync** - Decentralized fact-check indicator with community voting
+- **Persona Portals** - Multiple digital selves with AI tone-transfer
+- **Silent Connect** - Zero-notification messages with separate silent inbox
+- **DecideFlow** - AI parliament for group decisions with auto-polls
+
+## Core Features
+- Real-time messaging with Socket.IO
+- AI emotion analysis and song suggestions
+- Semantic memory search with embeddings
+- Message intent classification
+- Fact-checking with community voting
+- AI persona-based message rewriting
+- End-to-end encryption support
+- Group chat with decision-making
+- Cloudinary media uploads
+- Dark/light theme system with 6 themes
+- Responsive design
+
+## Technology Stack
+- **Frontend**: React 18, Vite, TailwindCSS, Framer Motion, Socket.IO Client
+- **Backend**: Node.js, Express, MongoDB, Mongoose, Socket.IO
+- **AI**: Google Gemini, OpenAI, HuggingFace (fallback chain)
+- **Database**: MongoDB with Redis caching
+- **Auth**: JWT with access/refresh token rotation
+- **Media**: Cloudinary for uploads
+- **Workers**: BullMQ for background tasks (embeddings, intent, truth)
+
+## API
+- RESTful API at `/api`
+- WebSocket for real-time events
+- Auth: JWT Bearer tokens
+- Endpoints: auth, messages, chats, users, AI, groups, bookmarks, memory, truth, personas, decide, upload
+
+## Pricing
+- Free tier with full core features
+- Premium features planned
+
+## Contact
+- Email: support@emotume.app
+- Website: https://emotume.app
+
+## Policies
+- Privacy-first design with end-to-end encryption
+- User data is private and secure
+- JWT-based authentication with token rotation
+
+## Documentation
+- Source: https://github.com/emotume/emotume
+- Built with React 18 + Vite
+- MongoDB for data persistence
+- Real-time via Socket.IO

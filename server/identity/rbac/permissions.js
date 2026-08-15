@@ -1,0 +1,184 @@
+const { ROLES, ROLE_HIERARCHY } = require('./roles');
+
+const PERMISSIONS = {
+  USER: {
+    READ_OWN: 'user:read_own',
+    UPDATE_OWN: 'user:update_own',
+    DELETE_OWN: 'user:delete_own',
+  },
+  USER_ADMIN: {
+    READ_ANY: 'user:read_any',
+    UPDATE_ANY: 'user:update_any',
+    DELETE_ANY: 'user:delete_any',
+    BAN: 'user:ban',
+    SUSPEND: 'user:suspend',
+    IMPERSONATE: 'user:impersonate',
+  },
+  SESSION: {
+    READ_OWN: 'session:read_own',
+    TERMINATE_OWN: 'session:terminate_own',
+    TERMINATE_OTHER: 'session:terminate_other',
+    READ_ANY: 'session:read_any',
+    TERMINATE_ANY: 'session:terminate_any',
+  },
+  MESSAGE: {
+    SEND: 'message:send',
+    READ_OWN: 'message:read_own',
+    DELETE_OWN: 'message:delete_own',
+    DELETE_ANY: 'message:delete_any',
+    PIN: 'message:pin',
+    ANNOUNCE: 'message:announce',
+  },
+  CHAT: {
+    CREATE: 'chat:create',
+    JOIN: 'chat:join',
+    LEAVE: 'chat:leave',
+    ADD_MEMBER: 'chat:add_member',
+    REMOVE_MEMBER: 'chat:remove_member',
+    UPDATE_SETTINGS: 'chat:update_settings',
+    DELETE: 'chat:delete',
+  },
+  ADMIN: {
+    DASHBOARD: 'admin:dashboard',
+    MANAGE_USERS: 'admin:manage_users',
+    MANAGE_ROLES: 'admin:manage_roles',
+    MANAGE_SESSIONS: 'admin:manage_sessions',
+    MANAGE_SETTINGS: 'admin:manage_settings',
+    VIEW_LOGS: 'admin:view_logs',
+    MANAGE_REPORTS: 'admin:manage_reports',
+  },
+  AI: {
+    USE: 'ai:use',
+    MANAGE_MODELS: 'ai:manage_models',
+    VIEW_METRICS: 'ai:view_metrics',
+    CONFIGURE: 'ai:configure',
+  },
+  BUSINESS: {
+    ANALYTICS: 'business:analytics',
+    EXPORT: 'business:export',
+    API_ACCESS: 'business:api_access',
+    WEBHOOKS: 'business:webhooks',
+  },
+  SYSTEM: {
+    HEALTH: 'system:health',
+    METRICS: 'system:metrics',
+    CONFIG: 'system:config',
+  },
+};
+
+const flattenPermissions = () => {
+  const flat = {};
+  for (const category of Object.values(PERMISSIONS)) {
+    for (const [key, value] of Object.entries(category)) {
+      flat[`${PERMISSIONS.constructor ? Object.keys(PERMISSIONS).find(k => PERMISSIONS[k] === category) : 'unknown'}.${key}`] = value;
+    }
+  }
+  return flat;
+};
+
+const ROLE_PERMISSIONS = {
+  [ROLES.OWNER]: Object.values(PERMISSIONS).reduce((acc, cat) => [...acc, ...Object.values(cat)], []),
+
+  [ROLES.SUPER_ADMIN]: [
+    ...Object.values(PERMISSIONS.USER_ADMIN),
+    ...Object.values(PERMISSIONS.SESSION).filter(p => !['session:terminate_other'].includes(p)),
+    ...Object.values(PERMISSIONS.MESSAGE),
+    ...Object.values(PERMISSIONS.CHAT),
+    ...Object.values(PERMISSIONS.ADMIN),
+    PERMISSIONS.AI.USE, PERMISSIONS.AI.MANAGE_MODELS, PERMISSIONS.AI.VIEW_METRICS,
+    PERMISSIONS.BUSINESS.ANALYTICS,
+    PERMISSIONS.SYSTEM.HEALTH, PERMISSIONS.SYSTEM.METRICS,
+    PERMISSIONS.USER.READ_OWN, PERMISSIONS.USER.UPDATE_OWN, PERMISSIONS.USER.DELETE_OWN,
+    PERMISSIONS.SESSION.READ_OWN, PERMISSIONS.SESSION.TERMINATE_OWN,
+  ],
+
+  [ROLES.ADMIN]: [
+    PERMISSIONS.USER_ADMIN.READ_ANY, PERMISSIONS.USER_ADMIN.BAN, PERMISSIONS.USER_ADMIN.SUSPEND,
+    PERMISSIONS.SESSION.READ_ANY, PERMISSIONS.SESSION.TERMINATE_ANY,
+    PERMISSIONS.MESSAGE.SEND, PERMISSIONS.MESSAGE.READ_OWN, PERMISSIONS.MESSAGE.DELETE_OWN, PERMISSIONS.MESSAGE.DELETE_ANY, PERMISSIONS.MESSAGE.PIN, PERMISSIONS.MESSAGE.ANNOUNCE,
+    PERMISSIONS.CHAT.CREATE, PERMISSIONS.CHAT.JOIN, PERMISSIONS.CHAT.ADD_MEMBER, PERMISSIONS.CHAT.REMOVE_MEMBER, PERMISSIONS.CHAT.UPDATE_SETTINGS,
+    PERMISSIONS.ADMIN.DASHBOARD, PERMISSIONS.ADMIN.MANAGE_USERS, PERMISSIONS.ADMIN.VIEW_LOGS, PERMISSIONS.ADMIN.MANAGE_REPORTS,
+    PERMISSIONS.AI.USE, PERMISSIONS.AI.VIEW_METRICS,
+    PERMISSIONS.SYSTEM.HEALTH, PERMISSIONS.SYSTEM.METRICS,
+    PERMISSIONS.USER.READ_OWN, PERMISSIONS.USER.UPDATE_OWN, PERMISSIONS.USER.DELETE_OWN,
+    PERMISSIONS.SESSION.READ_OWN, PERMISSIONS.SESSION.TERMINATE_OWN,
+  ],
+
+  [ROLES.MODERATOR]: [
+    PERMISSIONS.MESSAGE.SEND, PERMISSIONS.MESSAGE.READ_OWN, PERMISSIONS.MESSAGE.DELETE_OWN, PERMISSIONS.MESSAGE.DELETE_ANY, PERMISSIONS.MESSAGE.PIN,
+    PERMISSIONS.CHAT.CREATE, PERMISSIONS.CHAT.JOIN, PERMISSIONS.CHAT.ADD_MEMBER, PERMISSIONS.CHAT.REMOVE_MEMBER,
+    PERMISSIONS.SESSION.READ_OWN, PERMISSIONS.SESSION.TERMINATE_OWN,
+    PERMISSIONS.USER.READ_OWN, PERMISSIONS.USER.UPDATE_OWN,
+    PERMISSIONS.AI.USE,
+  ],
+
+  [ROLES.BUSINESS]: [
+    PERMISSIONS.MESSAGE.SEND, PERMISSIONS.MESSAGE.READ_OWN, PERMISSIONS.MESSAGE.DELETE_OWN, PERMISSIONS.MESSAGE.PIN,
+    PERMISSIONS.CHAT.CREATE, PERMISSIONS.CHAT.JOIN, PERMISSIONS.CHAT.ADD_MEMBER,
+    PERMISSIONS.SESSION.READ_OWN, PERMISSIONS.SESSION.TERMINATE_OWN,
+    PERMISSIONS.USER.READ_OWN, PERMISSIONS.USER.UPDATE_OWN,
+    PERMISSIONS.AI.USE,
+    PERMISSIONS.BUSINESS.ANALYTICS, PERMISSIONS.BUSINESS.EXPORT, PERMISSIONS.BUSINESS.API_ACCESS,
+  ],
+
+  [ROLES.PREMIUM]: [
+    PERMISSIONS.MESSAGE.SEND, PERMISSIONS.MESSAGE.READ_OWN, PERMISSIONS.MESSAGE.DELETE_OWN, PERMISSIONS.MESSAGE.PIN,
+    PERMISSIONS.CHAT.CREATE, PERMISSIONS.CHAT.JOIN, PERMISSIONS.CHAT.ADD_MEMBER,
+    PERMISSIONS.SESSION.READ_OWN, PERMISSIONS.SESSION.TERMINATE_OWN,
+    PERMISSIONS.USER.READ_OWN, PERMISSIONS.USER.UPDATE_OWN,
+    PERMISSIONS.AI.USE,
+    PERMISSIONS.BUSINESS.ANALYTICS,
+  ],
+
+  [ROLES.VERIFIED]: [
+    PERMISSIONS.MESSAGE.SEND, PERMISSIONS.MESSAGE.READ_OWN, PERMISSIONS.MESSAGE.DELETE_OWN,
+    PERMISSIONS.CHAT.CREATE, PERMISSIONS.CHAT.JOIN,
+    PERMISSIONS.SESSION.READ_OWN, PERMISSIONS.SESSION.TERMINATE_OWN,
+    PERMISSIONS.USER.READ_OWN, PERMISSIONS.USER.UPDATE_OWN,
+    PERMISSIONS.AI.USE,
+  ],
+
+  [ROLES.USER]: [
+    PERMISSIONS.MESSAGE.SEND, PERMISSIONS.MESSAGE.READ_OWN, PERMISSIONS.MESSAGE.DELETE_OWN,
+    PERMISSIONS.CHAT.CREATE, PERMISSIONS.CHAT.JOIN,
+    PERMISSIONS.SESSION.READ_OWN, PERMISSIONS.SESSION.TERMINATE_OWN,
+    PERMISSIONS.USER.READ_OWN, PERMISSIONS.USER.UPDATE_OWN,
+    PERMISSIONS.AI.USE,
+  ],
+
+  [ROLES.BOT]: [
+    PERMISSIONS.MESSAGE.SEND,
+    PERMISSIONS.CHAT.JOIN,
+    PERMISSIONS.AI.USE,
+  ],
+
+  [ROLES.GUEST]: [
+    PERMISSIONS.MESSAGE.SEND,
+    PERMISSIONS.CHAT.JOIN,
+  ],
+};
+
+const hasPermission = (role, permission) => {
+  if (Array.isArray(role)) return role.some(r => hasPermission(r, permission));
+  const rolePerms = ROLE_PERMISSIONS[role] || [];
+  return rolePerms.includes(permission);
+};
+
+const hasRoleOrAbove = (userRole, requiredRole) => {
+  const userLevel = ROLE_HIERARCHY[userRole] || 0;
+  const requiredLevel = ROLE_HIERARCHY[requiredRole] || 0;
+  return userLevel >= requiredLevel;
+};
+
+const getHighestRole = (roles) => {
+  if (!roles || roles.length === 0) return ROLES.USER;
+  return roles.sort((a, b) => (ROLE_HIERARCHY[b] || 0) - (ROLE_HIERARCHY[a] || 0))[0];
+};
+
+module.exports = {
+  PERMISSIONS,
+  ROLE_PERMISSIONS,
+  hasPermission,
+  hasRoleOrAbove,
+  getHighestRole,
+};

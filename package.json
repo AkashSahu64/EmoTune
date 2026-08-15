@@ -1,0 +1,20 @@
+{
+  "name": "emotune",
+  "version": "2.0.0",
+  "description": "AI-Powered Emotional Chat Experience",
+  "private": true,
+  "scripts": {
+    "dev": "npm run deps && concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "deps": "powershell -ExecutionPolicy Bypass -File scripts/ensure-deps.ps1",
+    "deps:skip": "powershell -ExecutionPolicy Bypass -File scripts/ensure-deps.ps1 -SkipDeps",
+    "fix:wsl": "powershell -ExecutionPolicy Bypass -File scripts/fix-docker-wsl.ps1",
+    "build": "cd client && npm run build",
+    "start": "npm run deps && cd server && npm start",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

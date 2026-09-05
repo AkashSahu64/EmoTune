@@ -27,7 +27,9 @@ export default function useMessages(chatId, activeIntent = 'all') {
   return {
     messages: messagesQuery.data || [],
     setMessages,
-    loadingMessages: messagesQuery.isLoading || messagesQuery.isFetching,
+    // Background refetches must not replace an already usable chat with a
+    // loading skeleton. Only the first load is blocking for this view.
+    loadingMessages: messagesQuery.isLoading,
     fetchMessages,
   };
 }

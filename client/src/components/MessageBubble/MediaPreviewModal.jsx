@@ -117,7 +117,7 @@ function MediaPreviewModal({ message, messages, onClose }) {
           title={getFileName(current)}
         />
       );
-    return <p className="text-sm text-text-secondary">Preview unavailable</p>;
+    return <p className="text-sm text-text-secondary dark:text-text-secondary-dark">Preview unavailable</p>;
   })();
 
   return (

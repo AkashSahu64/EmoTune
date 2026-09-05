@@ -167,7 +167,10 @@ const cacheService = {
     try {
       const client = redisClient || await getRedis();
       if (!client) return;
-      const keys = await client.keys(`${CONFIG.redis.keyPrefix}*${pattern}*`).catch(() => []);
+      // ioredis applies keyPrefix to key-based commands, including KEYS.
+      // Adding CONFIG.redis.keyPrefix here prefixes the pattern twice and
+      // leaves Redis-backed Story feeds stale after a new public Story.
+      const keys = await client.keys(`*${pattern}*`).catch(() => []);
       if (keys.length > 0) {
         await client.del(...keys).catch(() => {});
       }

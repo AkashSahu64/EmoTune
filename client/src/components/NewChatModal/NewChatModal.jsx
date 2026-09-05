@@ -74,21 +74,21 @@ function NewChatModal({ onClose, onSelectChat }) {
             key={u._id}
             onClick={() => handleSelect(u._id)}
             disabled={creating === u._id}
-            className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-hover/[0.07] transition-colors text-left disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus"
+            className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] transition-colors text-left disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus dark:focus:ring-focus-dark"
             role="option"
             type="button"
           >
             <Avatar src={u.avatar} name={u.username} size="md" status={onlineUsers?.has?.(u._id) ? 'online' : 'offline'} />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-text-primary truncate">{u.username}</p>
-              <p className="text-xs text-text-secondary truncate">{u.email}</p>
+              <p className="text-sm font-medium text-text-primary dark:text-text-primary-dark truncate">{u.username}</p>
+              <p className="text-xs text-text-secondary dark:text-text-secondary-dark truncate">{u.email}</p>
             </div>
             <div className="flex-shrink-0">
               {creating === u._id ? (
                 <LoadingSpinner size="sm" />
               ) : (
-                <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <FiMessageCircle className="text-primary" size={16} />
+                <div className="w-8 h-8 rounded-xl bg-primary/10 dark:bg-primary-dark/10 flex items-center justify-center">
+                  <FiMessageCircle className="text-primary dark:text-primary-dark" size={16} />
                 </div>
               )}
             </div>
@@ -97,23 +97,23 @@ function NewChatModal({ onClose, onSelectChat }) {
 
         {!query && !searching && (
           <div className="space-y-1 px-1">
-            <p className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider px-2 py-2">Recent Contacts</p>
+            <p className="text-[10px] font-semibold text-text-secondary dark:text-text-secondary-dark uppercase tracking-wider px-2 py-2">Recent Contacts</p>
             {recentContacts.map((u) => (
               <motion.button
                 key={u._id}
                 onClick={() => u.isAI ? toast.info('AI Assistant coming soon!') : handleSelect(u._id)}
-                className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-hover/[0.07] transition-colors text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus"
+                className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] transition-colors text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus dark:focus:ring-focus-dark"
                 type="button"
               >
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold">AI</div>
+                <div className="w-10 h-10 rounded-full bg-primary dark:bg-primary-dark flex items-center justify-center text-white text-sm font-bold">AI</div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-primary truncate">{u.username}</p>
-                  <p className="text-xs text-text-secondary">AI-powered assistant</p>
+                  <p className="text-sm font-medium text-text-primary dark:text-text-primary-dark truncate">{u.username}</p>
+                  <p className="text-xs text-text-secondary dark:text-text-secondary-dark">AI-powered assistant</p>
                 </div>
-                <FiStar size={16} className="text-warning" />
+                <FiStar size={16} className="text-warning dark:text-warning-dark" />
               </motion.button>
             ))}
-            <p className="text-xs text-text-secondary text-center py-6">Type a name or email to search</p>
+            <p className="text-xs text-text-secondary dark:text-text-secondary-dark text-center py-6">Type a name or email to search</p>
           </div>
         )}
       </ScrollArea>

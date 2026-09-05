@@ -21,7 +21,7 @@ const requirements = [
 
 export default memo(function PasswordStrength({ password = '' }) {
   const strength = requirements.filter((r) => meetsRequirement(password, r.key)).length;
-  const barColor = strength <= 1 ? 'var(--theme-danger)' : strength <= 3 ? 'var(--theme-warning)' : strength === 4 ? 'var(--theme-primary)' : 'var(--theme-success)';
+  const barColor = strength <= 1 ? '#DC2626' : strength <= 3 ? '#D97706' : strength === 4 ? '#3B5BFF' : '#16A34A';
   const barWidth = (strength / requirements.length) * 100;
 
   return (
@@ -31,7 +31,7 @@ export default memo(function PasswordStrength({ password = '' }) {
           <div
             key={i}
             className="h-1 flex-1 rounded-full transition-colors duration-normal"
-            style={{ backgroundColor: i < strength ? barColor : 'var(--theme-border)' }}
+            style={{ backgroundColor: i < strength ? barColor : '#94A3B8' }}
           />
         ))}
       </div>
@@ -42,10 +42,10 @@ export default memo(function PasswordStrength({ password = '' }) {
             <span
               key={req.key}
               className={`flex items-center gap-1 text-[9px] transition-colors duration-200 ${
-                met ? 'text-success' : password ? 'text-text-secondary' : 'text-text-secondary'
+                met ? 'text-success dark:text-success-dark' : password ? 'text-text-secondary dark:text-text-secondary-dark' : 'text-text-secondary dark:text-text-secondary-dark'
               }`}
             >
-              <svg width="8" height="8" viewBox="0 0 24 24" fill={met ? 'var(--theme-success)' : 'var(--theme-text-secondary)'} className="flex-shrink-0">
+              <svg width="8" height="8" viewBox="0 0 24 24" fill={met ? '#16A34A' : '#4B5563'} className="flex-shrink-0">
                 {met ? (
                   <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
                 ) : (

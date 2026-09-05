@@ -194,6 +194,7 @@ export const aiService = {
   rewriteMessage: (data) => api.post('/ai/rewrite', data),
   getEmotionTheme: (chatId) => api.get(`/ai/emotion-theme/${chatId}`),
   getGifs: (chatId, params = {}, config = {}) => api.get(`/ai/gifs/${chatId}`, { ...config, params }),
+  getStickers: (params = {}, config = {}) => api.get('/ai/stickers', { ...config, params }),
   getShayari: (chatId) => api.get(`/ai/shayari/${chatId}`),
   getSummary: (chatId, config = {}) => api.get(`/ai/summary/${chatId}`, config),
 };
@@ -237,8 +238,10 @@ export const groupIntelligenceService = {
 export const bookmarkService = {
   create: (data) => api.post('/bookmarks', data),
   getAll: (params) => api.get('/bookmarks', { params }),
+  getOne: (id) => api.get(`/bookmarks/${id}`),
   delete: (id) => api.delete(`/bookmarks/${id}`),
   increment: (id) => api.patch(`/bookmarks/${id}/use`),
+  setFavorite: (id, isFavorite) => api.patch(`/bookmarks/${id}/favorite`, { isFavorite }),
 };
 
 export const memoryService = {

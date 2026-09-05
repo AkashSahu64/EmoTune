@@ -20,7 +20,7 @@ export default function Tooltip({ children, content, position = 'top', className
     >
       {children}
       {isVisible && content && (
-        <div className={cn('glass-popover pointer-events-none absolute z-50 whitespace-nowrap rounded-md px-2.5 py-1.5 text-meta font-medium text-text-primary', positions[position])} role="tooltip">
+        <div className={cn('glass-popover pointer-events-none absolute z-50 whitespace-nowrap rounded-md px-2.5 py-1.5 text-meta font-medium text-text-primary dark:text-text-primary-dark', positions[position])} role="tooltip">
           {content}
         </div>
       )}

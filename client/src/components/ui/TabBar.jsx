@@ -2,7 +2,7 @@ import { cn } from '../../theme/utilities';
 
 export default function TabBar({ tabs, activeTab, onChange, className = '' }) {
   return (
-    <div className={cn('scrollbar-hide flex items-center gap-1 overflow-x-auto border-b border-border/20 px-3 py-2', className)} role="tablist">
+    <div className={cn('scrollbar-hide flex items-center gap-1 overflow-x-auto border-b border-border/20 dark:border-border-dark/20 px-3 py-2', className)} role="tablist">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         const Icon = tab.icon;
@@ -11,8 +11,8 @@ export default function TabBar({ tabs, activeTab, onChange, className = '' }) {
             key={tab.id}
             onClick={() => onChange(tab.id)}
             className={cn(
-              'interactive relative flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-label font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50',
-              isActive ? 'bg-primary text-on-primary' : 'text-text-secondary hover:text-text-primary',
+              'interactive relative flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-label font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 dark:focus-visible:ring-focus-dark/50',
+              isActive ? 'bg-primary dark:bg-primary-dark text-on-primary dark:text-on-primary-dark' : 'text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark',
             )}
             aria-selected={isActive}
             role="tab"

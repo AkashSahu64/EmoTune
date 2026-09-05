@@ -22,6 +22,7 @@ import ReactionDetails from "./ReactionDetails";
 import ReactionPicker from "./ReactionPicker";
 import ReplyPreview from "./ReplyPreview";
 import SongMessage from "./SongMessage";
+import StoryReferenceMessage from "./StoryReferenceMessage";
 import StickerMessage from "./StickerMessage";
 import TextMessage from "./TextMessage";
 import VideoMessage from "./VideoMessage";
@@ -54,6 +55,8 @@ const RENDERERS = Object.freeze({
   song: SongMessage,
   text: TextMessage,
   shayari: TextMessage,
+  story_reply: StoryReferenceMessage,
+  story_share: StoryReferenceMessage,
 });
 
 const DELETED_MESSAGE_TEXT = "This message was deleted";
@@ -72,7 +75,9 @@ function MessageBubble({
   onUnpin,
   onForward,
   onShowInfo,
+  onBookmark,
   onReact,
+  onOpenStory,
   isPinned,
   currentUserAvatar,
   receiverAvatar,
@@ -153,8 +158,8 @@ function MessageBubble({
   }, []);
 
   const content = useMemo(
-    () => <Renderer message={renderMessage} isOwn={isOwn} onOpen={openMedia} />,
-    [Renderer, isOwn, renderMessage, openMedia],
+    () => <Renderer message={renderMessage} isOwn={isOwn} onOpen={openMedia} onOpenStory={onOpenStory} />,
+    [Renderer, isOwn, renderMessage, openMedia, onOpenStory],
   );
   if (isMessageDeleted(message, userId)) return null;
 
@@ -212,6 +217,7 @@ function MessageBubble({
               onDeleteForMe={onDeleteForMe}
               onDeleteForEveryone={onDeleteForEveryone}
               onShowInfo={onShowInfo}
+              onBookmark={onBookmark}
               anchorRef={rootRef}
               id={menuId}
             />

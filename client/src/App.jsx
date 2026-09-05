@@ -74,11 +74,11 @@ export default function App() {
                 position="top-right"
                 toastOptions={{
                   classNames: {
-                    toast: 'glass-popover !rounded-lg !border-border/30 !bg-surface-floating/90 !text-text-primary',
-                    title: '!text-text-primary',
-                    description: '!text-text-secondary',
-                    actionButton: '!bg-primary !text-on-primary',
-                    cancelButton: '!bg-surface-elevated !text-text-secondary',
+                    toast: 'glass-popover !rounded-lg !border-border/30 dark:border-border-dark/30 !bg-surface-floating/90 dark:bg-surface-floating-dark/90 !text-text-primary dark:text-text-primary-dark',
+                    title: '!text-text-primary dark:text-text-primary-dark',
+                    description: '!text-text-secondary dark:text-text-secondary-dark',
+                    actionButton: '!bg-primary dark:bg-primary-dark !text-on-primary dark:text-on-primary-dark',
+                    cancelButton: '!bg-surface-elevated dark:bg-surface-elevated-dark !text-text-secondary dark:text-text-secondary-dark',
                   },
                 }}
               />

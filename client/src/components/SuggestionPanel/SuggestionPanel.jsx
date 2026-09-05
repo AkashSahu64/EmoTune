@@ -165,7 +165,7 @@ export default function SuggestionPanel({ suggestions, onSend, chatId, onBookmar
         <motion.button
           key={i}
           onClick={() => handleQuickReply(reply.text)}
-          className="flex items-center gap-1.5 px-3.5 py-2 bg-surface backdrop-blur-glass border border-border rounded-xl hover:bg-hover/[0.07] transition-colors text-xs font-medium text-text-primary"
+          className="flex items-center gap-1.5 px-3.5 py-2 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] transition-colors text-xs font-medium text-text-primary dark:text-text-primary-dark"
         >
           <span>{reply.emoji}</span>
           <span>{reply.text}</span>
@@ -184,16 +184,21 @@ export default function SuggestionPanel({ suggestions, onSend, chatId, onBookmar
         {emojis.length > 0 ? (
           <>
             {tabData._mood && (
-              <p className="text-[10px] text-text-secondary mb-2 capitalize">Mood: {tabData._mood}</p>
+              <p className="text-[10px] text-text-secondary dark:text-text-secondary-dark mb-2 capitalize">Mood: {tabData._mood}</p>
             )}
             <div className="flex flex-wrap gap-2 justify-center">
               {emojis.map((emoji, i) => (
                 <motion.button
                   key={i}
-                  className="bg-surface backdrop-blur-glass border border-border w-14 h-14 rounded-2xl flex items-center justify-center text-2xl hover:bg-hover/[0.07] transition-colors"
+                  className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-14 h-14 rounded-2xl flex items-center justify-center text-2xl hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] transition-colors"
                   onClick={() => {
                     handleSend('emoji', emoji, { emoji });
-                    onBookmark?.('emoji', { emoji });
+                    onBookmark?.({
+                      type: 'emoji',
+                      source: 'ai',
+                      content: emoji,
+                      metadata: { emoji, sourceChatId: chatId },
+                    });
                   }}
                   title={`Send ${emoji}`}
                 >
@@ -203,7 +208,7 @@ export default function SuggestionPanel({ suggestions, onSend, chatId, onBookmar
             </div>
           </>
         ) : (
-          <p className="text-xs text-text-secondary text-center">No emoji suggestions available</p>
+          <p className="text-xs text-text-secondary dark:text-text-secondary-dark text-center">No emoji suggestions available</p>
         )}
       </div>
     );
@@ -219,22 +224,35 @@ export default function SuggestionPanel({ suggestions, onSend, chatId, onBookmar
         {gifs.length > 0 ? (
           <div className="grid grid-cols-2 gap-2">
             {gifs.slice(0, 6).map((gif, i) => (
-              <motion.button
-                key={gif.id || i}
-                className="bg-surface backdrop-blur-glass border border-border rounded-xl overflow-hidden hover:bg-hover/[0.07] transition-colors"
-                onClick={() => handleSend('gif', gif.title || 'GIF', { mediaUrl: gif.url, gifId: gif.id })}
-              >
-                <img
-                  src={gif.preview || gif.url}
-                  alt={gif.title || 'GIF'}
-                  className="w-full h-24 object-cover"
-                  loading="lazy"
+              <div key={gif.id || i} className="relative">
+                <motion.button
+                  className="w-full bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl overflow-hidden hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] transition-colors"
+                  onClick={() => handleSend('gif', gif.title || 'GIF', { mediaUrl: gif.url, gifId: gif.id })}
+                >
+                  <img
+                    src={gif.preview || gif.url}
+                    alt={gif.title || 'GIF'}
+                    className="w-full h-24 object-cover"
+                    loading="lazy"
+                  />
+                </motion.button>
+                <IconButton
+                  icon={FiBookmark}
+                  size="xs"
+                  onClick={() => onBookmark?.({
+                    type: 'image',
+                    source: 'ai',
+                    content: gif.url || gif.preview || gif.title || 'GIF',
+                    metadata: { sourceChatId: chatId },
+                  })}
+                  label="Save GIF"
+                  className="absolute right-1 top-1 bg-surface/90"
                 />
-              </motion.button>
+              </div>
             ))}
           </div>
         ) : (
-          <p className="text-xs text-text-secondary text-center">No GIFs available. Try adding GIPHY_API_KEY in server .env</p>
+          <p className="text-xs text-text-secondary dark:text-text-secondary-dark text-center">No GIFs available. Try adding GIPHY_API_KEY in server .env</p>
         )}
       </div>
     );
@@ -250,15 +268,20 @@ export default function SuggestionPanel({ suggestions, onSend, chatId, onBookmar
         {shayaris.length > 0 ? (
           shayaris.map((shayari, i) => (
             <GlassCard key={i} className="p-4">
-              <p className="text-sm italic text-text-primary leading-relaxed font-serif whitespace-pre-line">{shayari}</p>
+              <p className="text-sm italic text-text-primary dark:text-text-primary-dark leading-relaxed font-serif whitespace-pre-line">{shayari}</p>
               <div className="flex items-center gap-2 mt-3">
                 <Button variant="secondary" size="xs" icon={FiSend} onClick={() => handleSend('shayari', shayari, { shayari })}>Send</Button>
-                <Button variant="ghost" size="xs" icon={FiBookmark} onClick={() => onBookmark?.('shayari', { shayari })}>Save</Button>
+                <Button variant="ghost" size="xs" icon={FiBookmark} onClick={() => onBookmark?.({
+                  type: 'shayari',
+                  source: 'ai',
+                  content: shayari,
+                  metadata: { shayari, sourceChatId: chatId },
+                })}>Save</Button>
               </div>
             </GlassCard>
           ))
         ) : (
-          <p className="text-xs text-text-secondary">No shayari available</p>
+          <p className="text-xs text-text-secondary dark:text-text-secondary-dark">No shayari available</p>
         )}
       </div>
     );
@@ -274,21 +297,34 @@ export default function SuggestionPanel({ suggestions, onSend, chatId, onBookmar
         {songs.length > 0 ? (
           songs.slice(0, 5).map((song, i) => (
             <GlassCard key={i} className="p-3 flex items-center gap-3" hover>
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-primary dark:bg-primary-dark flex items-center justify-center text-white flex-shrink-0">
                 <FiMusic size={16} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-text-primary truncate">{song.title || 'Unknown Song'}</p>
-                <p className="text-[10px] text-text-secondary truncate">
+                <p className="text-sm font-medium text-text-primary dark:text-text-primary-dark truncate">{song.title || 'Unknown Song'}</p>
+                <p className="text-[10px] text-text-secondary dark:text-text-secondary-dark truncate">
                   {song.artist || ''}
                   {song.source && <span className="ml-1 opacity-50">· {song.source}</span>}
                 </p>
               </div>
-              <IconButton icon={FiSend} size="xs" onClick={() => handleSend('song', song.title || 'Song', { songTitle: song.title, songArtist: song.artist, songClipUrl: song.previewUrl || song.externalUrl })} label="Send song" />
+              <div className="flex items-center gap-1">
+                <IconButton icon={FiBookmark} size="xs" onClick={() => onBookmark?.({
+                  type: 'song',
+                  source: 'ai',
+                  content: song.title || 'Song',
+                  metadata: {
+                    songTitle: song.title || 'Song',
+                    songArtist: song.artist || '',
+                    songClipUrl: song.previewUrl || song.externalUrl || '',
+                    sourceChatId: chatId,
+                  },
+                })} label="Save song" />
+                <IconButton icon={FiSend} size="xs" onClick={() => handleSend('song', song.title || 'Song', { songTitle: song.title, songArtist: song.artist, songClipUrl: song.previewUrl || song.externalUrl })} label="Send song" />
+              </div>
             </GlassCard>
           ))
         ) : (
-          <p className="text-xs text-text-secondary">No song suggestions available</p>
+          <p className="text-xs text-text-secondary dark:text-text-secondary-dark">No song suggestions available</p>
         )}
       </div>
     );
@@ -304,21 +340,33 @@ export default function SuggestionPanel({ suggestions, onSend, chatId, onBookmar
         {videos.length > 0 ? (
           videos.slice(0, 5).map((video, i) => (
             <GlassCard key={i} className="p-3 flex items-center gap-3" hover>
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-primary dark:bg-primary-dark flex items-center justify-center text-white flex-shrink-0">
                 <FiVideo size={16} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-text-primary truncate">{video.title || 'Video'}</p>
-                <p className="text-[10px] text-text-secondary">
+                <p className="text-sm font-medium text-text-primary dark:text-text-primary-dark truncate">{video.title || 'Video'}</p>
+                <p className="text-[10px] text-text-secondary dark:text-text-secondary-dark">
                   {video.source || ''}
                   {video.duration && <span className="ml-1 opacity-50">· {typeof video.duration === 'number' ? `${Math.round(video.duration / 60)}m` : video.duration}</span>}
                 </p>
               </div>
-              <IconButton icon={FiSend} size="xs" onClick={() => handleSend('video', video.title || 'Video', { videoEmbedUrl: video.embedUrl, videoQuery: video.query })} label="Send video" />
+              <div className="flex items-center gap-1">
+                <IconButton icon={FiBookmark} size="xs" onClick={() => onBookmark?.({
+                  type: 'video',
+                  source: 'ai',
+                  content: video.title || video.query || 'Video',
+                  metadata: {
+                    videoQuery: video.query || video.title || '',
+                    videoEmbedUrl: video.embedUrl || video.externalUrl || '',
+                    sourceChatId: chatId,
+                  },
+                })} label="Save video" />
+                <IconButton icon={FiSend} size="xs" onClick={() => handleSend('video', video.title || 'Video', { videoEmbedUrl: video.embedUrl, videoQuery: video.query })} label="Send video" />
+              </div>
             </GlassCard>
           ))
         ) : (
-          <p className="text-xs text-text-secondary">No video suggestions available</p>
+          <p className="text-xs text-text-secondary dark:text-text-secondary-dark">No video suggestions available</p>
         )}
       </div>
     );
@@ -334,14 +382,14 @@ export default function SuggestionPanel({ suggestions, onSend, chatId, onBookmar
         {summary ? (
           <>
             <GlassCard className="p-4">
-              <p className="text-sm text-text-primary leading-relaxed">{summary.summary}</p>
+              <p className="text-sm text-text-primary dark:text-text-primary-dark leading-relaxed">{summary.summary}</p>
               {summary.mainPoints?.length > 0 && (
                 <div className="mt-3">
-                  <p className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider mb-1.5">Key Points</p>
+                  <p className="text-[10px] font-semibold text-text-secondary dark:text-text-secondary-dark uppercase tracking-wider mb-1.5">Key Points</p>
                   <ul className="space-y-1">
                     {summary.mainPoints.filter(Boolean).map((point, i) => (
-                      <li key={i} className="text-xs text-text-secondary flex items-start gap-2">
-                        <span className="text-primary mt-0.5">•</span>
+                      <li key={i} className="text-xs text-text-secondary dark:text-text-secondary-dark flex items-start gap-2">
+                        <span className="text-primary dark:text-primary-dark mt-0.5">•</span>
                         <span>{point}</span>
                       </li>
                     ))}
@@ -349,16 +397,16 @@ export default function SuggestionPanel({ suggestions, onSend, chatId, onBookmar
                 </div>
               )}
               {summary.tone && (
-                <p className="text-xs mt-2 text-text-secondary">
-                  Tone: <span className="font-medium capitalize text-text-primary">{summary.tone}</span>
+                <p className="text-xs mt-2 text-text-secondary dark:text-text-secondary-dark">
+                  Tone: <span className="font-medium capitalize text-text-primary dark:text-text-primary-dark">{summary.tone}</span>
                 </p>
               )}
               {summary.actionItems?.length > 0 && (
                 <div className="mt-3">
-                  <p className="text-[10px] font-semibold text-warning uppercase tracking-wider mb-1.5">Action Items</p>
+                  <p className="text-[10px] font-semibold text-warning dark:text-warning-dark uppercase tracking-wider mb-1.5">Action Items</p>
                   {summary.actionItems.map((item, i) => (
-                    <p key={i} className="text-xs text-text-secondary flex items-start gap-2">
-                      <span className="text-warning mt-0.5">▶</span>
+                    <p key={i} className="text-xs text-text-secondary dark:text-text-secondary-dark flex items-start gap-2">
+                      <span className="text-warning dark:text-warning-dark mt-0.5">▶</span>
                       <span>{item}</span>
                     </p>
                   ))}
@@ -384,15 +432,15 @@ export default function SuggestionPanel({ suggestions, onSend, chatId, onBookmar
   const renderRewriteTab = () => (
     <div className="space-y-3">
       <div>
-        <p className="text-[10px] font-medium text-text-secondary mb-1.5">Message to rewrite</p>
+        <p className="text-[10px] font-medium text-text-secondary dark:text-text-secondary-dark mb-1.5">Message to rewrite</p>
         <textarea
           value={rewriteText}
           onChange={(e) => setRewriteText(e.target.value)}
           placeholder="Paste or type a message to rewrite..."
-          className="w-full bg-surface backdrop-blur-glass border border-border px-3 py-2 text-sm rounded-xl min-h-[60px] resize-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus transition-colors"
+          className="w-full bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark px-3 py-2 text-sm rounded-xl min-h-[60px] resize-none focus:outline-none focus:border-primary dark:focus:border-primary-dark focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark transition-colors"
           rows={2}
         />
-        <p className="text-[10px] text-text-secondary mt-1">Select tone</p>
+        <p className="text-[10px] text-text-secondary dark:text-text-secondary-dark mt-1">Select tone</p>
         <div className="flex flex-wrap gap-1.5 mt-1">
           {TONES.map((tone) => (
             <Chip
@@ -422,12 +470,12 @@ export default function SuggestionPanel({ suggestions, onSend, chatId, onBookmar
       {rewriteResult && (
         <motion.div initial={{ }} animate={{ }}>
           <GlassCard className="p-4">
-            <p className="text-[10px] font-medium text-text-secondary mb-1">Original</p>
-            <p className="text-xs text-text-secondary mb-3 italic">{rewriteResult.original}</p>
-            <p className="text-[10px] font-medium text-primary mb-1">Rewritten</p>
-            <p className="text-sm text-text-primary leading-relaxed">{rewriteResult.rewritten}</p>
+            <p className="text-[10px] font-medium text-text-secondary dark:text-text-secondary-dark mb-1">Original</p>
+            <p className="text-xs text-text-secondary dark:text-text-secondary-dark mb-3 italic">{rewriteResult.original}</p>
+            <p className="text-[10px] font-medium text-primary dark:text-primary-dark mb-1">Rewritten</p>
+            <p className="text-sm text-text-primary dark:text-text-primary-dark leading-relaxed">{rewriteResult.rewritten}</p>
             {rewriteResult.changes && (
-              <p className="text-[10px] text-text-secondary mt-2 italic">{rewriteResult.changes}</p>
+              <p className="text-[10px] text-text-secondary dark:text-text-secondary-dark mt-2 italic">{rewriteResult.changes}</p>
             )}
             <div className="flex items-center gap-2 mt-3">
               <Button variant="secondary" size="xs" icon={FiSend} onClick={() => handleSend('text', rewriteResult.rewritten)}>Send</Button>
@@ -444,15 +492,15 @@ export default function SuggestionPanel({ suggestions, onSend, chatId, onBookmar
   const renderTranslateTab = () => (
     <div className="space-y-3">
       <div>
-        <p className="text-[10px] font-medium text-text-secondary mb-1.5">Text to translate</p>
+        <p className="text-[10px] font-medium text-text-secondary dark:text-text-secondary-dark mb-1.5">Text to translate</p>
         <textarea
           value={translateText}
           onChange={(e) => setTranslateText(e.target.value)}
           placeholder="Enter text to translate..."
-          className="w-full bg-surface backdrop-blur-glass border border-border px-3 py-2 text-sm rounded-xl min-h-[60px] resize-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus transition-colors"
+          className="w-full bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark px-3 py-2 text-sm rounded-xl min-h-[60px] resize-none focus:outline-none focus:border-primary dark:focus:border-primary-dark focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark transition-colors"
           rows={2}
         />
-        <p className="text-[10px] text-text-secondary mt-1">Translate to</p>
+        <p className="text-[10px] text-text-secondary dark:text-text-secondary-dark mt-1">Translate to</p>
         <div className="flex flex-wrap gap-1.5 mt-1 mb-2">
           {LANGUAGES.slice(0, 6).map((lang) => (
             <Chip
@@ -481,12 +529,12 @@ export default function SuggestionPanel({ suggestions, onSend, chatId, onBookmar
       {translateResult && (
         <motion.div initial={{ }} animate={{ }}>
           <GlassCard className="p-4">
-            <p className="text-[10px] font-medium text-text-secondary mb-1">Original</p>
-            <p className="text-xs text-text-secondary mb-3 italic">{translateResult.original}</p>
-            <p className="text-[10px] font-medium text-primary mb-1">Translated</p>
-            <p className="text-sm text-text-primary leading-relaxed">{translateResult.translated}</p>
+            <p className="text-[10px] font-medium text-text-secondary dark:text-text-secondary-dark mb-1">Original</p>
+            <p className="text-xs text-text-secondary dark:text-text-secondary-dark mb-3 italic">{translateResult.original}</p>
+            <p className="text-[10px] font-medium text-primary dark:text-primary-dark mb-1">Translated</p>
+            <p className="text-sm text-text-primary dark:text-text-primary-dark leading-relaxed">{translateResult.translated}</p>
             {translateResult.detectedLanguage && translateResult.detectedLanguage !== 'unknown' && (
-              <p className="text-[10px] text-text-secondary mt-1">Detected: {translateResult.detectedLanguage}</p>
+              <p className="text-[10px] text-text-secondary dark:text-text-secondary-dark mt-1">Detected: {translateResult.detectedLanguage}</p>
             )}
             <div className="flex items-center gap-2 mt-3">
               <Button variant="secondary" size="xs" icon={FiSend} onClick={() => handleSend('text', translateResult.translated)}>Send</Button>
@@ -516,13 +564,13 @@ export default function SuggestionPanel({ suggestions, onSend, chatId, onBookmar
   };
 
   return (
-    <div className="bg-surface backdrop-blur-glass border-t border-border">
+    <div className="bg-surface dark:bg-surface-dark backdrop-blur-glass border-t border-border dark:border-border-dark">
       <div className="flex items-center justify-between px-4 py-2.5">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-primary flex items-center justify-center text-white text-[10px] font-bold">AI</div>
-          <span className="text-xs font-semibold text-text-primary">AI Assistant</span>
+          <div className="w-6 h-6 rounded-lg bg-primary dark:bg-primary-dark flex items-center justify-center text-white text-[10px] font-bold">AI</div>
+          <span className="text-xs font-semibold text-text-primary dark:text-text-primary-dark">AI Assistant</span>
         </div>
-        <button onClick={() => setCollapsed(!collapsed)} className="p-1 text-text-secondary hover:text-text-primary transition-colors rounded-lg hover:bg-hover/[0.07]">
+        <button onClick={() => setCollapsed(!collapsed)} className="p-1 text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark transition-colors rounded-lg hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07]">
           {collapsed ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
         </button>
       </div>

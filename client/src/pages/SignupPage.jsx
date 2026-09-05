@@ -162,20 +162,20 @@ export default function SignupPage() {
 
         <div className="flex-1 flex items-center justify-center px-4 sm:px-6 xl:px-8 py-8 bg-transparent relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-            <div className="absolute top-1/4 right-1/4 w-[600px] h-[600px] bg-primary opacity-[0.03] rounded-full blur-[140px]" />
-            <div className="absolute bottom-1/3 right-1/3 w-[400px] h-[400px] bg-[var(--color-ai)] opacity-[0.02] rounded-full blur-[100px]" />
+            <div className="absolute top-1/4 right-1/4 w-[600px] h-[600px] bg-primary dark:bg-primary-dark opacity-[0.03] rounded-full blur-[140px]" />
+            <div className="absolute bottom-1/3 right-1/3 w-[400px] h-[400px] bg-[#7C3AED] opacity-[0.02] rounded-full blur-[100px]" />
           </div>
 
           <FormCard maxWidth="max-w-[520px]">
             <motion.div
-              className="auth-surface-card w-full max-w-[520px] rounded-[32px] border border-border/60 bg-surface/40 backdrop-blur-glass backdrop-blur-xl px-10 py-10 shadow-floating shadow-black/40 relative overflow-hidden"
+              className="auth-surface-card w-full max-w-[520px] rounded-[32px] border border-border/60 dark:border-border-dark/60 bg-surface/40 dark:bg-surface-dark/40 backdrop-blur-glass backdrop-blur-xl px-10 py-10 shadow-floating dark:shadow-floating-dark shadow-black/40 relative overflow-hidden"
               initial={{ }}
               animate={{ }}
               transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
             >
               <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-                <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary opacity-[0.04] rounded-full blur-[100px]" />
-                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[var(--color-ai)] opacity-[0.03] rounded-full blur-[100px]" />
+                <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary dark:bg-primary-dark opacity-[0.04] rounded-full blur-[100px]" />
+                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#7C3AED] opacity-[0.03] rounded-full blur-[100px]" />
               </div>
 
               <div className="relative z-10">
@@ -195,7 +195,7 @@ export default function SignupPage() {
                     />
                   </Link>
                   <motion.h1
-                    className="text-[28px] font-bold text-text-primary tracking-tight"
+                    className="text-[28px] font-bold text-text-primary dark:text-text-primary-dark tracking-tight"
                     initial={{ }}
                     animate={{ }}
                     transition={{ }}
@@ -203,7 +203,7 @@ export default function SignupPage() {
                     Create your account
                   </motion.h1>
                   <motion.p
-                    className="text-[14px] text-text-secondary mt-2"
+                    className="text-[14px] text-text-secondary dark:text-text-secondary-dark mt-2"
                     initial={{ }}
                     animate={{ }}
                     transition={{ }}
@@ -345,20 +345,20 @@ export default function SignupPage() {
                         type="checkbox"
                         checked={form.acceptTerms}
                         onChange={updateField('acceptTerms')}
-                        className="mt-0.5 w-4 h-4 rounded border-border bg-surface backdrop-blur-glass text-primary focus:ring-focus/30 focus:ring-offset-0 cursor-pointer transition-colors"
+                        className="mt-0.5 w-4 h-4 rounded border-border dark:border-border-dark bg-surface dark:bg-surface-dark backdrop-blur-glass text-primary dark:text-primary-dark focus:ring-focus/30 dark:focus:ring-focus-dark/30 focus:ring-offset-0 cursor-pointer transition-colors"
                       />
-                      <span className="text-[12px] text-text-secondary group-hover:text-text-secondary transition-colors leading-relaxed">
+                      <span className="text-[12px] text-text-secondary dark:text-text-secondary-dark group-hover:text-text-secondary dark:group-hover:text-text-secondary-dark transition-colors leading-relaxed">
                         I agree to the{' '}
                         <a
                           href="#"
-                          className="text-primary hover:text-primary transition-colors font-medium"
+                          className="text-primary dark:text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors font-medium"
                         >
                           Terms of Service
                         </a>{' '}
                         and{' '}
                         <a
                           href="#"
-                          className="text-primary hover:text-primary transition-colors font-medium"
+                          className="text-primary dark:text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors font-medium"
                         >
                           Privacy Policy
                         </a>
@@ -368,7 +368,7 @@ export default function SignupPage() {
                       <motion.p
                         initial={{ }}
                         animate={{ }}
-                        className="text-[10px] text-danger mt-1"
+                        className="text-[10px] text-danger dark:text-danger-dark mt-1"
                       >
                         {errors.acceptTerms}
                       </motion.p>
@@ -378,7 +378,7 @@ export default function SignupPage() {
                   <motion.button
                     type="submit"
                     disabled={loading || anyError}
-                    className="relative w-full h-[52px] rounded-2xl bg-primary text-white text-[14px] font-semibold  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center gap-2.5 shadow-lg shadow-[var(--theme-primary)]/25 hover:shadow-[var(--theme-primary)]/35"
+                    className="relative w-full h-[52px] rounded-2xl bg-primary dark:bg-primary-dark text-white text-[14px] font-semibold  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center gap-2.5 shadow-lg shadow-primary/25 dark:shadow-primary-dark/25 hover:shadow-primary/35 dark:shadow-primary-dark/35"
                     aria-label="Create your account"
                   >
                     {loading ? (
@@ -407,7 +407,7 @@ export default function SignupPage() {
                 </motion.div>
 
                 <motion.p
-                  className="mt-8 text-center text-[13px] text-text-secondary"
+                  className="mt-8 text-center text-[13px] text-text-secondary dark:text-text-secondary-dark"
                   initial={{ }}
                   animate={{ }}
                   transition={{ }}
@@ -415,14 +415,14 @@ export default function SignupPage() {
                   Already have an account?{' '}
                   <Link
                     to="/login"
-                    className="text-primary hover:text-primary font-semibold transition-colors"
+                    className="text-primary dark:text-primary-dark hover:text-primary dark:hover:text-primary-dark font-semibold transition-colors"
                   >
                     Sign in
                   </Link>
                 </motion.p>
 
                 <motion.div
-                  className="mt-8 pt-6 border-t border-border/50"
+                  className="mt-8 pt-6 border-t border-border/50 dark:border-border-dark/50"
                   initial={{ }}
                   animate={{ }}
                   transition={{ }}

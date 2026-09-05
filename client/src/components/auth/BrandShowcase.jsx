@@ -98,10 +98,10 @@ const DEMO_CONVERSATIONS = [
 ];
 
 const EMOTION_SEQUENCES = [
-  { emoji: "😊", label: "Joy", confidence: 94, color: "var(--theme-success)" },
-  { emoji: "🤔", label: "Curiosity", confidence: 88, color: "var(--theme-primary)" },
-  { emoji: "🎨", label: "Creativity", confidence: 91, color: "var(--color-ai)" },
-  { emoji: "💪", label: "Determination", confidence: 85, color: "var(--theme-warning)" },
+  { emoji: "😊", label: "Joy", confidence: 94, color: "#16A34A" },
+  { emoji: "🤔", label: "Curiosity", confidence: 88, color: "#3B5BFF" },
+  { emoji: "🎨", label: "Creativity", confidence: 91, color: "#7C3AED" },
+  { emoji: "💪", label: "Determination", confidence: 85, color: "#D97706" },
 ];
 
 const FEATURES = [
@@ -138,8 +138,8 @@ const TYPING_INDICATORS = [
 ];
 
 const AVATARS = [
-  { bg: "bg-primary", letter: "E", label: "Emotune AI" },
-  { bg: "bg-ai", letter: "U", label: "User" },
+  { bg: "bg-primary dark:bg-primary-dark", letter: "E", label: "Emotune AI" },
+  { bg: "bg-ai dark:bg-ai-dark", letter: "U", label: "User" },
 ];
 
 const STATS_TARGETS = {
@@ -178,7 +178,7 @@ function TypingDots() {
         {[...Array(3)].map((_, i) => (
           <motion.span
             key={i}
-            className="w-1.5 h-1.5 rounded-full bg-primary"
+            className="w-1.5 h-1.5 rounded-full bg-primary dark:bg-primary-dark"
             animate={{}}
             transition={{
               duration: 0.8,
@@ -189,7 +189,7 @@ function TypingDots() {
           />
         ))}
       </div>
-      <span className="text-[11px] text-text-secondary font-medium">
+      <span className="text-[11px] text-text-secondary dark:text-text-secondary-dark font-medium">
         {TYPING_INDICATORS[indicatorIndex].text}
       </span>
     </motion.div>
@@ -209,11 +209,11 @@ function ConversationPreview({ conversation, isVisible }) {
           className="absolute inset-0 flex flex-col justify-end p-5 gap-2.5"
         >
           <div className="flex items-center gap-2 px-1 mb-2">
-            <div className="h-px flex-1 bg-[var(--theme-border)]" />
-            <span className="text-[9px] text-text-muted font-medium px-2">
+            <div className="h-px flex-1 bg-border dark:bg-border-dark" />
+            <span className="text-[9px] text-text-muted dark:text-text-muted-dark font-medium px-2">
               New messages
             </span>
-            <div className="h-px flex-1 bg-[var(--theme-border)]" />
+            <div className="h-px flex-1 bg-border dark:bg-border-dark" />
           </div>
 
           {conversation.map((msg, i) => (
@@ -234,13 +234,13 @@ function ConversationPreview({ conversation, isVisible }) {
                     type: "spring",
                     stiffness: 200,
                   }}
-                  className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-[11px] font-bold text-white shadow-lg shadow-[var(--theme-primary)]/30 flex-shrink-0"
+                  className="w-8 h-8 rounded-full bg-primary dark:bg-primary-dark flex items-center justify-center text-[11px] font-bold text-white shadow-lg shadow-primary/30 dark:shadow-primary-dark/30 flex-shrink-0"
                 >
                   E
                 </motion.div>
               )}
               {msg.sent && i === 0 && (
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-[11px] font-bold text-white shadow-lg shadow-[var(--color-ai)]/30 flex-shrink-0 order-1">
+                <div className="w-8 h-8 rounded-full bg-primary dark:bg-primary-dark flex items-center justify-center text-[11px] font-bold text-white shadow-lg shadow-[#7C3AED]/30 flex-shrink-0 order-1">
                   U
                 </div>
               )}
@@ -248,8 +248,8 @@ function ConversationPreview({ conversation, isVisible }) {
                 <div
                   className={`px-4 py-3 rounded-2xl text-[13px] leading-relaxed shadow-lg ${
                     msg.sent
-                      ? "rounded-br-md bg-primary text-white shadow-[var(--theme-primary)]/25"
-                      : "rounded-bl-md bg-surface-elevated/90 backdrop-blur-glass border border-border text-text-secondary shadow-black/20"
+                      ? "rounded-br-md bg-primary dark:bg-primary-dark text-white shadow-primary/25 dark:shadow-primary-dark/25"
+                      : "rounded-bl-md bg-surface-elevated/90 dark:bg-surface-elevated-dark/90 backdrop-blur-glass border border-border dark:border-border-dark text-text-secondary dark:text-text-secondary-dark shadow-black/20"
                   }`}
                 >
                   <p>{msg.text}</p>
@@ -257,7 +257,7 @@ function ConversationPreview({ conversation, isVisible }) {
                 <div
                   className={`flex items-center gap-2 mt-1 ${msg.sent ? "justify-end" : "justify-start"}`}
                 >
-                  <span className="text-[9px] text-text-muted">{msg.time}</span>
+                  <span className="text-[9px] text-text-muted dark:text-text-muted-dark">{msg.time}</span>
                   {msg.reaction && (
                     <motion.span
                       initial={{}}
@@ -267,7 +267,7 @@ function ConversationPreview({ conversation, isVisible }) {
                         type: "spring",
                         stiffness: 200,
                       }}
-                      className="text-[11px] bg-surface backdrop-blur-glass border border-border rounded-full px-1.5 py-0.5 shadow-sm"
+                      className="text-[11px] bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-full px-1.5 py-0.5 shadow-sm"
                     >
                       {msg.reaction}
                     </motion.span>
@@ -308,11 +308,11 @@ function LiveAIShowcase() {
 
   return (
     <div className="relative w-full max-w-[660px]">
-      <div className="rounded-[20px] border border-border overflow-hidden bg-background/60 shadow-floating shadow-black/40 backdrop-blur-sm">
-        <div className="flex items-center gap-3 px-5 py-3.5 border-b border-border bg-background/70">
+      <div className="rounded-[20px] border border-border dark:border-border-dark overflow-hidden bg-background/60 dark:bg-background-dark/60 shadow-floating dark:shadow-floating-dark shadow-black/40 backdrop-blur-sm">
+        <div className="flex items-center gap-3 px-5 py-3.5 border-b border-border dark:border-border-dark bg-background/70 dark:bg-background-dark/70">
           <div className="flex items-center gap-2.5">
             <motion.div
-              className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-[13px] font-bold text-white shadow-lg shadow-[var(--theme-primary)]/30"
+              className="w-9 h-9 rounded-full bg-primary dark:bg-primary-dark flex items-center justify-center text-[13px] font-bold text-white shadow-lg shadow-primary/30 dark:shadow-primary-dark/30"
               animate={{}}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
@@ -320,30 +320,30 @@ function LiveAIShowcase() {
             </motion.div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[13px] font-semibold text-text-primary">
+                <span className="text-[13px] font-semibold text-text-primary dark:text-text-primary-dark">
                   Emotune AI
                 </span>
-                <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-primary/20 text-primary border border-primary/20">
+                <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-primary/20 dark:bg-primary-dark/20 text-primary dark:text-primary-dark border border-primary/20 dark:border-primary-dark/20">
                   AI
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                <span className="text-[10px] text-success font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-success dark:bg-success-dark animate-pulse" />
+                <span className="text-[10px] text-success dark:text-success-dark font-medium">
                   Online
                 </span>
-                <span className="text-[9px] text-text-muted">·</span>
-                <span className="text-[9px] text-text-muted">3 active</span>
+                <span className="text-[9px] text-text-muted dark:text-text-muted-dark">·</span>
+                <span className="text-[9px] text-text-muted dark:text-text-muted-dark">3 active</span>
               </div>
             </div>
           </div>
           <div className="flex-1" />
           <div className="flex items-center gap-2">
-            <span className="text-[9px] text-text-muted font-medium uppercase tracking-wider">
+            <span className="text-[9px] text-text-muted dark:text-text-muted-dark font-medium uppercase tracking-wider">
               Live Demo
             </span>
             <motion.div
-              className="w-2 h-2 rounded-full bg-success"
+              className="w-2 h-2 rounded-full bg-success dark:bg-success-dark"
               animate={{ }}
               transition={{ duration: 1.5, repeat: Infinity }}
             />
@@ -381,7 +381,7 @@ function EmotionWidget() {
           animate={{ }}
           exit={{ }}
           transition={{ duration: 0.3 }}
-          className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl bg-surface/80 backdrop-blur-glass border border-border backdrop-blur-sm"
+          className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl bg-surface/80 dark:bg-surface-dark/80 backdrop-blur-glass border border-border dark:border-border-dark backdrop-blur-sm"
         >
           <motion.span
             className="text-2xl"
@@ -392,14 +392,14 @@ function EmotionWidget() {
           </motion.span>
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[12px] font-semibold text-text-primary">
+              <span className="text-[12px] font-semibold text-text-primary dark:text-text-primary-dark">
                 {EMOTION_SEQUENCES[current].label}
               </span>
-              <span className="text-[11px] text-primary font-mono font-semibold">
+              <span className="text-[11px] text-primary dark:text-primary-dark font-mono font-semibold">
                 {EMOTION_SEQUENCES[current].confidence}%
               </span>
             </div>
-            <div className="h-1.5 rounded-full bg-surface-elevated backdrop-blur-glass overflow-hidden">
+            <div className="h-1.5 rounded-full bg-surface-elevated dark:bg-surface-elevated-dark backdrop-blur-glass overflow-hidden">
               <motion.div
                 className="h-full rounded-full"
                 style={{
@@ -438,24 +438,24 @@ function AIAccuracyCard() {
   }, []);
 
   return (
-    <div className="rounded-xl bg-surface/80 backdrop-blur-glass border border-border backdrop-blur-sm px-4 py-3.5">
+    <div className="rounded-xl bg-surface/80 dark:bg-surface-dark/80 backdrop-blur-glass border border-border dark:border-border-dark backdrop-blur-sm px-4 py-3.5">
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[11px] text-text-secondary font-medium">
+        <span className="text-[11px] text-text-secondary dark:text-text-secondary-dark font-medium">
           AI Accuracy
         </span>
-        <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-success/15 text-success border border-[var(--theme-success)]/20">
+        <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase bg-success/15 dark:bg-success-dark/15 text-success dark:text-success-dark border border-success/20 dark:border-success-dark/20">
           Live
         </span>
       </div>
       <div className="flex items-baseline gap-1">
-        <span className="text-[22px] font-bold text-text-primary font-mono tracking-tight">
+        <span className="text-[22px] font-bold text-text-primary dark:text-text-primary-dark font-mono tracking-tight">
           {accuracy.toFixed(1)}
         </span>
-        <span className="text-[13px] text-success font-semibold">%</span>
+        <span className="text-[13px] text-success dark:text-success-dark font-semibold">%</span>
       </div>
-      <div className="h-1 rounded-full bg-surface-elevated backdrop-blur-glass overflow-hidden mt-2">
+      <div className="h-1 rounded-full bg-surface-elevated dark:bg-surface-elevated-dark backdrop-blur-glass overflow-hidden mt-2">
         <motion.div
-          className="h-full rounded-full bg-primary"
+          className="h-full rounded-full bg-primary dark:bg-primary-dark"
           initial={{ width: 0 }}
           animate={{ width: `${accuracy}%` }}
           transition={{ duration: 1, ease: "easeOut" }}
@@ -474,20 +474,20 @@ function FeatureCards() {
           initial={{ }}
           animate={{ }}
           transition={{  duration: 0.4 }}
-          className="group relative rounded-xl bg-surface/60 backdrop-blur-glass border border-border backdrop-blur-sm px-4 py-3.5 overflow-hidden hover:border-primary/30 transition-colors duration-normal"
+          className="group relative rounded-xl bg-surface/60 dark:bg-surface-dark/60 backdrop-blur-glass border border-border dark:border-border-dark backdrop-blur-sm px-4 py-3.5 overflow-hidden hover:border-primary/30 dark:hover:border-primary-dark/30 transition-colors duration-normal"
         >
-          <div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 transition-opacity duration-normal" />
+          <div className="absolute inset-0 bg-primary dark:bg-primary-dark opacity-0 group-hover:opacity-100 transition-opacity duration-normal" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-2">
               <span className="text-lg">{f.icon}</span>
-              <span className="px-1.5 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider bg-primary/15 text-primary border border-primary/20">
+              <span className="px-1.5 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider bg-primary/15 dark:bg-primary-dark/15 text-primary dark:text-primary-dark border border-primary/20 dark:border-primary-dark/20">
                 {f.status}
               </span>
             </div>
-            <h4 className="text-[12px] font-semibold text-text-primary mb-0.5">
+            <h4 className="text-[12px] font-semibold text-text-primary dark:text-text-primary-dark mb-0.5">
               {f.title}
             </h4>
-            <p className="text-[10px] text-text-secondary leading-relaxed">
+            <p className="text-[10px] text-text-secondary dark:text-text-secondary-dark leading-relaxed">
               {f.desc}
             </p>
           </div>
@@ -529,18 +529,18 @@ function LiveStats() {
   ];
 
   return (
-    <div className="flex items-center rounded-xl bg-surface/60 backdrop-blur-glass border border-border backdrop-blur-sm px-3 py-[9px]">
+    <div className="flex items-center rounded-xl bg-surface/60 dark:bg-surface-dark/60 backdrop-blur-glass border border-border dark:border-border-dark backdrop-blur-sm px-3 py-[9px]">
       {items.map((s, i) => (
         <div key={s.label} className="flex-1 text-center">
-          <p className="text-xl font-bold text-text-primary font-mono tracking-tight leading-none">
+          <p className="text-xl font-bold text-text-primary dark:text-text-primary-dark font-mono tracking-tight leading-none">
             {s.value}
-            <span className="text-primary ml-0.5">+</span>
+            <span className="text-primary dark:text-primary-dark ml-0.5">+</span>
           </p>
-          <p className="text-[10px] text-text-secondary mt-1 font-medium">
+          <p className="text-[10px] text-text-secondary dark:text-text-secondary-dark mt-1 font-medium">
             {s.label}
           </p>
           {i < items.length - 1 && (
-            <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 w-px h-8 bg-[var(--theme-border)]" />
+            <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 w-px h-8 bg-border dark:bg-border-dark" />
           )}
         </div>
       ))}
@@ -552,19 +552,19 @@ const TrustRow = memo(function TrustRow() {
   return (
     <div className="flex items-center gap-6">
       <div className="flex -space-x-2">
-        {["var(--theme-primary)", "var(--theme-success)", "var(--theme-warning)", "var(--theme-danger)", "var(--color-ai)"].map((c, i) => (
+        {["#3B5BFF", "#16A34A", "#D97706", "#DC2626", "#7C3AED"].map((c, i) => (
           <motion.div
             key={i}
             initial={{}}
             animate={{}}
             transition={{ }}
-            className="w-6 h-6 rounded-full border-2 border-[var(--theme-bg)]"
+            className="w-6 h-6 rounded-full border-2 border-background dark:border-background-dark"
             style={{ backgroundColor: c }}
           />
         ))}
       </div>
-      <span className="text-[11px] text-text-muted font-medium">
-        Trusted by <span className="text-text-secondary">12,000+</span> users
+      <span className="text-[11px] text-text-muted dark:text-text-muted-dark font-medium">
+        Trusted by <span className="text-text-secondary dark:text-text-secondary-dark">12,000+</span> users
         worldwide
       </span>
     </div>
@@ -590,15 +590,15 @@ export default memo(function BrandShowcase() {
             animate={{ }}
             transition={{  duration: 0.5 }}
           >
-            <h1 className="text-[52px] font-bold text-text-primary leading-[1.04] tracking-[-0.03em]">
+            <h1 className="text-[52px] font-bold text-text-primary dark:text-text-primary-dark leading-[1.04] tracking-[-0.03em]">
               <span>Understand </span>
-              <span className="text-primary">
+              <span className="text-primary dark:text-primary-dark">
                 Emotions
               </span>
               <br />
               <span>Like Never Before</span>
             </h1>
-            <p className="text-[17px] text-text-secondary leading-relaxed mt-3 max-w-[520px]">
+            <p className="text-[17px] text-text-secondary dark:text-text-secondary-dark leading-relaxed mt-3 max-w-[520px]">
               Real-time emotion detection, smart replies, and AI-powered
               conversations that understand you deeply.
             </p>

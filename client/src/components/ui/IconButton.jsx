@@ -13,8 +13,8 @@ export default function IconButton({ icon: Icon, size = 'md', className = '', la
       onClick={onClick}
       aria-label={label}
       className={cn(
-        'interactive inline-flex items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 disabled:pointer-events-none disabled:opacity-40',
-        active ? 'bg-selection/16 text-primary' : 'text-text-secondary hover:text-text-primary',
+        'interactive inline-flex items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 dark:focus-visible:ring-focus-dark/50 disabled:pointer-events-none disabled:opacity-40',
+        active ? 'bg-selection/16 dark:bg-selection-dark/16 text-primary dark:text-primary-dark' : 'text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark',
         sizes[size] || sizes.md,
         className,
       )}

@@ -54,33 +54,33 @@ function MemorySearchPage() {
           <nav aria-label="Breadcrumb" className="flex items-center gap-4 mb-8">
             <Link to="/app" aria-label="Back to dashboard">
               <motion.button
-                className="w-10 h-10 rounded-xl bg-surface backdrop-blur-glass border border-border flex items-center justify-center text-text-primary"
+                className="w-10 h-10 rounded-xl bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark flex items-center justify-center text-text-primary dark:text-text-primary-dark"
               >
                 <FiArrowLeft aria-hidden="true" />
               </motion.button>
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-text-primary">Memory Mesh</h1>
-              <p className="text-sm text-text-secondary">Semantic search across your conversations</p>
+              <h1 className="text-2xl font-bold text-text-primary dark:text-text-primary-dark">Memory Mesh</h1>
+              <p className="text-sm text-text-secondary dark:text-text-secondary-dark">Semantic search across your conversations</p>
             </div>
           </nav>
 
           <form onSubmit={handleSearch} className="mb-8" role="search" aria-label="Search memories">
             <div className="flex gap-3">
               <div className="flex-1 relative">
-                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" aria-hidden="true" />
+                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary dark:text-text-secondary-dark" aria-hidden="true" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search your memories..."
-                  className="w-full pl-12 pr-4 py-4 text-lg rounded-xl bg-surface backdrop-blur-glass border border-border text-text-primary placeholder:text-placeholder focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus transition-colors"
+                  className="w-full pl-12 pr-4 py-4 text-lg rounded-xl bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark text-text-primary dark:text-text-primary-dark placeholder:text-placeholder dark:placeholder:text-placeholder-dark focus:outline-none focus:border-primary dark:focus:border-primary-dark focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark transition-colors"
                   aria-label="Search query"
                 />
               </div>
               <motion.button
                 type="submit"
-                className="px-8 py-3 rounded-xl bg-primary text-white font-semibold text-sm shadow-sm hover:opacity-90 transition-colors disabled:opacity-50"
+                className="px-8 py-3 rounded-xl bg-primary dark:bg-primary-dark text-white font-semibold text-sm shadow-sm hover:opacity-90 transition-colors disabled:opacity-50"
                 disabled={loading}
                 aria-label="Execute search"
               >
@@ -92,8 +92,8 @@ function MemorySearchPage() {
           </form>
 
           {error && (
-            <div className="bg-surface backdrop-blur-glass border border-border rounded-2xl p-4 mb-6 border-danger" role="alert">
-              <p className="text-danger text-sm">{error}</p>
+            <div className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-2xl p-4 mb-6 border-danger dark:border-danger-dark" role="alert">
+              <p className="text-danger dark:text-danger-dark text-sm">{error}</p>
             </div>
           )}
 
@@ -105,21 +105,21 @@ function MemorySearchPage() {
 
           {!loading && results.length === 0 && searchQuery && (
             <div className="text-center py-16" aria-live="polite">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-surface backdrop-blur-glass border border-border flex items-center justify-center text-3xl text-text-secondary" aria-hidden="true">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark flex items-center justify-center text-3xl text-text-secondary dark:text-text-secondary-dark" aria-hidden="true">
                 <FiSearch />
               </div>
-              <h2 className="text-lg font-semibold text-text-primary">No Memories Found</h2>
-              <p className="text-sm text-text-secondary mt-1">Try a different search query</p>
+              <h2 className="text-lg font-semibold text-text-primary dark:text-text-primary-dark">No Memories Found</h2>
+              <p className="text-sm text-text-secondary dark:text-text-secondary-dark mt-1">Try a different search query</p>
             </div>
           )}
 
           {!loading && results.length === 0 && !searchQuery && (
             <div className="text-center py-16">
-              <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-primary opacity-20 flex items-center justify-center text-4xl" aria-hidden="true">
+              <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-primary dark:bg-primary-dark opacity-20 flex items-center justify-center text-4xl" aria-hidden="true">
                 🧠
               </div>
-              <h2 className="text-xl font-semibold text-text-primary">Search Your Memories</h2>
-              <p className="text-sm text-text-secondary mt-2 max-w-md mx-auto">
+              <h2 className="text-xl font-semibold text-text-primary dark:text-text-primary-dark">Search Your Memories</h2>
+              <p className="text-sm text-text-secondary dark:text-text-secondary-dark mt-2 max-w-md mx-auto">
                 Type a query above to search through all your conversations using AI-powered semantic search.
                 Find that shayari, song, or important message instantly.
               </p>
@@ -130,7 +130,7 @@ function MemorySearchPage() {
             {results.map((result) => (
               <motion.article
                 key={result.id}
-                className="bg-surface backdrop-blur-glass border border-border rounded-2xl p-5"
+                className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-2xl p-5"
                 role="listitem"
                 initial={{ }}
                 whileInView={{ }}
@@ -140,37 +140,37 @@ function MemorySearchPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-6 h-6 rounded-full bg-primary text-[10px] text-white flex items-center justify-center font-medium" aria-hidden="true">
+                      <div className="w-6 h-6 rounded-full bg-primary dark:bg-primary-dark text-[10px] text-white flex items-center justify-center font-medium" aria-hidden="true">
                         {result.sender?.username?.[0] || '?'}
                       </div>
-                      <span className="text-xs font-medium text-text-secondary">
+                      <span className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark">
                         {result.sender?.username || 'Unknown'}
                       </span>
-                      <span className="text-[10px] text-text-secondary">
+                      <span className="text-[10px] text-text-secondary dark:text-text-secondary-dark">
                         {new Date(result.createdAt).toLocaleDateString()}
                       </span>
                     </div>
 
-                    <p className="text-sm text-text-primary leading-relaxed">
+                    <p className="text-sm text-text-primary dark:text-text-primary-dark leading-relaxed">
                       {result.text}
                     </p>
 
                     {result.metadata?.emotionTag && (
-                      <span className="inline-block mt-2 text-[10px] px-2 py-0.5 rounded-full bg-[var(--theme-glass)] text-text-secondary">
+                      <span className="inline-block mt-2 text-[10px] px-2 py-0.5 rounded-full bg-surface/80 dark:bg-surface-dark/80 text-text-secondary dark:text-text-secondary-dark">
                         {result.metadata.emotionTag}
                       </span>
                     )}
 
                     <div className="flex items-center gap-3 mt-3">
-                      <span className="text-[10px] text-text-secondary">
+                      <span className="text-[10px] text-text-secondary dark:text-text-secondary-dark">
                         Relevance: {Math.round(result.score * 100)}%
                       </span>
                       {result.isVerified ? (
-                        <span className="flex items-center gap-1 text-[10px] text-success">
+                        <span className="flex items-center gap-1 text-[10px] text-success dark:text-success-dark">
                           <FiCheckCircle aria-hidden="true" /> Verified
                         </span>
                       ) : (
-                        <span className="flex items-center gap-1 text-[10px] text-warning">
+                        <span className="flex items-center gap-1 text-[10px] text-warning dark:text-warning-dark">
                           <FiClock aria-hidden="true" /> Pending
                         </span>
                       )}
@@ -178,7 +178,7 @@ function MemorySearchPage() {
                   </div>
 
                   <div className="flex-shrink-0" aria-hidden="true">
-                    <div className={`w-3 h-3 rounded-full ${result.isVerified ? 'bg-success' : 'bg-warning'}`} />
+                    <div className={`w-3 h-3 rounded-full ${result.isVerified ? 'bg-success dark:bg-success-dark' : 'bg-warning dark:bg-warning-dark'}`} />
                   </div>
                 </div>
               </motion.article>

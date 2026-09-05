@@ -17,7 +17,7 @@ const chatMessages = [
 export default memo(function AIChatMockup() {
   return (
     <DeviceFrame type="phone">
-      <ChatHeader name="Sarah Chen" online avatarColor="var(--color-ai)" />
+      <ChatHeader name="Sarah Chen" online avatarColor="#7C3AED" />
       <div className="p-3 min-h-[360px]">
         {chatMessages.map((msg, i) => (
           <motion.div
@@ -36,11 +36,11 @@ export default memo(function AIChatMockup() {
           initial={{ }}
           animate={{ }}
           transition={{  duration: 0.3 }}
-          className="mt-3 p-3 rounded-2xl bg-primary border border-primary/20"
+          className="mt-3 p-3 rounded-2xl bg-primary dark:bg-primary-dark border border-primary/20 dark:border-primary-dark/20"
         >
           <div className="flex items-center gap-1.5 mb-2">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-primary"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-            <span className="text-[11px] font-semibold text-primary">AI Smart Reply</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-primary dark:text-primary-dark"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            <span className="text-[11px] font-semibold text-primary dark:text-primary-dark">AI Smart Reply</span>
           </div>
           <div className="space-y-1.5">
             {aiSuggestions.map((s, i) => (
@@ -49,11 +49,11 @@ export default memo(function AIChatMockup() {
                 initial={{ }}
                 animate={{ }}
                 transition={{  duration: 0.2 }}
-                className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg bg-surface-elevated backdrop-blur-glass border border-border hover:border-primary/40 transition-colors text-left"
+                className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg bg-surface-elevated dark:bg-surface-elevated-dark backdrop-blur-glass border border-border dark:border-border-dark hover:border-primary/40 dark:hover:border-primary-dark/40 transition-colors text-left"
                 type="button"
               >
-                <span className="text-[11px] text-text-primary">{s.text}</span>
-                <span className="text-[8px] text-text-secondary">{s.label}</span>
+                <span className="text-[11px] text-text-primary dark:text-text-primary-dark">{s.text}</span>
+                <span className="text-[8px] text-text-secondary dark:text-text-secondary-dark">{s.label}</span>
               </motion.button>
             ))}
           </div>
@@ -65,9 +65,9 @@ export default memo(function AIChatMockup() {
           transition={{  duration: 0.3 }}
           className="mt-2 flex items-center gap-2 px-1"
         >
-          <span className="text-[9px] text-primary">✨</span>
-          <span className="text-[9px] text-text-secondary">AI detected:</span>
-          <span className="text-[9px] text-text-primary font-medium">Excitement</span>
+          <span className="text-[9px] text-primary dark:text-primary-dark">✨</span>
+          <span className="text-[9px] text-text-secondary dark:text-text-secondary-dark">AI detected:</span>
+          <span className="text-[9px] text-text-primary dark:text-text-primary-dark font-medium">Excitement</span>
         </motion.div>
       </div>
     </DeviceFrame>

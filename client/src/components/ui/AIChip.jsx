@@ -12,8 +12,8 @@ export default function AIChip({ label, onClick, active, className = '', size = 
     <button
       onClick={onClick}
       className={cn(
-        'interactive inline-flex items-center border font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50',
-        active ? 'border-ai bg-ai text-white' : 'border-ai/20 bg-ai/10 text-ai hover:bg-ai/15',
+        'interactive inline-flex items-center border font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 dark:focus-visible:ring-focus-dark/50',
+        active ? 'border-ai dark:border-ai-dark bg-ai dark:bg-ai-dark text-white' : 'border-ai/20 dark:border-ai-dark/20 bg-ai/10 dark:bg-ai-dark/10 text-ai dark:text-ai-dark hover:bg-ai/15 dark:hover:bg-ai-dark/15',
         sizes[size] || sizes.sm,
         className,
       )}

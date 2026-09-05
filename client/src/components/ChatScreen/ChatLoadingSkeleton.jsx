@@ -13,15 +13,15 @@ const ROWS = [
 ];
 
 function SkeletonBar({ className = "" }) {
-  return <Skeleton className={`bg-text-muted/20 ${className}`} rounded="full" />;
+  return <Skeleton className={`bg-text-muted/20 dark:bg-text-muted-dark/20 ${className}`} rounded="full" />;
 }
 
 function MessageBubbleSkeleton({ row }) {
   const isMedia = row.media;
   const bubbleTone = row.own
-    ? "bg-[var(--wa-outgoing)]"
-    : "bg-[var(--wa-incoming)]";
-  const skeletonTone = row.own ? "bg-white/25" : "bg-text-muted/20";
+    ? "bg-chat-outgoing dark:bg-chat-outgoing-dark"
+    : "bg-chat-incoming dark:bg-chat-incoming-dark";
+  const skeletonTone = row.own ? "bg-white/25" : "bg-text-muted/20 dark:bg-text-muted-dark/20";
 
   return (
     <div
@@ -50,14 +50,14 @@ function MessageBubbleSkeleton({ row }) {
             >
               <path
                 d="M0 0C5 2 1 12 12 18H0V0Z"
-                fill={row.own ? "var(--wa-outgoing)" : "var(--wa-incoming)"}
+                className={row.own ? "fill-chat-outgoing dark:fill-chat-outgoing-dark" : "fill-chat-incoming dark:fill-chat-incoming-dark"}
               />
             </svg>
           )}
 
           {isMedia ? (
             <div className="w-[min(280px,calc(100vw-64px))] space-y-2">
-              <Skeleton className="h-[132px] w-full rounded-xl bg-text-muted/15" />
+              <Skeleton className="h-[132px] w-full rounded-xl bg-text-muted/15 dark:bg-text-muted-dark/15" />
               <div className="flex items-center justify-between gap-2 px-1">
                 <SkeletonBar className={`h-2 w-[46%] ${skeletonTone}`} />
                 <div className="flex items-center gap-1">
@@ -91,14 +91,14 @@ function MessageBubbleSkeleton({ row }) {
 function ChatLoadingSkeleton() {
   return (
     <div
-      className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--wa-chat-bg)] py-2 scrollbar-glass"
+      className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-chat-background dark:bg-chat-background-dark py-2 scrollbar-glass"
       role="status"
       aria-busy="true"
       aria-label="Loading conversation"
     >
       <div className="flex justify-center py-3" aria-hidden="true">
-        <span className="rounded-full bg-surface-elevated/80 px-3 py-1 text-[11px] font-semibold text-text-muted shadow-sm">
-          <span className="inline-block h-2 w-12 animate-pulse rounded-full bg-text-muted/25" />
+        <span className="rounded-full bg-surface-elevated/80 dark:bg-surface-elevated-dark/80 px-3 py-1 text-[11px] font-semibold text-text-muted dark:text-text-muted-dark shadow-sm">
+          <span className="inline-block h-2 w-12 animate-pulse rounded-full bg-text-muted/25 dark:bg-text-muted-dark/25" />
         </span>
       </div>
       <div className="space-y-0.5" aria-hidden="true">

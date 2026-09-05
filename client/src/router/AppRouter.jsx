@@ -14,9 +14,9 @@ const OAuthCallback = lazy(() => import('../pages/OAuthCallback'));
 
 function RouteShellFallback() {
   return (
-    <div className="min-h-screen bg-background p-3 text-text-primary" role="status" aria-label="Loading application">
+    <div className="min-h-screen bg-background dark:bg-background-dark p-3 text-text-primary dark:text-text-primary-dark" role="status" aria-label="Loading application">
       <div className="mx-auto flex h-[calc(100vh-1.5rem)] max-w-screen-2xl gap-3 overflow-hidden">
-        <aside className="hidden w-[var(--sidebar-width)] shrink-0 rounded-2xl border border-border/30 bg-surface/60 p-3 lg:block">
+        <aside className="hidden w-sidebar shrink-0 rounded-2xl border border-border/30 dark:border-border-dark/30 bg-surface/60 dark:bg-surface-dark/60 p-3 lg:block">
           <div className="mb-4 flex items-center gap-3">
             <div className="h-11 w-11 rounded-full shimmer-bg" />
             <div className="space-y-2">
@@ -31,8 +31,8 @@ function RouteShellFallback() {
             ))}
           </div>
         </aside>
-        <main className="flex min-w-0 flex-1 flex-col rounded-2xl border border-border/30 bg-surface/40">
-          <div className="h-16 border-b border-border/30 p-4">
+        <main className="flex min-w-0 flex-1 flex-col rounded-2xl border border-border/30 dark:border-border-dark/30 bg-surface/40 dark:bg-surface-dark/40">
+          <div className="h-16 border-b border-border/30 dark:border-border-dark/30 p-4">
             <div className="h-3 w-32 rounded shimmer-bg" />
           </div>
           <div className="flex flex-1 items-center justify-center">

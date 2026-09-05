@@ -73,15 +73,15 @@ export default function DecideFlow({ chatId, onClose }) {
 
   return (
     <div
-      className="bg-surface backdrop-blur-glass border border-border rounded-2xl flex flex-col h-full"
+      className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-2xl flex flex-col h-full"
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="flex items-center justify-between p-4 border-b border-border dark:border-border-dark">
         <div className="flex items-center gap-2">
-          <FiZap size={16} className="text-primary" />
-          <span className="text-sm font-semibold text-text-primary">DecideFlow</span>
+          <FiZap size={16} className="text-primary dark:text-primary-dark" />
+          <span className="text-sm font-semibold text-text-primary dark:text-text-primary-dark">DecideFlow</span>
         </div>
-        <button onClick={onClose} className="p-1 text-text-secondary hover:text-text-primary">
+        <button onClick={onClose} className="p-1 text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark">
           <FiX size={18} />
         </button>
       </div>
@@ -91,7 +91,7 @@ export default function DecideFlow({ chatId, onClose }) {
         <button
           onClick={handleTrigger}
           disabled={creating}
-          className="bg-primary text-white w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium hover:opacity-90 transition-opacity"
+          className="bg-primary dark:bg-primary-dark text-white w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium hover:opacity-90 transition-opacity"
         >
           {creating ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -108,11 +108,11 @@ export default function DecideFlow({ chatId, onClose }) {
           ))
         ) : decisions.length === 0 ? (
           <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-surface backdrop-blur-glass border border-border flex items-center justify-center text-2xl text-text-secondary">
+            <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark flex items-center justify-center text-2xl text-text-secondary dark:text-text-secondary-dark">
               <FiBarChart2 />
             </div>
-            <p className="text-sm text-text-secondary">No decisions yet</p>
-            <p className="text-xs text-text-secondary mt-1">Type /decide or click the button above</p>
+            <p className="text-sm text-text-secondary dark:text-text-secondary-dark">No decisions yet</p>
+            <p className="text-xs text-text-secondary dark:text-text-secondary-dark mt-1">Type /decide or click the button above</p>
           </div>
           ) : (
             activeDecision && (
@@ -124,9 +124,9 @@ export default function DecideFlow({ chatId, onClose }) {
               >
                 {/* Status Badge */}
                 <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs ${
-                  activeDecision.status === 'resolved' ? 'bg-success/20 text-success' :
-                  activeDecision.status === 'deadlocked' ? 'bg-danger/20 text-danger' :
-                  'bg-warning/20 text-warning'
+                  activeDecision.status === 'resolved' ? 'bg-success/20 dark:bg-success-dark/20 text-success dark:text-success-dark' :
+                  activeDecision.status === 'deadlocked' ? 'bg-danger/20 dark:bg-danger-dark/20 text-danger dark:text-danger-dark' :
+                  'bg-warning/20 dark:bg-warning-dark/20 text-warning dark:text-warning-dark'
                 }`}>
                   {activeDecision.status === 'resolved' && <FiCheck size={14} />}
                   {activeDecision.status === 'deadlocked' && <FiAlertTriangle size={14} />}
@@ -135,16 +135,16 @@ export default function DecideFlow({ chatId, onClose }) {
                 </div>
 
                 {/* Summary */}
-                <div className="bg-surface backdrop-blur-glass border border-border rounded-2xl p-4">
-                  <h3 className="text-sm font-semibold text-text-primary mb-2">Summary</h3>
-                  <p className="text-xs text-text-secondary leading-relaxed">
+                <div className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-2xl p-4">
+                  <h3 className="text-sm font-semibold text-text-primary dark:text-text-primary-dark mb-2">Summary</h3>
+                  <p className="text-xs text-text-secondary dark:text-text-secondary-dark leading-relaxed">
                     {activeDecision.summary || 'AI is analyzing the conversation...'}
                   </p>
                 </div>
 
                 {/* Poll Options */}
                 <div>
-                  <h3 className="text-sm font-semibold text-text-primary mb-3">Options</h3>
+                  <h3 className="text-sm font-semibold text-text-primary dark:text-text-primary-dark mb-3">Options</h3>
                   <div className="space-y-2">
                     {activeDecision.pollOptions?.map((option, i) => {
                       const percentage = totalVotes > 0 ? ((option.voteCount || 0) / totalVotes) * 100 : 0;
@@ -153,15 +153,15 @@ export default function DecideFlow({ chatId, onClose }) {
                           key={i}
                           onClick={() => handleVote(i)}
                           disabled={activeDecision.status !== 'active'}
-                          className="w-full bg-surface backdrop-blur-glass border border-border p-3 rounded-xl text-left hover:bg-hover/[0.07] transition-colors group"
+                          className="w-full bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark p-3 rounded-xl text-left hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] transition-colors group"
                         >
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm text-text-primary">{option.text}</span>
-                            <span className="text-xs text-text-secondary">{option.voteCount || 0} votes</span>
+                            <span className="text-sm text-text-primary dark:text-text-primary-dark">{option.text}</span>
+                            <span className="text-xs text-text-secondary dark:text-text-secondary-dark">{option.voteCount || 0} votes</span>
                           </div>
-                          <div className="h-2 rounded-full bg-[var(--theme-glass)] overflow-hidden">
+                          <div className="h-2 rounded-full bg-surface/80 dark:bg-surface-dark/80 overflow-hidden">
                             <div
-                              className="h-full rounded-full bg-primary"
+                              className="h-full rounded-full bg-primary dark:bg-primary-dark"
                             />
                           </div>
         </motion.button>
@@ -172,23 +172,23 @@ export default function DecideFlow({ chatId, onClose }) {
 
                 {/* Compromise */}
                 {activeDecision.compromise && (
-                  <div className="bg-surface backdrop-blur-glass border-2 border-[var(--theme-warning)] rounded-2xl p-4">
+                  <div className="bg-surface dark:bg-surface-dark backdrop-blur-glass border-2 border-warning dark:border-warning-dark rounded-2xl p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <FiAlertTriangle size={14} className="text-warning" />
-                      <span className="text-sm font-semibold text-text-primary">Suggested Compromise</span>
+                      <FiAlertTriangle size={14} className="text-warning dark:text-warning-dark" />
+                      <span className="text-sm font-semibold text-text-primary dark:text-text-primary-dark">Suggested Compromise</span>
                     </div>
-                    <p className="text-xs text-text-secondary">{activeDecision.compromise}</p>
+                    <p className="text-xs text-text-secondary dark:text-text-secondary-dark">{activeDecision.compromise}</p>
                   </div>
                 )}
 
                 {/* Deadlock Warning */}
                 {activeDecision.deadlock && activeDecision.status === 'active' && (
-                  <div className="bg-surface backdrop-blur-glass border-2 border-danger rounded-2xl p-4">
+                  <div className="bg-surface dark:bg-surface-dark backdrop-blur-glass border-2 border-danger dark:border-danger-dark rounded-2xl p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <FiAlertTriangle size={14} className="text-danger" />
-                      <span className="text-sm font-semibold text-danger">Deadlock Detected</span>
+                      <FiAlertTriangle size={14} className="text-danger dark:text-danger-dark" />
+                      <span className="text-sm font-semibold text-danger dark:text-danger-dark">Deadlock Detected</span>
                     </div>
-                    <p className="text-xs text-text-secondary">
+                    <p className="text-xs text-text-secondary dark:text-text-secondary-dark">
                       AI has detected a potential deadlock. Consider using the compromise suggestion above.
                     </p>
                   </div>

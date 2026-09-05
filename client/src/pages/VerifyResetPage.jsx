@@ -144,7 +144,7 @@ export default function VerifyResetPage() {
         <div className="flex-1 flex items-center justify-center px-2 py-4 bg-transparent relative overflow-hidden">
           <FormCard maxWidth="max-w-[520px]">
             <motion.div
-              className="auth-surface-card w-full max-w-[520px] rounded-3xl border border-border/60 bg-surface/40 backdrop-blur-glass backdrop-blur-md px-8 py-6 shadow-lg shadow-black/20 relative overflow-hidden"
+              className="auth-surface-card w-full max-w-[520px] rounded-3xl border border-border/60 dark:border-border-dark/60 bg-surface/40 dark:bg-surface-dark/40 backdrop-blur-glass backdrop-blur-md px-8 py-6 shadow-lg shadow-black/20 relative overflow-hidden"
               initial={{ }}
               animate={{ }}
               transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
@@ -161,14 +161,14 @@ export default function VerifyResetPage() {
                       initial={{}}
                       animate={{}}
                       transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                      className="w-20 h-20 mx-auto mb-6 rounded-full bg-success/15 flex items-center justify-center"
+                      className="w-20 h-20 mx-auto mb-6 rounded-full bg-success/15 dark:bg-success-dark/15 flex items-center justify-center"
                     >
-                      <FiCheckCircle size={40} className="text-success" />
+                      <FiCheckCircle size={40} className="text-success dark:text-success-dark" />
                     </motion.div>
                     <motion.h2
                       initial={{ }}
                       animate={{ }}
-                      className="text-2xl font-bold text-text-primary mb-2"
+                      className="text-2xl font-bold text-text-primary dark:text-text-primary-dark mb-2"
                     >
                       Code verified!
                     </motion.h2>
@@ -176,7 +176,7 @@ export default function VerifyResetPage() {
                       initial={{ }}
                       animate={{ }}
                       transition={{ }}
-                      className="text-[14px] text-text-secondary"
+                      className="text-[14px] text-text-secondary dark:text-text-secondary-dark"
                     >
                       Redirecting to reset your password...
                     </motion.p>
@@ -206,12 +206,12 @@ export default function VerifyResetPage() {
                         transition={{ }}
                         className="flex items-center justify-center gap-2 mb-3"
                       >
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <FiMail size={18} className="text-primary" />
+                        <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-primary-dark/10 flex items-center justify-center">
+                          <FiMail size={18} className="text-primary dark:text-primary-dark" />
                         </div>
                       </motion.div>
                       <motion.h1
-                        className="text-3xl font-bold text-text-primary tracking-tight"
+                        className="text-3xl font-bold text-text-primary dark:text-text-primary-dark tracking-tight"
                         initial={{ }}
                         animate={{ }}
                         transition={{ }}
@@ -219,13 +219,13 @@ export default function VerifyResetPage() {
                         Check your email
                       </motion.h1>
                       <motion.p
-                        className="text-[14px] text-text-secondary mt-2"
+                        className="text-[14px] text-text-secondary dark:text-text-secondary-dark mt-2"
                         initial={{ }}
                         animate={{ }}
                         transition={{ }}
                       >
                         We sent a 6-digit code to{' '}
-                        <span className="text-text-primary font-medium">{decodedEmail}</span>
+                        <span className="text-text-primary dark:text-text-primary-dark font-medium">{decodedEmail}</span>
                       </motion.p>
                     </div>
 
@@ -246,7 +246,7 @@ export default function VerifyResetPage() {
                       <motion.p
                         initial={{ }}
                         animate={{ }}
-                        className="text-[12px] text-danger text-center mt-4"
+                        className="text-[12px] text-danger dark:text-danger-dark text-center mt-4"
                       >
                         {error}
                       </motion.p>
@@ -258,11 +258,11 @@ export default function VerifyResetPage() {
                       animate={{ }}
                       transition={{ }}
                     >
-                      <div className="flex items-center gap-2 text-[13px] text-text-secondary">
+                      <div className="flex items-center gap-2 text-[13px] text-text-secondary dark:text-text-secondary-dark">
                         {countdown > 0 ? (
                           <>
                             <span>Resend code in</span>
-                            <span className="text-warning font-mono font-semibold min-w-[24px] text-center">
+                            <span className="text-warning dark:text-warning-dark font-mono font-semibold min-w-[24px] text-center">
                               {countdown}s
                             </span>
                           </>
@@ -271,7 +271,7 @@ export default function VerifyResetPage() {
                             type="button"
                             onClick={handleResend}
                             disabled={resending}
-                            className="flex items-center gap-1.5 text-primary hover:text-primary transition-colors font-medium disabled:opacity-50"
+                            className="flex items-center gap-1.5 text-primary dark:text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors font-medium disabled:opacity-50"
                           >
                             <FiRefreshCw size={14} className={resending ? 'animate-spin' : ''} />
                             {resending ? 'Sending...' : 'Resend code'}
@@ -281,7 +281,7 @@ export default function VerifyResetPage() {
 
                       <Link
                         to="/forgot-password"
-                        className="inline-flex items-center gap-2 text-[12px] text-text-muted hover:text-text-secondary transition-colors"
+                        className="inline-flex items-center gap-2 text-[12px] text-text-muted dark:text-text-muted-dark hover:text-text-secondary dark:hover:text-text-secondary-dark transition-colors"
                       >
                         <FiArrowLeft size={12} />
                         Change email
@@ -292,7 +292,7 @@ export default function VerifyResetPage() {
                       type="button"
                       onClick={handleVerify}
                       disabled={otp.length !== 6 || loading}
-                      className="relative w-full h-[52px] mt-6 rounded-2xl bg-primary text-white text-[14px] font-semibold  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center gap-2.5 shadow-lg shadow-[var(--theme-primary)]/25 hover:shadow-[var(--theme-primary)]/35"
+                      className="relative w-full h-[52px] mt-6 rounded-2xl bg-primary dark:bg-primary-dark text-white text-[14px] font-semibold  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center gap-2.5 shadow-lg shadow-primary/25 dark:shadow-primary-dark/25 hover:shadow-primary/35 dark:shadow-primary-dark/35"
                       aria-label="Verify code"
                     >
                       {loading ? (

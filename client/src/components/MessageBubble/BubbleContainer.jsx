@@ -30,8 +30,8 @@ function BubbleContainer({
         "relative min-w-0 max-w-full overflow-visible px-1 py-[5px] text-[14px] leading-5",
         isMedia ? "w-full p-1" : "",
         isOwn
-          ? "bg-[var(--wa-outgoing)] text-[var(--wa-outgoing-text)]"
-          : "bg-[var(--wa-incoming)] text-[var(--wa-incoming-text)]",
+          ? "bg-chat-outgoing dark:bg-chat-outgoing-dark text-chat-outgoing-text"
+          : "bg-chat-incoming dark:bg-chat-incoming-dark text-chat-incoming-text dark:text-chat-incoming-text-dark",
       ]
         .filter(Boolean)
         .join(" ");
@@ -79,12 +79,12 @@ function BubbleContainer({
         >
           {isOwn && isLastInGroup && !isChromeless && (
             <svg aria-hidden="true" className="absolute bottom-0 right-[-7px]" width="10" height="16" viewBox="0 0 12 18" preserveAspectRatio="none">
-              <path d="M0 0C5 2 1 12 12 18H0V0Z" fill="var(--wa-outgoing)" />
+              <path d="M0 0C5 2 1 12 12 18H0V0Z" className="fill-chat-outgoing dark:fill-chat-outgoing-dark" />
             </svg>
           )}
           {!isOwn && isLastInGroup && !isChromeless && (
             <svg aria-hidden="true" className="absolute bottom-0 left-[-7px] scale-x-[-1]" width="10" height="16" viewBox="0 0 12 18" preserveAspectRatio="none">
-              <path d="M0 0C5 2 1 12 12 18H0V0Z" fill="var(--wa-incoming)" />
+              <path d="M0 0C5 2 1 12 12 18H0V0Z" className="fill-chat-incoming dark:fill-chat-incoming-dark" />
             </svg>
           )}
           {children}

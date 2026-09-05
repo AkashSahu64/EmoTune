@@ -130,50 +130,50 @@ export default function GhostCollaboration({ session, onClose, socket, chatId })
   if (!isActive) {
     return (
       <motion.div
-        className="bg-surface backdrop-blur-glass border border-border rounded-2xl p-8 text-center"
+        className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-2xl p-8 text-center"
         initial={{ }}
         animate={{ }}
       >
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface backdrop-blur-glass border border-border flex items-center justify-center text-2xl text-text-secondary">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark flex items-center justify-center text-2xl text-text-secondary dark:text-text-secondary-dark">
           <FiClock />
         </div>
-        <h3 className="text-lg font-semibold text-text-primary">Session Ended</h3>
-        <p className="text-sm text-text-secondary mt-1">This ghost session has been destroyed</p>
-        <button onClick={onClose} className="mt-4 bg-primary text-white px-5 py-2 rounded-xl font-medium hover:opacity-90 transition-opacity">Close</button>
+        <h3 className="text-lg font-semibold text-text-primary dark:text-text-primary-dark">Session Ended</h3>
+        <p className="text-sm text-text-secondary dark:text-text-secondary-dark mt-1">This ghost session has been destroyed</p>
+        <button onClick={onClose} className="mt-4 bg-primary dark:bg-primary-dark text-white px-5 py-2 rounded-xl font-medium hover:opacity-90 transition-opacity">Close</button>
       </motion.div>
     );
   }
 
   return (
     <motion.div
-      className="bg-surface backdrop-blur-glass border border-border rounded-2xl flex flex-col h-full"
+      className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-2xl flex flex-col h-full"
       initial={{ }}
       animate={{ }}
     >
-      <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="flex items-center justify-between p-4 border-b border-border dark:border-border-dark">
         <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold text-text-primary">👻 Ghost Session</span>
+          <span className="text-sm font-semibold text-text-primary dark:text-text-primary-dark">👻 Ghost Session</span>
           <span className={`flex items-center gap-1 text-xs ${
-            timeLeft < 60 ? 'text-danger' : 'text-text-secondary'
+            timeLeft < 60 ? 'text-danger dark:text-danger-dark' : 'text-text-secondary dark:text-text-secondary-dark'
           }`}>
             <FiClock size={12} />
             {formatTime(timeLeft)}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-text-secondary flex items-center gap-1">
+          <span className="text-xs text-text-secondary dark:text-text-secondary-dark flex items-center gap-1">
             <FiUsers size={12} /> {participants.length}
           </span>
-          <button onClick={handleDestroy} disabled={saving} className="p-1.5 text-danger hover:bg-hover/[0.07] rounded-lg" title="Destroy Session">
+          <button onClick={handleDestroy} disabled={saving} className="p-1.5 text-danger dark:text-danger-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] rounded-lg" title="Destroy Session">
             <FiTrash2 size={16} />
           </button>
-          <button onClick={onClose} className="p-1.5 text-text-secondary hover:text-text-primary" title="Minimize">
+          <button onClick={onClose} className="p-1.5 text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark" title="Minimize">
             <FiX size={16} />
           </button>
         </div>
       </div>
 
-      <div className="flex items-center gap-1 px-3 py-2 border-b border-border">
+      <div className="flex items-center gap-1 px-3 py-2 border-b border-border dark:border-border-dark">
         {MODES.map((m) => {
           const Icon = m.icon;
           return (
@@ -182,8 +182,8 @@ export default function GhostCollaboration({ session, onClose, socket, chatId })
               onClick={() => handleModeSwitch(m.id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
                 mode === m.id
-                  ? 'bg-primary text-white'
-                  : 'text-text-secondary hover:bg-hover/[0.07]'
+                  ? 'bg-primary dark:bg-primary-dark text-white'
+                  : 'text-text-secondary dark:text-text-secondary-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07]'
               }`}
             >
               <Icon size={14} />
@@ -219,12 +219,12 @@ export default function GhostCollaboration({ session, onClose, socket, chatId })
 
         {mode === 'code' && (
           <div className="w-full h-full flex flex-col">
-            <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border bg-background">
-              <span className="text-[10px] text-text-secondary">Language:</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border dark:border-border-dark bg-background dark:bg-background-dark">
+              <span className="text-[10px] text-text-secondary dark:text-text-secondary-dark">Language:</span>
               <select
                 value={codeLanguage}
                 onChange={(e) => setCodeLanguage(e.target.value)}
-                className="text-[11px] bg-transparent text-text-primary border border-border rounded px-1.5 py-0.5 outline-none"
+                className="text-[11px] bg-transparent text-text-primary dark:text-text-primary-dark border border-border dark:border-border-dark rounded px-1.5 py-0.5 outline-none"
               >
                 {['javascript', 'typescript', 'python', 'html', 'css', 'java', 'cpp', 'go', 'rust', 'sql'].map((lang) => (
                   <option key={lang} value={lang}>{lang}</option>
@@ -251,19 +251,19 @@ export default function GhostCollaboration({ session, onClose, socket, chatId })
         )}
       </div>
 
-      <div className="flex items-center justify-between p-3 border-t border-border">
+      <div className="flex items-center justify-between p-3 border-t border-border dark:border-border-dark">
         <div className="flex items-center gap-2">
           {participants.map((p, i) => (
             <div
               key={i}
-              className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-[8px] font-bold"
+              className="w-6 h-6 rounded-full bg-primary dark:bg-primary-dark flex items-center justify-center text-white text-[8px] font-bold"
               title={p.user?.username || 'User'}
             >
               {p.user?.username?.[0] || 'U'}
             </div>
           ))}
         </div>
-        <p className="text-[10px] text-text-secondary">
+        <p className="text-[10px] text-text-secondary dark:text-text-secondary-dark">
           Content auto-destroys when timer ends
         </p>
       </div>

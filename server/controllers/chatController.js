@@ -9,34 +9,43 @@ exports.getUserChats = async (req, res) => {
       isArchived: { $ne: true },
       'participants.isArchived': { $ne: true },
     })
-      .populate('participants.user', 'username avatar status lastActive')
+      .populate(
+        'participants.user',
+        'username avatar status lastActive preferences.privacy.onlineStatus',
+      )
       .populate('lastMessage.sender', 'username')
-      .sort({ 'lastMessage.createdAt': -1, updatedAt: -1 });
+      .sort({ 'lastMessage.createdAt': -1, updatedAt: -1 })
+      .lean();
 
     const onlineUsers = req.app.get('onlineUsers');
-    const presenceService = req.app.get('presenceService');
 
-    const enrichedChats = await Promise.all(chats.map(async (chat) => {
-      const obj = chat.toObject();
-      const currentParticipant = chat.participants.find((p) => p.user?._id?.toString() === req.userId.toString());
+    const enrichedChats = chats.map((chat) => {
+      const obj = { ...chat };
+      const participants = Array.isArray(chat.participants) ? chat.participants : [];
+      const currentParticipant = participants.find((p) => p?.user?._id?.toString() === req.userId.toString());
       obj.isPinned = Boolean(currentParticipant?.isPinned);
       obj.isMuted = Boolean(currentParticipant?.isMuted);
       obj.isArchived = Boolean(currentParticipant?.isArchived);
       if (chat.type === 'direct') {
-        const other = chat.participants.find((p) => p.user._id.toString() !== req.userId.toString());
-        if (other?.user) {
+        // A participant can be null when its referenced User was deleted or
+        // unavailable during populate. Keep the chat response usable instead
+        // of failing the entire /api/chats request.
+        const other = participants.find((p) => p?.user?._id?.toString() !== req.userId.toString());
+        if (other?.user?._id) {
           const uid = other.user._id.toString();
-          const isOnline = presenceService ? await presenceService.isOnline(uid) : Boolean(onlineUsers?.has(uid));
-          const userPrefs = await User.findById(uid).select('preferences');
-          const onlineStatusSetting = userPrefs?.preferences?.privacy?.onlineStatus || 'everyone';
+          const onlineStatusSetting = other.user.preferences?.privacy?.onlineStatus || 'everyone';
+          const publicOtherUser = { ...other.user };
+          delete publicOtherUser.preferences;
           obj.otherUser = {
-            ...other.user.toObject ? other.user.toObject() : other.user,
-            isOnline: onlineStatusSetting === 'nobody' ? false : isOnline,
+            ...publicOtherUser,
+            // Socket presence is already available to the client and avoids
+            // one Redis lookup per direct chat during dashboard bootstrap.
+            isOnline: onlineStatusSetting === 'nobody' ? false : Boolean(onlineUsers?.has(uid)),
           };
         }
       }
       return obj;
-    }));
+    });
 
     res.json({ chats: enrichedChats });
   } catch (err) {
@@ -111,7 +120,9 @@ exports.getOrCreateDirectChat = async (req, res) => {
     }).populate('participants.user', 'username avatar status');
 
     let chat = chats.find((c) => {
-      const ids = c.participants.map((p) => p.user._id.toString());
+      const ids = (c.participants || [])
+        .map((p) => p?.user?._id?.toString())
+        .filter(Boolean);
       return ids.includes(userId) && ids.includes(req.userId.toString()) && ids.length === 2;
     });
 
@@ -132,8 +143,8 @@ exports.getOrCreateDirectChat = async (req, res) => {
     const presenceService = req.app.get('presenceService');
     const enriched = chat.toObject();
     if (chat.type === 'direct') {
-      const other = chat.participants.find((p) => p.user._id.toString() !== req.userId.toString());
-      if (other?.user) {
+      const other = (chat.participants || []).find((p) => p?.user?._id?.toString() !== req.userId.toString());
+      if (other?.user?._id) {
         const uid = other.user._id.toString();
         enriched.otherUser = {
           ...(other.user.toObject ? other.user.toObject() : other.user),
@@ -175,16 +186,17 @@ exports.searchUsers = async (req, res) => {
   const onlineUsers = req.app.get('onlineUsers');
   const presenceService = req.app.get('presenceService');
   const users = await User.find(query)
-    .select('username avatar email status')
+    .select('username avatar email status preferences.privacy.onlineStatus')
     .limit(20);
 
   const enriched = await Promise.all(users.map(async (u) => {
     const uid = u._id.toString();
     const isOnline = presenceService ? await presenceService.isOnline(uid) : Boolean(onlineUsers?.has(uid));
-    const userPrefs = await User.findById(uid).select('preferences');
-    const onlineStatusSetting = userPrefs?.preferences?.privacy?.onlineStatus || 'everyone';
+    const onlineStatusSetting = u.preferences?.privacy?.onlineStatus || 'everyone';
+    const publicUser = u.toObject();
+    delete publicUser.preferences;
     return {
-      ...u.toObject(),
+      ...publicUser,
       isOnline: onlineStatusSetting === 'nobody' ? false : isOnline,
     };
   }));

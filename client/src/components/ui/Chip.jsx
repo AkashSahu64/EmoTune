@@ -18,14 +18,14 @@ export default function Chip({
 }) {
   const inactive =
     variant === "ghost"
-      ? "border-transparent text-text-secondary hover:bg-hover/[0.07] hover:text-text-primary"
+      ? "border-transparent text-text-secondary dark:text-text-secondary-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] hover:text-text-primary dark:hover:text-text-primary-dark"
       : variant === "outline"
-        ? "border-border/30 text-text-secondary hover:border-primary/50"
-        : "glass-surface text-text-secondary hover:bg-surface-elevated/70 hover:text-text-primary";
+        ? "border-border/30 dark:border-border-dark/30 text-text-secondary dark:text-text-secondary-dark hover:border-primary/50 dark:hover:border-primary-dark/50"
+        : "glass-surface text-text-secondary dark:text-text-secondary-dark hover:bg-surface-elevated/70 dark:hover:bg-surface-elevated-dark/70 hover:text-text-primary dark:hover:text-text-primary-dark";
   const activeStyle =
     variant === "default"
-      ? "border-primary bg-primary text-on-primary"
-      : "border-primary/30 bg-selection/15 text-primary";
+      ? "border-primary dark:border-primary-dark bg-primary dark:bg-primary-dark text-on-primary dark:text-on-primary-dark"
+      : "border-primary/30 dark:border-primary-dark/30 bg-selection/15 dark:bg-selection-dark/15 text-primary dark:text-primary-dark";
   const Component = onClick ? "button" : "span";
 
   return (
@@ -33,7 +33,7 @@ export default function Chip({
       onClick={onClick}
       type={onClick ? "button" : undefined}
       className={cn(
-        "interactive inline-flex items-center whitespace-nowrap border font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50",
+        "interactive inline-flex items-center whitespace-nowrap border font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 dark:focus-visible:ring-focus-dark/50",
         active ? activeStyle : inactive,
         sizes[size] || sizes.sm,
         className,
@@ -50,7 +50,7 @@ export default function Chip({
         <span
           className={cn(
             "text-meta font-semibold",
-            active ? "text-current opacity-80" : "text-text-muted",
+            active ? "text-current opacity-80" : "text-text-muted dark:text-text-muted-dark",
           )}
         >
           {count}

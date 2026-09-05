@@ -87,8 +87,8 @@ export default function ResetPasswordPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-transparent">
         <div className="text-center">
-          <p className="text-danger text-[14px] mb-4">Invalid reset link</p>
-          <Link to="/forgot-password" className="text-primary hover:text-primary">
+          <p className="text-danger dark:text-danger-dark text-[14px] mb-4">Invalid reset link</p>
+          <Link to="/forgot-password" className="text-primary dark:text-primary-dark hover:text-primary dark:hover:text-primary-dark">
             Request a new password reset
           </Link>
         </div>
@@ -116,7 +116,7 @@ export default function ResetPasswordPage() {
         <div className="flex-1 flex items-center justify-center px-2 py-4 bg-transparent relative overflow-hidden">
           <FormCard maxWidth="max-w-[520px]">
             <motion.div
-              className="auth-surface-card w-full max-w-[520px] rounded-3xl border border-border/60 bg-surface/40 backdrop-blur-glass backdrop-blur-md px-8 py-6 shadow-lg shadow-black/20 relative overflow-hidden"
+              className="auth-surface-card w-full max-w-[520px] rounded-3xl border border-border/60 dark:border-border-dark/60 bg-surface/40 dark:bg-surface-dark/40 backdrop-blur-glass backdrop-blur-md px-8 py-6 shadow-lg shadow-black/20 relative overflow-hidden"
               initial={{ }}
               animate={{ }}
               transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
@@ -133,14 +133,14 @@ export default function ResetPasswordPage() {
                       initial={{}}
                       animate={{}}
                       transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                      className="w-24 h-24 mx-auto mb-6 rounded-full bg-success/15 flex items-center justify-center"
+                      className="w-24 h-24 mx-auto mb-6 rounded-full bg-success/15 dark:bg-success-dark/15 flex items-center justify-center"
                     >
-                      <FiCheckCircle size={48} className="text-success" />
+                      <FiCheckCircle size={48} className="text-success dark:text-success-dark" />
                     </motion.div>
                     <motion.h2
                       initial={{ }}
                       animate={{ }}
-                      className="text-2xl font-bold text-text-primary mb-2"
+                      className="text-2xl font-bold text-text-primary dark:text-text-primary-dark mb-2"
                     >
                       Password changed!
                     </motion.h2>
@@ -148,7 +148,7 @@ export default function ResetPasswordPage() {
                       initial={{ }}
                       animate={{ }}
                       transition={{ }}
-                      className="text-[14px] text-text-secondary mb-6"
+                      className="text-[14px] text-text-secondary dark:text-text-secondary-dark mb-6"
                     >
                       Welcome back to Emotune
                     </motion.p>
@@ -159,7 +159,7 @@ export default function ResetPasswordPage() {
                     >
                       <Link
                         to="/login"
-                        className="inline-flex items-center gap-2 px-8 h-[52px] rounded-2xl bg-primary text-white text-[14px] font-semibold transition-colors duration-200 shadow-lg shadow-[var(--theme-primary)]/25"
+                        className="inline-flex items-center gap-2 px-8 h-[52px] rounded-2xl bg-primary dark:bg-primary-dark text-white text-[14px] font-semibold transition-colors duration-200 shadow-lg shadow-primary/25 dark:shadow-primary-dark/25"
                       >
                         Go to login
                       </Link>
@@ -190,12 +190,12 @@ export default function ResetPasswordPage() {
                         transition={{ }}
                         className="flex items-center justify-center gap-2 mb-3"
                       >
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <FiLock size={18} className="text-primary" />
+                        <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-primary-dark/10 flex items-center justify-center">
+                          <FiLock size={18} className="text-primary dark:text-primary-dark" />
                         </div>
                       </motion.div>
                       <motion.h1
-                        className="text-3xl font-bold text-text-primary tracking-tight"
+                        className="text-3xl font-bold text-text-primary dark:text-text-primary-dark tracking-tight"
                         initial={{ }}
                         animate={{ }}
                         transition={{ }}
@@ -203,7 +203,7 @@ export default function ResetPasswordPage() {
                         Create new password
                       </motion.h1>
                       <motion.p
-                        className="text-[14px] text-text-secondary mt-2"
+                        className="text-[14px] text-text-secondary dark:text-text-secondary-dark mt-2"
                         initial={{ }}
                         animate={{ }}
                         transition={{ }}
@@ -278,7 +278,7 @@ export default function ResetPasswordPage() {
                       <motion.button
                         type="submit"
                         disabled={loading || !password || !confirmPassword}
-                        className="relative w-full h-[52px] rounded-2xl bg-primary text-white text-[14px] font-semibold  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center gap-2.5 shadow-lg shadow-[var(--theme-primary)]/25 hover:shadow-[var(--theme-primary)]/35 mt-2"
+                        className="relative w-full h-[52px] rounded-2xl bg-primary dark:bg-primary-dark text-white text-[14px] font-semibold  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center gap-2.5 shadow-lg shadow-primary/25 dark:shadow-primary-dark/25 hover:shadow-primary/35 dark:shadow-primary-dark/35 mt-2"
                         aria-label="Reset password"
                       >
                         {loading ? (
@@ -297,7 +297,7 @@ export default function ResetPasswordPage() {
                     >
                       <Link
                         to="/login"
-                        className="inline-flex items-center gap-2 text-[13px] text-text-secondary hover:text-text-secondary transition-colors font-medium"
+                        className="inline-flex items-center gap-2 text-[13px] text-text-secondary dark:text-text-secondary-dark hover:text-text-secondary dark:hover:text-text-secondary-dark transition-colors font-medium"
                       >
                         <FiArrowLeft size={14} />
                         Back to login

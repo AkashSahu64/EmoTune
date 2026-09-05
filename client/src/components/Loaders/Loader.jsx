@@ -10,12 +10,12 @@ export default function Loader({ fullScreen = false, size = 'md', text = '' }) {
         className={`${sizeMap[size]} relative animate-spin`}
         aria-hidden="true"
       >
-        <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[var(--theme-primary)]" />
-        <div className="absolute inset-1 rounded-full border-2 border-transparent border-r-[var(--theme-secondary)]" />
-        <div className="absolute inset-2 rounded-full border-2 border-transparent border-b-[var(--theme-accent)]" />
+        <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary dark:border-t-primary-dark" />
+        <div className="absolute inset-1 rounded-full border-2 border-transparent border-r-secondary dark:border-r-secondary-dark" />
+        <div className="absolute inset-2 rounded-full border-2 border-transparent border-b-warning dark:border-b-warning-dark" />
       </div>
       {text && (
-        <p className="text-sm text-text-secondary">
+        <p className="text-sm text-text-secondary dark:text-text-secondary-dark">
           {text}
         </p>
       )}
@@ -24,7 +24,7 @@ export default function Loader({ fullScreen = false, size = 'md', text = '' }) {
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background z-50">
+      <div className="fixed inset-0 flex items-center justify-center bg-background dark:bg-background-dark z-50">
         {content}
       </div>
     );
@@ -35,7 +35,7 @@ export default function Loader({ fullScreen = false, size = 'md', text = '' }) {
 
 export function ShimmerCard({ lines = 3 }) {
   return (
-    <div className="bg-surface backdrop-blur-glass border border-border rounded-2xl p-4 space-y-3" aria-hidden="true">
+    <div className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-2xl p-4 space-y-3" aria-hidden="true">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-full shimmer-bg" />
         <div className="flex-1 space-y-2">
@@ -60,7 +60,7 @@ export function TypingIndicator() {
       {[0, 1, 2].map((i) => (
         <motion.div
           key={i}
-          className="w-[6px] h-[6px] rounded-full bg-[var(--theme-text-secondary)] animate-fade-in"
+          className="w-[6px] h-[6px] rounded-full bg-text-secondary dark:bg-text-secondary-dark animate-fade-in"
           aria-hidden="true"
         />
       ))}
@@ -80,11 +80,11 @@ export function ThinkingShimmer() {
         {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
-            className="w-[6px] h-[6px] rounded-full bg-primary animate-pulse"
+            className="w-[6px] h-[6px] rounded-full bg-primary dark:bg-primary-dark animate-pulse"
           />
         ))}
       </div>
-      <span className="text-xs text-text-secondary">AI is thinking...</span>
+      <span className="text-xs text-text-secondary dark:text-text-secondary-dark">AI is thinking...</span>
     </div>
   );
 }

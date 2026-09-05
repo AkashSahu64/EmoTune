@@ -11,6 +11,11 @@ const messageSchema = new mongoose.Schema({
     ref: 'Chat',
     required: true,
   },
+  clientMessageId: {
+    type: String,
+    trim: true,
+    maxlength: 100,
+  },
   content: {
     type: String,
     trim: true,
@@ -18,7 +23,7 @@ const messageSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['text', 'emoji', 'gif', 'shayari', 'song', 'video', 'image', 'audio', 'file', 'system', 'poll', 'decision', 'story_reply', 'reaction', 'event', 'voice_note', 'scheduled'],
+    enum: ['text', 'emoji', 'gif', 'shayari', 'song', 'video', 'image', 'audio', 'file', 'system', 'poll', 'decision', 'story_reply', 'story_share', 'reaction', 'event', 'voice_note', 'scheduled'],
     default: 'text',
   },
   mediaUrl: { type: String, default: '' },
@@ -48,6 +53,7 @@ const messageSchema = new mongoose.Schema({
     fileSize: { type: Number },
     fileType: { type: String },
     mediaUrl: { type: String },
+    storyReaction: { type: Boolean, default: false },
   },
   intents: [{
     type: String,
@@ -86,14 +92,16 @@ const messageSchema = new mongoose.Schema({
     expiresAt: Date,
     isMultipleChoice: { type: Boolean, default: false },
   },
-  eventData: {
+    eventData: {
     title: String,
     description: String,
     startDate: Date,
     endDate: Date,
     location: String,
-    attendees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  },
+      attendees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    },
+    storyRef: { type: mongoose.Schema.Types.ObjectId, ref: 'Story' },
+    storyOwner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   scheduledFor: Date,
   scheduledSender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   voiceNote: {
@@ -125,6 +133,10 @@ const messageSchema = new mongoose.Schema({
 });
 
 messageSchema.index({ chat: 1, createdAt: -1 });
+messageSchema.index(
+  { sender: 1, chat: 1, clientMessageId: 1 },
+  { unique: true, partialFilterExpression: { clientMessageId: { $type: 'string' } } },
+);
 messageSchema.index({ chat: 1, threadId: 1 });
 messageSchema.index({ chat: 1, intents: 1 });
 messageSchema.index({ sender: 1, createdAt: -1 });

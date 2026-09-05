@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState, memo } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, memo } from "react";
 import { createPortal } from "react-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
@@ -50,8 +50,8 @@ const filters = [
 
 function SolidAvatar({ src, name, size = "md", status, kind }) {
   const sizes = {
-    sm: "h-9 w-9 text-xs",
-    md: "h-11 w-11 text-sm",
+    sm: "h-9 w-9 text-sm",
+    md: "h-12 w-12 text-md",
     lg: "h-16 w-16 text-lg",
   };
   const initials = (name || "?")
@@ -62,12 +62,12 @@ function SolidAvatar({ src, name, size = "md", status, kind }) {
     .toUpperCase();
   const background =
     kind === "ai"
-      ? "bg-ai/14 text-ai"
+      ? "bg-ai/14 dark:bg-ai-dark/14 text-ai dark:text-ai-dark"
       : kind === "ghost"
-        ? "bg-ghost/14 text-ghost"
+        ? "bg-ghost/14 dark:bg-ghost-dark/14 text-ghost dark:text-ghost-dark"
         : kind === "memory"
-          ? "bg-memory/14 text-memory"
-          : "bg-surface-elevated text-text-primary";
+          ? "bg-memory/14 dark:bg-memory-dark/14 text-memory dark:text-memory-dark"
+          : "bg-surface-elevated dark:bg-surface-elevated-dark text-text-primary dark:text-text-primary-dark";
   return (
     <span
       className="relative inline-flex shrink-0"
@@ -76,7 +76,7 @@ function SolidAvatar({ src, name, size = "md", status, kind }) {
       <span
         className={cn(
           sizes[size],
-          "flex items-center justify-center overflow-hidden rounded-full font-semibold",
+          "flex items-center justify-center overflow-hidden border-2 border-border-muted dark:border-border-dark rounded-full font-semibold",
           background,
         )}
       >
@@ -99,8 +99,8 @@ function SolidAvatar({ src, name, size = "md", status, kind }) {
       {status && (
         <span
           className={cn(
-            "absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-surface",
-            status === "online" ? "bg-online" : "bg-offline",
+            "absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-surface dark:border-surface-dark",
+            status === "online" ? "bg-online dark:bg-online-dark" : "bg-offline dark:bg-offline-dark",
           )}
           aria-label={status}
         />
@@ -125,10 +125,10 @@ function SmallIconButton({
       title={label}
       onClick={onClick}
       className={cn(
-        "interactive flex h-9 w-9 items-center justify-center rounded-full border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50",
+        "interactive flex h-9 w-9 items-center justify-center rounded-full border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 dark:focus-visible:ring-focus-dark/50",
         active
-          ? "border-primary bg-primary text-on-primary"
-          : "border-border/20 bg-surface/70 text-text-primary",
+          ? "border-primary dark:border-primary-dark bg-primary dark:bg-primary-dark text-on-primary dark:text-on-primary-dark"
+          : "border-border/90 dark:border-border-dark/90 bg-surface/70 dark:bg-surface-dark/70 text-text-primary dark:text-text-primary-dark",
         className,
       )}
     >
@@ -142,7 +142,7 @@ function Badge({ children, tone = "blue" }) {
     <span
       className={cn(
         "inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-0.5 pt-[2px] text-[10px] font-bold",
-        tone === "blue" ? "bg-primary/50 text-on-primary" : "bg-ai/14 text-ai",
+        tone === "blue" ? "bg-primary/50 dark:bg-primary-dark/50 text-on-primary dark:text-on-primary-dark" : "bg-ai/14 dark:bg-ai-dark/14 text-ai dark:text-ai-dark",
       )}
     >
       {children}
@@ -170,6 +170,7 @@ function Sidebar({
   onMarkAllChatsRead,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [showPinnedOnly, setShowPinnedOnly] = useState(false);
   const [scrollTop, setScrollTop] = useState(0);
@@ -183,8 +184,16 @@ function Sidebar({
   });
   const [showQrCode, setShowQrCode] = useState(false);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
+  const [activeNavItem, setActiveNavItem] = useState(null);
   const profileMenuAnchorRef = useRef(null);
   const listRef = useRef(null);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery.trim());
+    }, 180);
+    return () => window.clearTimeout(timer);
+  }, [searchQuery]);
 
   const profileLink = `${window.location.origin}/profile/${user?._id || user?.id || "me"}`;
 
@@ -213,10 +222,10 @@ function Sidebar({
   }, [profileMenuOpen]);
 
   const availabilityOptions = [
-    { id: "online", label: "Online", tone: "bg-online" },
-    { id: "away", label: "Away", tone: "bg-warning" },
-    { id: "busy", label: "Busy", tone: "bg-danger" },
-    { id: "offline", label: "Invisible", tone: "bg-offline" },
+    { id: "online", label: "Online", tone: "bg-online dark:bg-online-dark" },
+    { id: "away", label: "Away", tone: "bg-warning dark:bg-warning-dark" },
+    { id: "busy", label: "Busy", tone: "bg-danger dark:bg-danger-dark" },
+    { id: "offline", label: "Invisible", tone: "bg-offline dark:bg-offline-dark" },
   ];
 
   const handleAvailabilityChange = async (status) => {
@@ -254,17 +263,17 @@ function Sidebar({
   };
 
   const chatSearchQuery = useQuery({
-    queryKey: ["chat-search", searchQuery.trim()],
+    queryKey: ["chat-search", debouncedSearchQuery],
     queryFn: ({ signal }) =>
       chatService
-        .search(searchQuery.trim(), { signal })
+        .search(debouncedSearchQuery, { signal })
         .then(({ data }) => data.chats || []),
-    enabled: searchQuery.trim().length >= 2,
+    enabled: debouncedSearchQuery.length >= 2,
     staleTime: 30_000,
   });
 
   const sourceChats =
-    searchQuery.trim().length >= 2 ? chatSearchQuery.data || [] : chats;
+    debouncedSearchQuery.length >= 2 ? chatSearchQuery.data || [] : chats;
   const filteredChats = useMemo(
     () =>
       sourceChats.filter((chat) => {
@@ -349,29 +358,42 @@ function Sidebar({
     onUpdateChatPreference?.(chat, preference);
   };
 
+  const handleNavClick = (item, action) => {
+    setActiveNavItem(item);
+    action?.();
+  };
+
+  const navButtonClass = (item) =>
+    cn(
+      "relative flex items-center justify-center rounded-2xl px-1 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 dark:focus-visible:ring-focus-dark/50",
+      activeNavItem === item
+        ? "bg-primary/10 text-primary dark:bg-primary-dark/10 dark:text-primary-dark"
+        : "text-text-secondary dark:text-text-secondary-dark hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-primary dark:hover:text-primary-dark",
+    );
+
   return (
     <aside
-      className="relative flex h-full w-full flex-col overflow-hidden text-text-primary"
+      className="relative flex h-full w-full flex-col overflow-hidden text-text-primary dark:text-text-primary-dark"
       aria-label="Chat sidebar"
     >
       <div className="shrink-0">
-        <div className="mb-1 border-b border-border/20 bg-surface/55 px-3 py-2 backdrop-blur-glass">
+        <div className="mb-1 border-b border-border dark:border-border-dark bg-surface/90 dark:bg-surface-dark/90 px-3 py-1.5">
           <div className="flex items-center gap-3">
             <SolidAvatar src={user?.avatar} name={user?.username} size="md" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h2 className="truncate text-[16px] font-bold">
+                <h2 className="truncate text-[18px] font-bold tracking-tighter">
                   {user?.fullName || "User"}
                 </h2>
                 {user?.isVerified && (
                   <FiShield
                     size={13}
-                    className="text-primary"
+                    className="text-primary dark:text-primary-dark"
                     aria-label="Verified"
                   />
                 )}
               </div>
-              <p className="truncate text-xs text-text-secondary">
+              <p className="truncate -mt-1.5 text-sm text-text-secondary dark:text-text-secondary-dark">
                 {user?.username ? `@${user.username}` : "No username"}
               </p>
             </div>
@@ -382,7 +404,7 @@ function Sidebar({
               >
                 <span className="relative">
                   <FiBell size={18} />
-                  <span className="absolute -right-0 -top-0.5 h-2 w-2 rounded-full bg-primary" />
+                  <span className="absolute -right-0 -top-0.5 h-2 w-2 rounded-full bg-primary dark:bg-primary-dark" />
                 </span>
               </SmallIconButton>
               <div ref={profileMenuAnchorRef} className="relative">
@@ -417,7 +439,7 @@ function Sidebar({
                           top: profileMenuPosition.top,
                           left: profileMenuPosition.left,
                         }}
-                        className="glass-popover fixed z-[100] min-w-[220px] rounded-xl border border-border/30 p-1.5 text-text-secondary shadow-floating"
+                        className="fixed z-[100] min-w-[220px] bg-surface dark:bg-surface-dark rounded-xl border border-border/80 dark:border-border-dark/80 px-0.5 py-1 text-text-primary dark:text-text-primary-dark"
                       >
                         <div className="relative">
                           <button
@@ -426,19 +448,19 @@ function Sidebar({
                             onClick={() =>
                               setAvailabilityMenuOpen((open) => !open)
                             }
-                            className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-xs hover:bg-hover/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50"
+                            className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left text-md hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-text-primary dark:hover:text-text-primary-dark"
                           >
                             <span className="flex items-center gap-2">
-                              <FiCheckCircle size={14} />
+                              <FiCheckCircle size={15} />
                               Set Availability
                             </span>
-                            <span className="flex items-center gap-1 text-[10px] capitalize text-text-muted">
+                            <span className="flex items-center gap-1 text-[10px] capitalize text-text-muted dark:text-text-muted-dark">
                               <span
                                 className={cn(
                                   "h-2 w-2 rounded-full",
                                   availabilityOptions.find(
                                     (option) => option.id === availability,
-                                  )?.tone || "bg-offline",
+                                  )?.tone || "bg-offline dark:bg-offline-dark",
                                 )}
                               />
                               {availability}
@@ -446,7 +468,7 @@ function Sidebar({
                           </button>
 
                           {availabilityMenuOpen && (
-                            <div className="glass-popover absolute left-full top-0 mr-2 min-w-[130px] rounded-lg border border-border/30 p-1 shadow-floating">
+                            <div className="absolute left-full bg-surface dark:bg-surface-dark top-0 mr-2 min-w-[130px] rounded-lg border border-border/90 dark:border-border-dark/90 p-1">
                               {availabilityOptions.map((option) => (
                                 <button
                                   key={option.id}
@@ -455,7 +477,7 @@ function Sidebar({
                                   onClick={() =>
                                     handleAvailabilityChange(option.id)
                                   }
-                                  className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-xs capitalize hover:bg-hover/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50"
+                                  className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-xs capitalize hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-text-primary dark:hover:text-text-primary-dark"
                                 >
                                   <span
                                     className={cn(
@@ -474,9 +496,9 @@ function Sidebar({
                           type="button"
                           role="menuitem"
                           onClick={onLogout}
-                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs hover:bg-hover/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50"
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-md hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-text-primary dark:hover:text-text-primary-dark"
                         >
-                          <FiRepeat size={14} />
+                          <FiRepeat size={15} />
                           Switch Account
                         </button>
                         <button
@@ -486,27 +508,27 @@ function Sidebar({
                             setShowQrCode(true);
                             setProfileMenuOpen(false);
                           }}
-                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs hover:bg-hover/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50"
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-md hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-text-primary dark:hover:text-text-primary-dark"
                         >
-                          <FiUser size={14} />
+                          <FiUser size={15} />
                           My QR Code
                         </button>
                         <button
                           type="button"
                           role="menuitem"
                           onClick={handleCopyProfileLink}
-                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs hover:bg-hover/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50"
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-md hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-text-primary dark:hover:text-text-primary-dark"
                         >
-                          <FiCopy size={14} />
+                          <FiCopy size={15} />
                           Copy Profile Link
                         </button>
                         <button
                           type="button"
                           role="menuitem"
                           onClick={handleMarkAllChatsRead}
-                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs hover:bg-hover/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50"
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-md hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-text-primary dark:hover:text-text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 dark:focus-visible:ring-focus-dark/50"
                         >
-                          <FiCheckCircle size={14} />
+                          <FiCheckCircle size={15} />
                           Mark All Chats as Read
                         </button>
                         <button
@@ -516,9 +538,9 @@ function Sidebar({
                             setActiveFilter("archived");
                             setProfileMenuOpen(false);
                           }}
-                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs hover:bg-hover/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50"
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-md hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-text-primary dark:hover:text-text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 dark:focus-visible:ring-focus-dark/50"
                         >
-                          <FiArchive size={14} />
+                          <FiArchive size={15} />
                           Archived Chats
                         </button>
                         <button
@@ -528,9 +550,9 @@ function Sidebar({
                             setProfileMenuOpen(false);
                             onOpenSettings?.();
                           }}
-                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs hover:bg-hover/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50"
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-md hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-text-primary dark:hover:text-text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 dark:focus-visible:ring-focus-dark/50"
                         >
-                          <FiSliders size={14} />
+                          <FiSliders size={15} />
                           Keyboard Shortcuts
                         </button>
                         <button
@@ -540,19 +562,19 @@ function Sidebar({
                             setShowWhatsNew(true);
                             setProfileMenuOpen(false);
                           }}
-                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs hover:bg-hover/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50"
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-md hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-text-primary dark:hover:text-text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 dark:focus-visible:ring-focus-dark/50"
                         >
-                          <FiStar size={14} />
+                          <FiStar size={15} />
                           What&apos;s New
                         </button>
-                        <div className="my-1 border-t border-border/20" />
+                        <div className="my-1 border-t border-border/20 dark:border-border-dark/20" />
                         <button
                           type="button"
                           role="menuitem"
                           onClick={onLogout}
-                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs text-danger/90 hover:bg-danger/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50"
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-md text-danger/90 dark:text-danger-dark/90 hover:bg-danger/[0.08] dark:hover:bg-danger-dark/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 dark:focus-visible:ring-focus-dark/50"
                         >
-                          <FiLogOut size={14} />
+                          <FiLogOut size={15} />
                           Logout
                         </button>
                       </div>
@@ -564,22 +586,8 @@ function Sidebar({
           </div>
         </div>
 
-        <div className="relative mb-2 px-1">
-          <FiSearch
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-text-primary"
-            size={16}
-          />
-          <input
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Search conversations..."
-            aria-label="Search conversations"
-            className="glass-input h-10 w-full rounded-2xl pl-10 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/35"
-          />
-        </div>
-
         <div
-          className="flex gap-2 overflow-x-auto pb-1 px-2 scrollbar-hide"
+          className="flex gap-2 overflow-x-auto px-2 pb-2 scrollbar-hide"
           aria-label="Conversation filters"
         >
           {filters.map(({ id, label, icon: Icon }) => {
@@ -594,10 +602,10 @@ function Sidebar({
                   setShowPinnedOnly(id === "pinned");
                 }}
                 className={cn(
-                  "interactive flex h-[27px] shrink-0 items-center justify-center pt-[1px] rounded-full border px-3 text-[11px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50",
+                  "interactive flex h-[27px] shrink-0 items-center justify-center pt-[1px] rounded-full border px-3 text-[12px] font-semibold focus-visible:outline-none",
                   active
-                    ? "border-primary bg-primary text-on-primary"
-                    : "border-border/20 bg-surface/70 text-text-primary",
+                    ? "border-primary dark:border-primary-dark bg-primary dark:bg-primary-dark text-on-primary dark:text-on-primary-dark"
+                    : "border-border/80 dark:border-border-dark/80 bg-surface/70 dark:bg-surface-dark/70 text-text-primary dark:text-text-primary-dark",
                 )}
               >
                 {label}
@@ -606,24 +614,38 @@ function Sidebar({
             );
           })}
         </div>
+
+        <div className="relative mb-2 px-2">
+          <FiSearch
+            className="absolute z-10 left-5 top-1/2 -translate-y-1/2 text-text-primary dark:text-secondary-dark"
+            size={16}
+          />
+          <input
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search conversations..."
+            aria-label="Search conversations"
+            className="border border-border dark:border-border-dark bg-surface-elevated dark:bg-surface-dark text-text-primary dark:text-text-primary-dark backdrop-blur-sm h-11 w-full rounded-full pl-10 text-[14px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus/35 dark:focus-visible:ring-focus-dark/35"
+          />
+        </div>
       </div>
 
       <div
         ref={listRef}
         onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
-        className="min-h-0 flex-1 overflow-y-auto px-2 mt-2 scrollbar-hide"
+        className="min-h-0 flex-1 overflow-y-auto px-2 scrollbar-hide"
       >
         {loadingChats ? (
-          <div className="space-y-2" aria-label="Loading chats">
+          <div className="space-y-1" aria-label="Loading chats">
             {[1, 2, 3, 4, 5].map((item) => (
               <div
                 key={item}
-                className="shimmer-bg h-[50px] rounded-lg border border-border/20"
+                className="bg-secondary/20 dark:bg-secondary-dark/20 animate-pulse h-[50px] rounded-lg border border-border/20 dark:border-border-dark/20"
               />
             ))}
           </div>
         ) : filteredChats.length === 0 ? (
-          <div className="glass-elevated rounded-xl p-6 text-center text-sm text-text-secondary">
+          <div className="flex items-center justify-center p-6 text-md text-text-secondary dark:text-text-secondary-dark">
             No conversations found.
           </div>
         ) : (
@@ -648,10 +670,10 @@ function Sidebar({
                     onClick={() => onSelectChat(chat)}
                     aria-selected={isActive}
                     className={cn(
-                      "interactive group relative mb-[3px] flex h-[50px] w-full items-center gap-3 rounded-md px-2 text-left",
+                      "interactive group relative mb-0.5 flex h-[50px] w-full items-center gap-3 rounded-xl px-2 text-left",
                       isActive
-                        ? "border border-primary/20 bg-primary/20"
-                        : "bg-primary/10",
+                        ? "border border-primary/20 dark:border-primary-dark/20 bg-primary/20 dark:bg-primary-dark/20"
+                        : "bg-primary-light dark:bg-secondary-dark/10 hover:bg-primary-hover dark:hover:bg-primary-dark/10",
                     )}
                   >
                     <SolidAvatar
@@ -671,26 +693,26 @@ function Sidebar({
                             {getChatName(chat)}
                           </strong>
                           {kind === "ai" && (
-                            <FiZap size={13} className="text-ai" />
+                            <FiZap size={13} className="text-ai dark:text-ai-dark" />
                           )}
                           {chat.isPinned && (
                             <MdOutlinePushPin
                               size={12}
-                              className="text-primary"
+                              className="text-primary dark:text-primary-dark"
                             />
                           )}
                         </span>
-                        <span className="shrink-0 text-[10px] text-text-muted">
+                        <span className="shrink-0 text-[10px] text-text-muted dark:text-text-muted-dark">
                           {getTime(chat)}
                         </span>
                       </span>
                       <span className="-mt-0.5 flex items-center justify-between gap-2">
                         <span
                           className={cn(
-                            "truncate text-[12px]",
+                            "truncate text-[12px] pr-2",
                             chat.typingUsers?.length
-                              ? "italic text-primary"
-                              : "text-text-secondary",
+                              ? "italic text-primary dark:text-primary-dark"
+                              : "text-text-secondary dark:text-text-secondary-dark",
                           )}
                         >
                           {chat.typingUsers?.length
@@ -726,7 +748,7 @@ function Sidebar({
                             );
                           }
                         }}
-                        className="hidden h-8 w-8 cursor-pointer items-center justify-center rounded-full text-text-secondary hover:bg-hover/[0.09] hover:text-text-primary group-hover:flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50"
+                        className="hidden h-8 w-8 cursor-pointer items-center justify-center rounded-full text-text-secondary dark:text-text-secondary-dark hover:bg-hover/[0.09] dark:hover:bg-hover-dark/[0.09] hover:text-text-primary dark:hover:text-text-primary-dark group-hover:flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 dark:focus-visible:ring-focus-dark/50"
                       >
                         <FiMoreHorizontal size={17} />
                       </span>
@@ -736,7 +758,7 @@ function Sidebar({
                           role="menu"
                           aria-label="Chat actions"
                           onClick={(event) => event.stopPropagation()}
-                          className="glass-popover absolute right-0 top-full mt-1 flex min-w-[140px] flex-col gap-0.5 rounded-md border border-border/30 py-0.5 text-text-secondary shadow-floating"
+                          className="absolute right-0 top-full bg-surface dark:bg-surface-dark mt-1 flex min-w-[140px] flex-col gap-0.5 rounded-md border border-border/70 dark:border-border-dark/70 py-0.5 text-text-secondary dark:text-text-secondary-dark shadow-sm"
                         >
                           <span
                             role="menuitem"
@@ -756,7 +778,7 @@ function Sidebar({
                                 setOpenChatMenuId(null);
                               }
                             }}
-                            className="flex cursor-pointer items-center gap-2 p-1.5 text-sm hover:bg-hover/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50"
+                            className="flex cursor-pointer items-center gap-2 p-1.5 text-[14px] hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-text-primary dark:hover:text-text-primary-dark"
                           >
                             <MdOutlinePushPin size={16} />
                             <span>
@@ -781,7 +803,7 @@ function Sidebar({
                                 setOpenChatMenuId(null);
                               }
                             }}
-                            className="flex cursor-pointer items-center gap-2 p-1.5 text-sm hover:bg-hover/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50"
+                            className="flex cursor-pointer items-center gap-2 p-1.5 text-[14px] hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-text-primary dark:hover:text-text-primary-dark"
                           >
                             <FiVolumeX size={16} />
                             <span>
@@ -806,7 +828,7 @@ function Sidebar({
                                 setOpenChatMenuId(null);
                               }
                             }}
-                            className="flex cursor-pointer items-center gap-2 p-1.5 text-sm text-danger/90 hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50"
+                            className="flex cursor-pointer items-center gap-2 p-1.5 text-[14px] text-danger/90 dark:text-danger-dark/90 hover:bg-danger/10 dark:hover:bg-danger-dark/10 hover:text-danger dark:hover:text-danger-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 dark:focus-visible:ring-focus-dark/50"
                           >
                             <MdDeleteForever size={16} />
                             <span>Archive chat</span>
@@ -823,62 +845,62 @@ function Sidebar({
 
       <div className="shrink-0 px-2 pb-1.5 pt-2">
         <nav
-          className="glass-elevated grid grid-cols-6 items-stretch gap-1 rounded-2xl p-1.5"
+          className="grid grid-cols-6 items-stretch gap-1 bg-surface dark:bg-surface-dark border border-border/ dark:border-border-dark/ rounded-full p-1.5"
           aria-label="Sidebar navigation"
         >
           <button
             type="button"
-            onClick={onOpenStory}
+            onClick={() => handleNavClick("stories", onOpenStory)}
             title="Open stories"
-            className="interactive flex items-center justify-center rounded-2xl px-1 py-1.5 text-text-secondary hover:bg-hover/[0.08] hover:text-text-primary"
+            className={navButtonClass("stories")}
             aria-label="Open stories"
           >
             <LuSmilePlus size={20} className="shrink-0" aria-hidden="true" />
           </button>
           <button
             type="button"
-            onClick={onOpenNewChat}
+            onClick={() => handleNavClick("new-chat", onOpenNewChat)}
             title="Invite user"
-            className="interactive flex items-center justify-center rounded-2xl px-1 py-1.5 text-text-secondary hover:bg-hover/[0.08] hover:text-text-primary"
+            className={navButtonClass("new-chat")}
             aria-label="Invite user"
           >
-            <FaUserPlus size={20} className="shrink-0 text-primary" aria-hidden="true" />
+            <FaUserPlus size={20} className="shrink-0 " aria-hidden="true" />
           </button>
           <button
             type="button"
-            onClick={onOpenGroupModal}
+            onClick={() => handleNavClick("groups", onOpenGroupModal)}
             title="Create group"
-            className="interactive flex items-center justify-center rounded-2xl px-1 py-1.5 text-text-secondary hover:bg-hover/[0.08] hover:text-text-primary"
+            className={navButtonClass("groups")}
             aria-label="Create group"
           >
-            <FaUsers size={20} className="shrink-0 text-primary" aria-hidden="true" />
+            <FaUsers size={20} className="shrink-0" aria-hidden="true" />
           </button>
           <button
             type="button"
-            onClick={onOpenBookmarks}
+            onClick={() => handleNavClick("bookmarks", onOpenBookmarks)}
             title="Open bookmarks"
-            className="interactive flex items-center justify-center rounded-2xl px-1 py-1.5 text-text-secondary hover:bg-hover/[0.08] hover:text-text-primary"
+            className={navButtonClass("bookmarks")}
             aria-label="Open bookmarks"
           >
             <FiBookmark size={20} className="shrink-0" aria-hidden="true" />
           </button>
           <button
             type="button"
-            onClick={onOpenSilentInbox}
+            onClick={() => handleNavClick("ai-inbox", onOpenSilentInbox)}
             title="Open AI inbox"
-            className="interactive flex items-center justify-center rounded-2xl px-1 py-1.5 text-text-secondary hover:bg-hover/[0.08] hover:text-text-primary"
+            className={navButtonClass("ai-inbox")}
             aria-label="Open AI inbox"
           >
             <FiZap size={20} className="shrink-0" aria-hidden="true" />
             {silentInboxCount > 0 && (
-              <span className="absolute right-1.5 top-1 h-2 w-2 rounded-full bg-primary" />
+              <span className="absolute right-1.5 top-1 h-2 w-2 rounded-full bg-primary dark:bg-primary-dark" />
             )}
           </button>
           <button
             type="button"
-            onClick={onOpenSettings}
+            onClick={() => handleNavClick("settings", onOpenSettings)}
             title="Open settings"
-            className="iinteractive flex items-center justify-center rounded-2xl px-1 py-1.5 text-text-secondary hover:bg-hover/[0.08] hover:text-text-primary"
+            className={navButtonClass("settings")}
             aria-label="Open settings"
           >
             <FiSettings size={20} className="shrink-0" aria-hidden="true" />
@@ -901,11 +923,11 @@ function Sidebar({
               onClick={() => setShowQrCode(false)}
               aria-label="Close QR code"
             />
-            <div className="glass-dialog relative z-10 w-full max-w-sm rounded-2xl p-6 text-center text-text-primary">
+            <div className="glass-dialog relative z-10 w-full max-w-sm rounded-2xl p-6 text-center text-text-primary dark:text-text-primary-dark">
               <button
                 type="button"
                 onClick={() => setShowQrCode(false)}
-                className="absolute right-3 top-3 rounded-full p-1 text-text-secondary hover:bg-hover/[0.08]"
+                className="absolute right-3 top-3 rounded-full p-1 text-text-secondary dark:text-text-secondary-dark hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08]"
                 aria-label="Close QR code"
               >
                 <FiX size={18} />
@@ -913,20 +935,20 @@ function Sidebar({
               <h2 id="profile-qr-title" className="text-lg font-semibold">
                 My QR Code
               </h2>
-              <p className="mt-1 text-sm text-text-secondary">
+              <p className="mt-1 text-sm text-text-secondary dark:text-text-secondary-dark">
                 Scan to open{" "}
                 {user?.fullName || user?.username || "my Emotune profile"}.
               </p>
               <div className="mx-auto my-5 flex w-fit rounded-xl bg-white p-3 text-black">
                 <QRCodeSVG value={profileLink} size={184} includeMargin />
               </div>
-              <p className="break-all rounded-lg bg-surface/60 p-2 text-xs text-text-muted">
+              <p className="break-all rounded-lg bg-surface/60 dark:bg-surface-dark/60 p-2 text-xs text-text-muted dark:text-text-muted-dark">
                 {profileLink}
               </p>
               <button
                 type="button"
                 onClick={handleCopyProfileLink}
-                className="mt-4 w-full rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-on-primary hover:bg-primary-hover"
+                className="mt-4 w-full rounded-lg bg-primary dark:bg-primary-dark px-3 py-2 text-sm font-semibold text-on-primary dark:text-on-primary-dark hover:bg-primary-hover dark:hover:bg-primary-hover-dark"
               >
                 Copy Profile Link
               </button>
@@ -950,22 +972,22 @@ function Sidebar({
               onClick={() => setShowWhatsNew(false)}
               aria-label="Close What's New"
             />
-            <div className="glass-dialog relative z-10 w-full max-w-md rounded-2xl p-6 text-text-primary">
+            <div className="glass-dialog relative z-10 w-full max-w-md rounded-2xl p-6 text-text-primary dark:text-text-primary-dark">
               <button
                 type="button"
                 onClick={() => setShowWhatsNew(false)}
-                className="absolute right-3 top-3 rounded-full p-1 text-text-secondary hover:bg-hover/[0.08]"
+                className="absolute right-3 top-3 rounded-full p-1 text-text-secondary dark:text-text-secondary-dark hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08]"
                 aria-label="Close What's New"
               >
                 <FiX size={18} />
               </button>
               <div className="flex items-center gap-3">
-                <FiInfo className="text-primary" size={22} />
+                <FiInfo className="text-primary dark:text-primary-dark" size={22} />
                 <div>
                   <h2 id="whats-new-title" className="text-lg font-semibold">
                     What&apos;s New
                   </h2>
-                  <p className="text-xs text-text-secondary">
+                  <p className="text-xs text-text-secondary dark:text-text-secondary-dark">
                     Latest Emotune improvements
                   </p>
                 </div>
@@ -987,10 +1009,10 @@ function Sidebar({
                 ].map(([title, description]) => (
                   <div
                     key={title}
-                    className="rounded-xl border border-border/25 bg-surface/45 p-3"
+                    className="rounded-xl border border-border/25 dark:border-border-dark/25 bg-surface/45 dark:bg-surface-dark/45 p-3"
                   >
                     <p className="text-sm font-medium">{title}</p>
-                    <p className="mt-1 text-xs text-text-secondary">
+                    <p className="mt-1 text-xs text-text-secondary dark:text-text-secondary-dark">
                       {description}
                     </p>
                   </div>

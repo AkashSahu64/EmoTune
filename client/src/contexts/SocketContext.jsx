@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from '../hooks/useAuth';
+import { clearAccessToken } from '../services/accessToken';
 
 export const SocketContext = createContext(null);
 
@@ -49,7 +50,17 @@ export function SocketProvider({ children }) {
 
     newSocket.on('connect', () => setIsConnected(true));
     newSocket.on('disconnect', () => setIsConnected(false));
-    newSocket.on('connect_error', (error) => console.error('Socket error:', error.message));
+    newSocket.on('connect_error', (error) => {
+      const message = String(error?.message || '').toLowerCase();
+      console.error('Socket error:', error.message);
+      // An expired/revoked token cannot succeed through reconnect attempts.
+      // Stop the retry storm and let the API auth lifecycle restore or redirect.
+      if (message.includes('invalid token') || message.includes('authentication required') || message.includes('session')) {
+        newSocket.io.opts.reconnection = false;
+        newSocket.disconnect();
+        clearAccessToken();
+      }
+    });
 
     newSocket.on('onlineUsers:list', ({ onlineUserIds }) => {
       setOnlineUsers(new Set(onlineUserIds));

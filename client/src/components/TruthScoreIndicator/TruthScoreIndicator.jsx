@@ -10,9 +10,9 @@ export default function TruthScoreIndicator({ claim, compact = false }) {
   const score = claim?.truthScore || localScore;
 
   const getColor = () => {
-    if (score >= 0.7) return 'var(--theme-success)';
-    if (score >= 0.4) return 'var(--theme-warning)';
-    return 'var(--theme-danger)';
+    if (score >= 0.7) return '#16A34A';
+    if (score >= 0.4) return '#D97706';
+    return '#DC2626';
   };
 
   const getStatus = () => {
@@ -59,29 +59,29 @@ export default function TruthScoreIndicator({ claim, compact = false }) {
                 animate={{ }}
                 exit={{ }}
               >
-              <div className="bg-surface backdrop-blur-glass border border-border rounded-2xl p-3">
+              <div className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-2xl p-3">
                 <div className="flex items-center gap-2 mb-2">
                   <FiShield size={14} style={{ color: getColor() }} />
-                  <span className="text-xs font-medium text-text-primary">{getStatus()}</span>
+                  <span className="text-xs font-medium text-text-primary dark:text-text-primary-dark">{getStatus()}</span>
                 </div>
                 {claim?.claimText && (
-                  <p className="text-xs text-text-secondary mb-2">"{claim.claimText}"</p>
+                  <p className="text-xs text-text-secondary dark:text-text-secondary-dark mb-2">"{claim.claimText}"</p>
                 )}
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="flex-1 h-1.5 rounded-full bg-[var(--theme-glass)] overflow-hidden">
+                  <div className="flex-1 h-1.5 rounded-full bg-surface/80 dark:bg-surface-dark/80 overflow-hidden">
                     <div
                       className="h-full rounded-full transition-colors"
                       style={{ width: `${score * 100}%`, backgroundColor: getColor() }}
                     />
                   </div>
-                  <span className="text-[10px] text-text-secondary">{Math.round(score * 100)}%</span>
+                  <span className="text-[10px] text-text-secondary dark:text-text-secondary-dark">{Math.round(score * 100)}%</span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleVote('up')}
                     className={`flex items-center gap-1 px-2 py-1 text-[10px] rounded-lg transition-colors ${
-                      voted === 'up' ? 'bg-success text-white' : 'bg-surface backdrop-blur-glass border border-border hover:bg-hover/[0.07] text-text-secondary'
+                      voted === 'up' ? 'bg-success dark:bg-success-dark text-white' : 'bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] text-text-secondary dark:text-text-secondary-dark'
                     }`}
                   >
                     <FiThumbsUp size={10} /> Agree
@@ -89,13 +89,13 @@ export default function TruthScoreIndicator({ claim, compact = false }) {
                   <button
                     onClick={() => handleVote('down')}
                     className={`flex items-center gap-1 px-2 py-1 text-[10px] rounded-lg transition-colors ${
-                      voted === 'down' ? 'bg-danger text-white' : 'bg-surface backdrop-blur-glass border border-border hover:bg-hover/[0.07] text-text-secondary'
+                      voted === 'down' ? 'bg-danger dark:bg-danger-dark text-white' : 'bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] text-text-secondary dark:text-text-secondary-dark'
                     }`}
                   >
                     <FiThumbsDown size={10} /> Disagree
                   </button>
                   {claim?.sources?.[0]?.url && (
-                    <a href={claim.sources[0].url} target="_blank" rel="noopener noreferrer" className="ml-auto text-primary">
+                    <a href={claim.sources[0].url} target="_blank" rel="noopener noreferrer" className="ml-auto text-primary dark:text-primary-dark">
                       <FiExternalLink size={12} />
                     </a>
                   )}
@@ -109,33 +109,33 @@ export default function TruthScoreIndicator({ claim, compact = false }) {
   }
 
   return (
-    <div className="bg-surface backdrop-blur-glass border border-border rounded-2xl p-4">
+    <div className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-2xl p-4">
       <div className="flex items-center gap-2 mb-3">
         <FiShield size={16} style={{ color: getColor() }} />
-        <span className="text-sm font-medium text-text-primary">Truth Score: {getStatus()}</span>
+        <span className="text-sm font-medium text-text-primary dark:text-text-primary-dark">Truth Score: {getStatus()}</span>
       </div>
 
       {claim?.claimText && (
-        <p className="text-sm text-text-secondary mb-3 bg-[var(--theme-glass)] p-2 rounded-lg italic">
+        <p className="text-sm text-text-secondary dark:text-text-secondary-dark mb-3 bg-surface/80 dark:bg-surface-dark/80 p-2 rounded-lg italic">
           "{claim.claimText}"
         </p>
       )}
 
       <div className="flex items-center gap-2 mb-3">
-        <div className="flex-1 h-2 rounded-full bg-[var(--theme-glass)] overflow-hidden">
+        <div className="flex-1 h-2 rounded-full bg-surface/80 dark:bg-surface-dark/80 overflow-hidden">
           <div
             className="h-full rounded-full transition-colors"
             style={{ width: `${score * 100}%`, backgroundColor: getColor() }}
           />
         </div>
-        <span className="text-xs text-text-secondary">{Math.round(score * 100)}%</span>
+        <span className="text-xs text-text-secondary dark:text-text-secondary-dark">{Math.round(score * 100)}%</span>
       </div>
 
       <div className="flex items-center gap-2">
         <button
           onClick={() => handleVote('up')}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg ${
-            voted === 'up' ? 'bg-success text-white' : 'bg-surface backdrop-blur-glass border border-border hover:bg-hover/[0.07] text-text-secondary'
+            voted === 'up' ? 'bg-success dark:bg-success-dark text-white' : 'bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] text-text-secondary dark:text-text-secondary-dark'
           }`}
         >
           <FiThumbsUp size={12} /> ({claim?.totalUpvotes || 0})
@@ -143,7 +143,7 @@ export default function TruthScoreIndicator({ claim, compact = false }) {
         <button
           onClick={() => handleVote('down')}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg ${
-            voted === 'down' ? 'bg-danger text-white' : 'bg-surface backdrop-blur-glass border border-border hover:bg-hover/[0.07] text-text-secondary'
+            voted === 'down' ? 'bg-danger dark:bg-danger-dark text-white' : 'bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] text-text-secondary dark:text-text-secondary-dark'
           }`}
         >
           <FiThumbsDown size={12} /> ({claim?.totalDownvotes || 0})
@@ -151,15 +151,15 @@ export default function TruthScoreIndicator({ claim, compact = false }) {
       </div>
 
       {claim?.sources?.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-border">
-          <p className="text-[10px] font-medium text-text-secondary mb-1">Sources:</p>
+        <div className="mt-3 pt-3 border-t border-border dark:border-border-dark">
+          <p className="text-[10px] font-medium text-text-secondary dark:text-text-secondary-dark mb-1">Sources:</p>
           {claim.sources.map((source, i) => (
             <a
               key={i}
               href={source.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block text-xs text-primary hover:underline truncate"
+              className="block text-xs text-primary dark:text-primary-dark hover:underline truncate"
             >
               {source.title || source.url}
             </a>

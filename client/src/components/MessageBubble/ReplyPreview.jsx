@@ -19,7 +19,7 @@ function ReplyPreview({ reply, isOwn }) {
   const sender = reply.sender?.username || "Reply";
   return (
     <div className={`mb-2 flex w-full overflow-hidden rounded-lg text-left ${isOwn ? "bg-white/[.15]" : "bg-[#f3f4f6]"}`}>
-      <span className={`w-1 shrink-0 ${isOwn ? "bg-white/[.8]" : "bg-primary/[.95]"}`} aria-hidden="true" />
+      <span className={`w-1 shrink-0 ${isOwn ? "bg-white/[.8]" : "bg-primary/[.95] dark:bg-primary-dark/[.95]"}`} aria-hidden="true" />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5 px-3 py-2">
         <strong className="truncate text-xs font-bold">{sender}</strong>
         <span className="flex truncate items-center gap-[5px] text-xs opacity-80">

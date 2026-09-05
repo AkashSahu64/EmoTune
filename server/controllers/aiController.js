@@ -91,7 +91,16 @@ exports.getSuggestions = async (req, res) => {
     });
   } catch (err) {
     logger.error('getSuggestions error', { error: err.message });
-    res.status(500).json({ error: 'Failed to get suggestions' });
+    // Suggestions are an auxiliary feature. A provider, cache, or optional
+    // intelligence failure must not turn an otherwise usable chat into a 500.
+    // Return a stable empty payload so the client can keep messaging normally.
+    res.json({
+      analysis: {},
+      recommendations: { emoji: [], sticker: [], shayari: [], song: [], reply: [] },
+      songs: [],
+      videos: [],
+      performance: { degraded: true },
+    });
   }
 };
 
@@ -127,7 +136,7 @@ exports.getEmojis = async (req, res) => {
 
 exports.getGifs = async (req, res) => {
   try {
-    const { chatId } = req.params;
+    const chatId = req.params.chatId || req.userId;
     const query = String(req.query.q || '').trim().slice(0, 80);
     // Empty q is the panel's trending request. Use a stable media query instead
     // of feeding an entire recent chat message into provider search, which can

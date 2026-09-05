@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("theme");
+          var prefersDark =
+            !theme &&
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+          if (theme === "dark" || prefersDark) {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+        } catch (error) {
+          document.documentElement.classList.remove("dark");
+        }
+      })();
+    </script>
+
+    <title data-rh="true">GaonGram - Connect, Share, Chat, and Discover Bharat</title>
+    <meta
+      data-rh="true"
+      name="description"
+      content="GaonGram is a social platform for posts, reels, audio, blogs, playlists, stories, and real-time conversations across Bharat."
+    />
+    <meta
+      data-rh="true"
+      name="keywords"
+      content="GaonGram, social media, Indian social network, reels, audio, blogs, chat, creators, Bharat"
+    />
+    <meta data-rh="true" name="author" content="GaonGram Technologies Pvt. Ltd." />
+    <meta
+      data-rh="true"
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+    <meta data-rh="true" name="theme-color" content="#0f172a" />
+    <meta data-rh="true" property="og:type" content="website" />
+    <meta data-rh="true" property="og:locale" content="en_IN" />
+    <meta data-rh="true" property="og:site_name" content="GaonGram" />
+    <meta
+      data-rh="true"
+      property="og:title"
+      content="GaonGram - Connect, Share, Chat, and Discover Bharat"
+    />
+    <meta
+      data-rh="true"
+      property="og:description"
+      content="Join GaonGram to share posts, watch reels, listen to audio, read blogs, and connect with communities across Bharat."
+    />
+    <meta data-rh="true" property="og:url" content="https://gaongram.com/" />
+    <meta data-rh="true" property="og:image" content="https://gaongram.com/preview.png" />
+    <meta
+      data-rh="true"
+      property="og:image:secure_url"
+      content="https://gaongram.com/preview.png"
+    />
+    <meta data-rh="true" property="og:image:type" content="image/png" />
+    <meta data-rh="true" property="og:image:width" content="1200" />
+    <meta data-rh="true" property="og:image:height" content="630" />
+    <meta
+      data-rh="true"
+      property="og:image:alt"
+      content="GaonGram social sharing preview"
+    />
+
+    <meta data-rh="true" name="twitter:card" content="summary_large_image" />
+    <meta data-rh="true" name="twitter:site" content="@gaongram" />
+    <meta
+      data-rh="true"
+      name="twitter:title"
+      content="GaonGram - Connect, Share, Chat, and Discover Bharat"
+    />
+    <meta
+      data-rh="true"
+      name="twitter:description"
+      content="Share posts, watch reels, listen to audio, read blogs, and connect on GaonGram."
+    />
+    <meta data-rh="true" name="twitter:image" content="https://gaongram.com/preview.png" />
+    <meta
+      data-rh="true"
+      name="twitter:image:alt"
+      content="GaonGram social sharing preview"
+    />
+
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <script data-rh="true" type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "GaonGram",
+        "url": "https://gaongram.com",
+        "description": "GaonGram is a social platform for posts, reels, audio, blogs, playlists, stories, and real-time conversations across Bharat.",
+        "publisher": {
+          "@type": "Organization",
+          "name": "GaonGram Technologies Pvt. Ltd.",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://gaongram.com/preview.png"
+          }
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://gaongram.com/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
+  </head>
+
+  <body class="bg-white dark:bg-background-dark">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

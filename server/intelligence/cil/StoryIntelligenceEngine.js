@@ -1,5 +1,8 @@
 const Story = require('../../domain/models/Story');
 const StoryHighlight = require('../../domain/models/StoryHighlight');
+const StoryView = require('../../domain/models/StoryView');
+const StoryReaction = require('../../domain/models/StoryReaction');
+const User = require('../../models/User');
 const dnaEngine = require('../conversationDNAEngine');
 const timeIntelligence = require('../timeIntelligence');
 const cacheService = require('../../core/cacheService');
@@ -227,7 +230,7 @@ class StoryIntelligenceEngine {
     const startTime = Date.now();
 
     const validatedAudience = storyData.audience || { type: 'public' };
-    if (!['public', 'close_friends', 'custom', 'private'].includes(validatedAudience.type)) {
+    if (!['public', 'friends', 'close_friends', 'custom', 'private'].includes(validatedAudience.type)) {
       validatedAudience.type = 'public';
     }
 
@@ -267,12 +270,18 @@ class StoryIntelligenceEngine {
         layout: storyData.content?.layout,
         mood: storyData.content?.mood,
         theme: storyData.content?.theme,
+        // Interactive story data (polls, questions, links, etc.) must be
+        // persisted here. The upload flow already sends it under content,
+        // but omitting it from this mapping caused polls to be stored as
+        // empty text stories and rendered as "No content" in the viewer.
+        interactive: storyData.content?.interactive,
       },
       aiGenerated: aiMetadata,
       audience: validatedAudience,
       tags: storyData.tags || [],
       mentions: storyData.mentions || [],
       location: storyData.location,
+      scheduling: storyData.scheduling,
       expiresAt,
       isDraft: storyData.isDraft || false,
       isArchived: false,
@@ -284,11 +293,18 @@ class StoryIntelligenceEngine {
     } catch (err) {
       logger.warn('Failed to update analytics counters', { userId, error: err.message });
     }
+    await this.invalidateStoryCaches();
 
     try {
-      const audienceIds = this._resolveAudience(validatedAudience, userId);
-      for (const targetId of audienceIds) {
-        this._emitSocketEvent(targetId, 'story:new', { story, userId });
+      if (validatedAudience.type === 'public') {
+        // Public events carry only an identifier. Clients re-query through
+        // the authorized feed path instead of receiving private Story data.
+        this._broadcastSocketEvent('story:new', { storyId: story._id });
+      } else {
+        const audienceIds = await this._resolveAudience(validatedAudience, userId);
+        for (const targetId of new Set([userId, ...audienceIds])) {
+          this._emitSocketEvent(targetId, 'story:new', { storyId: story._id });
+        }
       }
     } catch (err) {
       logger.warn('Failed to emit socket events for story', { storyId: story._id, error: err.message });
@@ -306,9 +322,14 @@ class StoryIntelligenceEngine {
   }
 
   async getFeed(userId, options = {}) {
-    const cacheKey = `story:feed:${userId}`;
-    const cached = await cacheService.get(cacheKey);
-    if (cached) return cached;
+    // Bump the feed cache namespace after changing public-visibility rules so
+    // an older cached feed cannot hide Stories until its TTL expires.
+    const cacheKey = `story:feed:v2:${userId}`;
+    const forceRefresh = options?.fresh === '1' || options?.fresh === 'true' || options?.fresh === true;
+    if (!forceRefresh) {
+      const cached = await cacheService.get(cacheKey);
+      if (cached) return cached;
+    }
 
     const startTime = Date.now();
 
@@ -332,6 +353,26 @@ class StoryIntelligenceEngine {
 
       const friendUserIds = await this._getFriendUserIds(userId);
 
+      // Public Stories are discoverable by every authenticated user. The old
+      // query only searched direct-chat participants, so public Stories from
+      // other users were limited to the small six-hour suggestions list.
+      const publicStoryDocs = await Story.find({
+        user: { $ne: userId },
+        expiresAt: { $gt: now },
+        isArchived: false,
+        isDraft: false,
+        // Older Stories may predate the audience subdocument. The product
+        // default is public, so those records must remain discoverable until
+        // a migration backfills audience.type.
+        $or: [
+          { 'audience.type': 'public' },
+          { audience: { $exists: false } },
+        ],
+      })
+        .sort({ createdAt: -1 })
+        .limit(100)
+        .lean();
+
       const friendStoryDocs = await Story.find({
         user: { $in: friendUserIds },
         expiresAt: { $gt: now },
@@ -339,27 +380,78 @@ class StoryIntelligenceEngine {
         isDraft: false,
         $or: [
           { 'audience.type': 'public' },
+          { 'audience.type': 'friends' },
           { 'audience.type': 'close_friends' },
           { 'audience.type': 'custom', 'audience.allowedUsers': userId },
+          { audience: { $exists: false } },
         ],
       })
         .sort({ createdAt: -1 })
         .lean();
 
+      const storyDocsById = new Map();
+      for (const story of [...publicStoryDocs, ...friendStoryDocs]) {
+        // A legacy/corrupt Story without an owner must not make the entire
+        // feed fail while resolving privacy and owner metadata. It is skipped
+        // until it can be repaired by a data-maintenance job.
+        if (!story?._id || !story?.user) {
+          logger.warn('Skipping Story with invalid owner reference', {
+            storyId: story?._id?.toString?.() || null,
+          });
+          continue;
+        }
+        storyDocsById.set(story._id.toString(), story);
+      }
+      const visibleStoryCandidates = [...storyDocsById.values()];
+
+      // Resolve privacy inputs once per feed. A per-Story policy query makes
+      // relationship/privacy lookups scale linearly with feed size.
+      const viewer = await User.findById(userId).select('preferences.privacy.blockedUsers').lean();
+      const ownerIds = [...new Set(visibleStoryCandidates
+        .map((story) => story.user?.toString?.())
+        .filter(Boolean))];
+      const owners = await User.find({ _id: { $in: ownerIds } })
+        .select('username name avatar preferences.privacy.blockedUsers').lean();
+      const ownerMap = new Map(owners.map((owner) => [owner._id.toString(), owner]));
+      const viewerBlocked = new Set((viewer?.preferences?.privacy?.blockedUsers || []).map((id) => id.toString()));
+      const visibleFriendStories = visibleStoryCandidates.filter((story) => {
+        const ownerId = story.user?.toString?.();
+        if (!ownerId) return false;
+        const owner = ownerMap.get(ownerId);
+        const ownerBlocked = new Set((owner?.preferences?.privacy?.blockedUsers || []).map((id) => id.toString()));
+        const audience = story.audience || { type: 'public' };
+        if (viewerBlocked.has(ownerId) || ownerBlocked.has(userId)) return false;
+        if ((audience.excludedUsers || []).some((id) => id.toString() === userId)) return false;
+        if (audience.type === 'custom') return (audience.allowedUsers || []).some((id) => id.toString() === userId);
+        return audience.type === 'public' || audience.type === 'friends' || audience.type === 'close_friends';
+      });
+
+      const viewedStoryIds = new Set((await StoryView.find({
+        story: { $in: visibleFriendStories.map((story) => story._id) },
+        user: userId,
+      }).select('story').lean()).map((view) => view.story.toString()));
+
       const grouped = {};
-      for (const story of friendStoryDocs) {
-        const uid = story.user.toString();
+      for (const story of visibleFriendStories) {
+        const uid = story.user?.toString?.();
+        if (!uid) continue;
         if (!grouped[uid]) grouped[uid] = [];
         grouped[uid].push(story);
       }
 
       for (const [uid, stories] of Object.entries(grouped)) {
+        const owner = ownerMap.get(uid);
         const hasUnviewed = stories.some(s => {
-          const views = s.metadata?.viewDetails || [];
-          return !views.some(v => v.user?.toString() === userId);
+          const legacyViews = s.metadata?.viewDetails || [];
+          return !viewedStoryIds.has(s._id.toString())
+            && !legacyViews.some(v => v.user?.toString() === userId);
         });
         friendStories.push({
           user: uid,
+          userInfo: {
+            username: owner?.username || owner?.name || '',
+            avatar: owner?.avatar || '',
+          },
           stories,
           hasUnviewed,
         });
@@ -585,8 +677,16 @@ class StoryIntelligenceEngine {
       if (!story) return null;
 
       const meta = story.metadata || {};
-      const viewDetails = meta.viewDetails || [];
-      const reactions = meta.reactions || [];
+      const storedViews = await StoryView.find({ story: story._id }).lean();
+      const viewByUser = new Map();
+      for (const view of meta.viewDetails || []) if (view.user) viewByUser.set(view.user.toString(), view);
+      for (const view of storedViews) if (view.user) viewByUser.set(view.user.toString(), view);
+      const viewDetails = [...viewByUser.values()];
+      const storedReactions = await StoryReaction.find({ story: story._id }).lean();
+      const reactionByUser = new Map();
+      for (const reaction of meta.reactions || []) if (reaction.user) reactionByUser.set(reaction.user.toString(), reaction);
+      for (const reaction of storedReactions) if (reaction.user) reactionByUser.set(reaction.user.toString(), reaction);
+      const reactions = [...reactionByUser.values()];
 
       const uniqueViewers = new Set(viewDetails.map(v => v.user?.toString()));
       const completedViews = viewDetails.filter(v => v.completed);
@@ -635,29 +735,46 @@ class StoryIntelligenceEngine {
     }
   }
 
-  async createHighlight(userId, name, storyIds) {
-    const stories = await Story.find({ _id: { $in: storyIds }, user: userId });
-    if (stories.length === 0) throw new Error('No valid stories to highlight');
+  async createHighlight(userId, name, storyIds, highlightId = null) {
+      const stories = await Story.find({ _id: { $in: storyIds }, user: userId, isDraft: false });
+      if (stories.length === 0) throw new Error('No valid stories to highlight');
 
-    const coverMedia = stories[0].content?.mediaUrl || stories[0].content?.backgroundColor || '#6366f1';
+      const normalizedIds = [...new Set(stories.map((story) => story._id.toString()))];
+      if (highlightId) {
+        const highlight = await StoryHighlight.findOne({ _id: highlightId, user: userId, isArchived: false });
+        if (!highlight) throw new Error('Highlight not found or not authorized');
+        const nextIds = [...new Set([...highlight.stories.map((id) => id.toString()), ...normalizedIds])];
+        highlight.stories = nextIds;
+        await highlight.save();
+        await Story.updateMany(
+          { _id: { $in: normalizedIds }, user: userId, 'highlights.highlightId': { $ne: highlight._id } },
+          { $push: { highlights: { highlightId: highlight._id, addedAt: new Date() } } },
+        );
+        await cacheService.invalidate(`story:highlights:${userId}`);
+        return highlight;
+      }
+
+      const coverMedia = stories[0].content?.mediaUrl || stories[0].content?.backgroundColor || '#6366f1';
 
     const highlight = await StoryHighlight.create({
       user: userId,
       name,
       coverMedia,
-      stories: storyIds,
+        stories: normalizedIds,
       color: '#6366f1',
       order: 0,
     });
 
-    await Story.updateMany(
-      { _id: { $in: storyIds } },
+      await Story.updateMany(
+      { _id: { $in: normalizedIds }, user: userId },
       { $push: { highlights: { highlightId: highlight._id, addedAt: new Date() } } },
     );
 
-    logger.info('Highlight created', { userId, highlightId: highlight._id, name, storyCount: storyIds.length });
+      logger.info('Highlight created', { userId, highlightId: highlight._id, name, storyCount: storyIds.length });
 
-    return highlight;
+      await cacheService.invalidate(`story:highlights:${userId}`);
+
+      return highlight;
   }
 
   async getHighlights(userId) {
@@ -668,35 +785,92 @@ class StoryIntelligenceEngine {
     const highlights = await StoryHighlight.find({ user: userId, isArchived: false })
       .sort({ order: 1 })
       .populate('stories', 'content mediaUrl type createdAt')
-      .lean();
+      .lean()
+      .then((items) => items.filter((item) => item.stories?.length));
 
     await cacheService.set(cacheKey, highlights, 60);
     return highlights;
   }
 
+  async invalidateStoryAnalytics(storyId) {
+    if (!storyId) return;
+    await cacheService.invalidate(`story:analytics:${storyId}`);
+  }
+
+  async removeStoryFromHighlights(userId, storyId) {
+    const highlights = await StoryHighlight.find({
+      user: userId,
+      isArchived: false,
+      stories: storyId,
+    }).select('_id').lean();
+
+    if (highlights.length === 0) return;
+
+    await StoryHighlight.updateMany(
+      { _id: { $in: highlights.map((highlight) => highlight._id) } },
+      { $pull: { stories: storyId } },
+    );
+    await StoryHighlight.deleteMany({
+      user: userId,
+      isArchived: false,
+      stories: { $size: 0 },
+    });
+    await cacheService.invalidate(`story:highlights:${userId}`);
+  }
+
+  async deleteHighlight(userId, highlightId) {
+    const highlight = await StoryHighlight.findOneAndUpdate(
+      { _id: highlightId, user: userId, isArchived: false },
+      { $set: { isArchived: true } },
+      { new: true },
+    ).lean();
+    if (!highlight) return null;
+
+    await Story.updateMany(
+      { user: userId, 'highlights.highlightId': highlight._id },
+      { $pull: { highlights: { highlightId: highlight._id } } },
+    );
+    await cacheService.invalidate(`story:highlights:${userId}`);
+    return highlight;
+  }
+
   async processStoryReaction(storyId, userId, emoji) {
-    const story = await Story.findById(storyId);
+    const story = await Story.findById(storyId).select('user metadata');
     if (!story) throw new Error('Story not found');
 
-    if (!story.metadata) story.metadata = {};
-    if (!story.metadata.reactions) story.metadata.reactions = [];
-
-    const existingIndex = story.metadata.reactions.findIndex(
-      r => r.user?.toString() === userId && r.emoji === emoji
-    );
-
-    if (existingIndex >= 0) {
-      story.metadata.reactions.splice(existingIndex, 1);
+    const existing = await StoryReaction.findOne({ story: storyId, user: userId });
+    const legacy = (story.metadata?.reactions || []).find((reaction) => reaction.user?.toString() === userId);
+    let action;
+    let reaction = null;
+    if (!existing) {
+      if (legacy?.emoji === emoji) {
+        await Story.updateOne({ _id: storyId }, { $pull: { 'metadata.reactions': { user: userId } } });
+        action = 'remove';
+        await Story.updateOne({ _id: storyId, $expr: { $gt: ['$metadata.engagement', 0] } }, { $inc: { 'metadata.engagement': -1 } });
+      } else {
+        reaction = await StoryReaction.create({ story: storyId, user: userId, emoji });
+        if (legacy) await Story.updateOne({ _id: storyId }, { $pull: { 'metadata.reactions': { user: userId } } });
+        action = legacy ? 'change' : 'add';
+        if (!legacy) await Story.updateOne({ _id: storyId }, { $inc: { 'metadata.engagement': 1 } });
+      }
+    } else if (existing.emoji === emoji) {
+      await StoryReaction.deleteOne({ _id: existing._id });
+      action = 'remove';
+      await Story.updateOne({ _id: storyId, $expr: { $gt: ['$metadata.engagement', 0] } }, { $inc: { 'metadata.engagement': -1 } });
     } else {
-      story.metadata.reactions.push({ emoji, user: userId, createdAt: new Date() });
+      reaction = await StoryReaction.findOneAndUpdate(
+        { _id: existing._id },
+        { $set: { emoji, updatedAt: new Date() } },
+        { new: true },
+      );
+      action = 'change';
     }
-
-    story.metadata.engagement = (story.metadata.engagement || 0) + 1;
-    await story.save();
 
     logger.info('Story reaction processed', { storyId, userId, emoji });
 
-    return { reacted: existingIndex < 0, emoji };
+    this.emitStoryReaction(story, { storyId, userId, emoji, action });
+    await cacheService.invalidate(`story:analytics:${storyId}`);
+    return { reacted: action !== 'remove', action, emoji, reaction };
   }
 
   async deleteExpiredStories() {
@@ -710,24 +884,27 @@ class StoryIntelligenceEngine {
     return result;
   }
 
-  async getTrendingStories(limit = 10) {
-    const cacheKey = `story:trending`;
+  async getTrendingStories(limit = 10, viewerId = null) {
+    // The response now contains normalized owner metadata. Version the key
+    // so older entries without a name/avatar cannot be rendered as Unknown.
+    const cacheKey = `story:trending:v4:${viewerId || 'anonymous'}`;
     const cached = await cacheService.get(cacheKey);
     if (cached) return cached;
 
-    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+    const activeStoryWindowStart = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const now = new Date();
 
     const stories = await Story.find({
+      ...(viewerId ? { user: { $ne: viewerId } } : {}),
       expiresAt: { $gt: now },
       isArchived: false,
       isDraft: false,
       'audience.type': 'public',
-      createdAt: { $gt: sixHoursAgo },
+      createdAt: { $gt: activeStoryWindowStart },
     })
       .sort({ 'metadata.views': -1, 'metadata.engagement': -1 })
       .limit(limit)
-      .populate('user', 'name avatar')
+      .populate('user', 'username name avatar')
       .lean();
 
     const trending = stories.map(story => {
@@ -736,6 +913,10 @@ class StoryIntelligenceEngine {
       const reactionCount = reactions.length;
       return {
         ...story,
+        userInfo: story.user ? {
+          username: story.user.username || story.user.name || '',
+          avatar: story.user.avatar || '',
+        } : {},
         trendingScore: (meta.views || 0) * 1 + reactionCount * 3 + (meta.engagement || 0) * 2,
       };
     });
@@ -1186,7 +1367,7 @@ class StoryIntelligenceEngine {
   async _getSuggestedStories(userId, friendIds) {
     try {
       const now = new Date();
-      const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+      const activeStoryWindowStart = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
       const stories = await Story.aggregate([
         {
@@ -1196,7 +1377,7 @@ class StoryIntelligenceEngine {
             isArchived: false,
             isDraft: false,
             'audience.type': 'public',
-            createdAt: { $gt: sixHoursAgo },
+            createdAt: { $gt: activeStoryWindowStart },
           },
         },
         { $sort: { 'metadata.views': -1 } },
@@ -1212,7 +1393,17 @@ class StoryIntelligenceEngine {
         { $unwind: { path: '$userData', preserveNullAndEmptyArrays: true } },
         {
           $project: {
-            user: { _id: '$userData._id', name: '$userData.name', avatar: '$userData.avatar' },
+            _id: 1,
+            type: 1,
+            content: 1,
+            createdAt: 1,
+            expiresAt: 1,
+            user: {
+              _id: '$userData._id',
+              username: '$userData.username',
+              name: '$userData.name',
+              avatar: '$userData.avatar',
+            },
             reason: { $literal: 'Trending story you might like' },
             preview: { $ifNull: ['$content.caption', '$content.text', ''] },
           },
@@ -1228,7 +1419,7 @@ class StoryIntelligenceEngine {
   async _getFriendUserIds(userId) {
     try {
       const Chat = require('../../models/Chat');
-      const chats = await Chat.find({ 'participants.user': userId })
+      const chats = await Chat.find({ type: 'direct', 'participants.user': userId })
         .select('participants')
         .lean();
 
@@ -1256,6 +1447,56 @@ class StoryIntelligenceEngine {
     return [];
   }
 
+  emitStoryDeleted(story) {
+    const audience = story?.audience || { type: 'public' };
+    if (audience.type === 'public') {
+      this._broadcastSocketEvent('story:deleted', { storyId: story._id });
+      return;
+    }
+    const targets = new Set([story?.user?.toString?.() || story?.user?.toString()]);
+    if (audience.type === 'custom') {
+      for (const id of audience.allowedUsers || []) targets.add(id.toString());
+    }
+    if (audience.type === 'close_friends' || audience.type === 'friends') {
+      this._resolveAudience(audience, story.user).then((ids) => {
+        ids.forEach((id) => targets.add(id.toString()));
+        targets.forEach((id) => this._emitSocketEvent(id, 'story:deleted', { storyId: story._id }));
+      }).catch((error) => logger.warn('Failed to resolve Story deletion audience', { error: error.message }));
+      return;
+    }
+    targets.forEach((id) => this._emitSocketEvent(id, 'story:deleted', { storyId: story._id }));
+  }
+
+  emitStoryCreated(story) {
+    const audience = story?.audience || { type: 'public' };
+    if (audience.type === 'public') {
+      this._broadcastSocketEvent('story:new', { storyId: story._id });
+      return;
+    }
+    const targets = new Set([story?.user?.toString?.() || story?.user?.toString()]);
+    if (audience.type === 'custom') for (const id of audience.allowedUsers || []) targets.add(id.toString());
+    if (audience.type === 'close_friends' || audience.type === 'friends') {
+      this._resolveAudience(audience, story.user).then((ids) => {
+        ids.forEach((id) => targets.add(id.toString()));
+        targets.forEach((id) => this._emitSocketEvent(id, 'story:new', { storyId: story._id }));
+      }).catch((error) => logger.warn('Failed to resolve Story creation audience', { error: error.message }));
+      return;
+    }
+    targets.forEach((id) => this._emitSocketEvent(id, 'story:new', { storyId: story._id }));
+  }
+
+  async invalidateStoryCaches() {
+    await Promise.all([
+      cacheService.invalidate('story:feed:'),
+      cacheService.invalidate('story:trending'),
+    ]);
+  }
+
+  emitStoryReaction(story, payload) {
+    const ownerId = story?.user?.toString?.() || story?.user?.toString();
+    if (ownerId) this._emitSocketEvent(ownerId, 'story:reaction', payload);
+  }
+
   async _incrementAnalyticsCounter(userId, metric) {
     try {
       const User = require('../../domain/models/User');
@@ -1269,10 +1510,19 @@ class StoryIntelligenceEngine {
     try {
       const io = require('../../core/socket');
       if (io && io.to) {
-        io.to(userId.toString()).emit(event, data);
+        io.to(`user:${userId.toString()}`).emit(event, data);
       }
     } catch (err) {
       logger.debug('Socket unavailable for event', { event, userId, error: err.message });
+    }
+  }
+
+  _broadcastSocketEvent(event, data) {
+    try {
+      const socket = require('../../core/socket');
+      socket.emit(event, data);
+    } catch (err) {
+      logger.debug('Socket broadcast unavailable', { event, error: err.message });
     }
   }
 

@@ -55,29 +55,29 @@ function SocialLoginButtons() {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-4">
-        <div className="flex-1 h-px bg-[var(--theme-border)]" />
-        <span className="text-[12px] text-text-secondary font-medium tracking-wide">
+        <div className="flex-1 h-px bg-border dark:bg-border-dark" />
+        <span className="text-[12px] text-text-secondary dark:text-text-secondary-dark font-medium tracking-wide">
           or continue with
         </span>
-        <div className="flex-1 h-px bg-[var(--theme-border)]" />
+        <div className="flex-1 h-px bg-border dark:bg-border-dark" />
       </div>
 
       <button
         onClick={handleGoogleLogin}
         disabled={authLoading}
-        className="group relative w-full flex items-center justify-center gap-3 px-4 py-[12px] rounded-lg bg-surface-elevated backdrop-blur-glass border border-border hover:border-primary/40 hover:bg-surface-elevated backdrop-blur-glass transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-focus/20 focus:ring-offset-2 focus:ring-offset-[var(--theme-bg)]"
+        className="group relative w-full flex items-center justify-center gap-3 px-4 py-[12px] rounded-lg bg-surface-elevated dark:bg-surface-elevated-dark backdrop-blur-glass border border-border dark:border-border-dark hover:border-primary/40 dark:hover:border-primary-dark/40 hover:bg-surface-elevated dark:hover:bg-surface-elevated-dark backdrop-blur-glass transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-focus/20 dark:focus:ring-focus-dark/20 focus:ring-offset-2 focus:ring-offset-background dark:ring-offset-background-dark"
         aria-label="Continue with Google"
         type="button"
       >
         {authLoading ? (
           <div
-            className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"
+            className="w-5 h-5 border-2 border-primary dark:border-primary-dark border-t-transparent rounded-full animate-spin"
             role="status"
           />
         ) : (
           <>
             {<FcGoogle size={20} />}
-            <span className="text-[14px] font-medium text-text-secondary group-hover:text-text-primary transition-colors">
+            <span className="text-[14px] font-medium text-text-secondary dark:text-text-secondary-dark group-hover:text-text-primary dark:group-hover:text-text-primary-dark transition-colors">
               Continue with Google
             </span>
           </>
@@ -85,7 +85,7 @@ function SocialLoginButtons() {
       </button>
 
       {error && (
-        <p className="text-[10px] text-danger text-center">{error}</p>
+        <p className="text-[10px] text-danger dark:text-danger-dark text-center">{error}</p>
       )}
     </div>
   );

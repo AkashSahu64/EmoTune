@@ -161,7 +161,7 @@ export default function ForgotPasswordPage() {
         <div className="flex-1 flex items-center justify-center px-2 py-4 bg-transparent relative overflow-hidden">
           <FormCard maxWidth="max-w-[520px]">
             <motion.div
-              className="auth-surface-card w-full max-w-[520px] rounded-3xl border border-border/60 bg-surface/40 backdrop-blur-glass backdrop-blur-md px-8 py-6 shadow-lg shadow-black/20 relative overflow-hidden"
+              className="auth-surface-card w-full max-w-[520px] rounded-3xl border border-border/60 dark:border-border-dark/60 bg-surface/40 dark:bg-surface-dark/40 backdrop-blur-glass backdrop-blur-md px-8 py-6 shadow-lg shadow-black/20 relative overflow-hidden"
               initial={{ }}
               animate={{ }}
               transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
@@ -179,7 +179,7 @@ export default function ForgotPasswordPage() {
                     />
                   </Link>
                   <motion.h1
-                    className="text-4xl font-bold text-text-primary tracking-tight"
+                    className="text-4xl font-bold text-text-primary dark:text-text-primary-dark tracking-tight"
                     initial={{ }}
                     animate={{ }}
                     transition={{ }}
@@ -187,7 +187,7 @@ export default function ForgotPasswordPage() {
                     Forgot password
                   </motion.h1>
                   <motion.p
-                    className="text-[14px] text-text-secondary mt-1"
+                    className="text-[14px] text-text-secondary dark:text-text-secondary-dark mt-1"
                     initial={{ }}
                     animate={{ }}
                     transition={{ }}
@@ -237,8 +237,8 @@ export default function ForgotPasswordPage() {
                           onClick={() => switchMode(m.key)}
                           className={`flex items-center gap-1.5 px-1 py-0.5 rounded-md text-[10px] font-medium transition-colors duration-200 ${
                             isActive
-                              ? 'bg-primary/10 text-primary border border-primary/20'
-                              : 'text-text-muted hover:text-text-secondary hover:bg-surface-elevated backdrop-blur-glass border border-transparent'
+                              ? 'bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark border border-primary/20 dark:border-primary-dark/20'
+                              : 'text-text-muted dark:text-text-muted-dark hover:text-text-secondary dark:hover:text-text-secondary-dark hover:bg-surface-elevated dark:hover:bg-surface-elevated-dark backdrop-blur-glass border border-transparent'
                           }`}
                           aria-label={`Use ${m.label}`}
                           title={m.label}
@@ -253,7 +253,7 @@ export default function ForgotPasswordPage() {
                   <motion.button
                     type="submit"
                     disabled={loading}
-                    className="relative w-full h-[52px] rounded-2xl bg-primary text-white text-[14px] font-semibold  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center gap-2.5 shadow-lg shadow-[var(--theme-primary)]/25 hover:shadow-[var(--theme-primary)]/35"
+                    className="relative w-full h-[52px] rounded-2xl bg-primary dark:bg-primary-dark text-white text-[14px] font-semibold  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center gap-2.5 shadow-lg shadow-primary/25 dark:shadow-primary-dark/25 hover:shadow-primary/35 dark:shadow-primary-dark/35"
                     aria-label="Send verification code"
                   >
                     {loading ? (
@@ -275,7 +275,7 @@ export default function ForgotPasswordPage() {
                 >
                   <Link
                     to="/login"
-                    className="inline-flex items-center gap-2 text-[13px] text-text-secondary hover:text-text-secondary transition-colors font-medium"
+                    className="inline-flex items-center gap-2 text-[13px] text-text-secondary dark:text-text-secondary-dark hover:text-text-secondary dark:hover:text-text-secondary-dark transition-colors font-medium"
                   >
                     <FiArrowLeft size={14} />
                     Back to login
@@ -283,7 +283,7 @@ export default function ForgotPasswordPage() {
                 </motion.div>
 
                 <motion.div
-                  className="mt-8 pt-6 border-t border-border/50"
+                  className="mt-8 pt-6 border-t border-border/50 dark:border-border-dark/50"
                   initial={{ }}
                   animate={{ }}
                   transition={{ }}

@@ -27,8 +27,8 @@ export function MenuItem({ icon: Icon, label, onClick, danger, disabled, shortcu
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'interactive flex w-full items-center gap-3 px-3 py-2.5 text-body focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus/50 disabled:opacity-40',
-        danger ? 'text-danger' : 'text-text-primary',
+        'interactive flex w-full items-center gap-3 px-3 py-2.5 text-body focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus/50 dark:focus-visible:ring-focus-dark/50 disabled:opacity-40',
+        danger ? 'text-danger dark:text-danger-dark' : 'text-text-primary dark:text-text-primary-dark',
       )}
       role="menuitem"
       type="button"
@@ -36,7 +36,7 @@ export function MenuItem({ icon: Icon, label, onClick, danger, disabled, shortcu
     >
       {Icon && <Icon size={15} className="shrink-0" aria-hidden="true" />}
       <span className="flex-1 text-left">{label}</span>
-      {shortcut && <kbd className="font-mono text-meta text-text-muted">{shortcut}</kbd>}
+      {shortcut && <kbd className="font-mono text-meta text-text-muted dark:text-text-muted-dark">{shortcut}</kbd>}
     </button>
   );
 }

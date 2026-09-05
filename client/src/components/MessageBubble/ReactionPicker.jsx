@@ -42,7 +42,7 @@ function ReactionPicker({ id, isOwn, onPick, anchorRef }) {
   return createPortal(
     <div
       id={id}
-      className="fixed z-[1001] flex min-h-11 max-w-[calc(100vw-16px)] min-w-max gap-1 rounded-full border border-border/70 bg-surface-elevated p-1 text-text-primary shadow-xl"
+      className="fixed z-[1001] flex min-h-11 max-w-[calc(100vw-16px)] min-w-max gap-1 rounded-full border border-border/70 dark:border-border-dark/70 bg-surface-elevated dark:bg-surface-elevated-dark p-1 text-text-primary dark:text-text-primary-dark shadow-xl"
       style={position}
       role="dialog"
       aria-label="Choose a reaction"
@@ -67,7 +67,7 @@ function ReactionPicker({ id, isOwn, onPick, anchorRef }) {
           key={emoji}
           type="button"
           data-bubble-action="true"
-          className="grid h-8 w-8 place-items-center rounded-full text-xl hover:bg-hover/[.1] focus:outline-none focus:ring-2 focus:ring-focus"
+          className="grid h-8 w-8 place-items-center rounded-full text-xl hover:bg-hover/[.1] dark:hover:bg-hover-dark/[.1] focus:outline-none focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark"
           aria-label={`React with ${emoji}`}
           onClick={(event) => {
             event.stopPropagation();
@@ -79,7 +79,7 @@ function ReactionPicker({ id, isOwn, onPick, anchorRef }) {
       ))}
       <button
         type="button"
-        className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-border/70 text-text-secondary hover:bg-hover/[.1] focus:outline-none focus:ring-2 focus:ring-focus"
+        className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-border/70 dark:border-border-dark/70 text-text-secondary dark:text-text-secondary-dark hover:bg-hover/[.1] dark:hover:bg-hover-dark/[.1] focus:outline-none focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark"
         aria-label="More reactions"
         aria-expanded={fullPickerOpen}
         onClick={(event) => {
@@ -91,7 +91,7 @@ function ReactionPicker({ id, isOwn, onPick, anchorRef }) {
       </button>
       {fullPickerOpen && createPortal(
         <div
-          className="fixed z-[1002] max-w-[calc(100vw-16px)] overflow-hidden rounded-xl border border-border bg-surface-elevated shadow-2xl"
+          className="fixed z-[1002] max-w-[calc(100vw-16px)] overflow-hidden rounded-xl border border-border dark:border-border-dark bg-surface-elevated dark:bg-surface-elevated-dark shadow-2xl"
           style={{
             top: position.top,
             left: isOwn ? "auto" : Math.max(8, position.left),

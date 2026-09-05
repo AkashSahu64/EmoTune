@@ -10,12 +10,12 @@ export const MEDIA_FILE_PATTERN = /\.(avif|bmp|gif|heic|heif|jpe?g|png|svg|webp|
 export const PREVIEWABLE_DOCUMENTS = new Set(["PDF", "TXT", "CSV"]);
 
 export const FILE_KIND_STYLES = Object.freeze({
-  pdf: { color: "var(--color-danger)", background: "rgb(var(--color-danger) / 0.14)", label: "PDF" },
-  word: { color: "var(--color-primary)", background: "rgb(var(--color-primary) / 0.14)", label: "WORD" },
-  sheet: { color: "var(--color-success)", background: "rgb(var(--color-success) / 0.14)", label: "SHEET" },
-  slides: { color: "var(--color-warning)", background: "rgb(var(--color-warning) / 0.14)", label: "SLIDES" },
-  archive: { color: "var(--color-ai)", background: "rgb(var(--color-ai) / 0.14)", label: "ARCHIVE" },
-  file: { color: "var(--color-text-secondary)", background: "rgb(var(--color-text-secondary) / 0.14)", label: "FILE" },
+  pdf: { color: "#DC2626", background: "#DC262624", label: "PDF" },
+  word: { color: "#3B5BFF", background: "#3B5BFF24", label: "WORD" },
+  sheet: { color: "#16A34A", background: "#16A34A24", label: "SHEET" },
+  slides: { color: "#D97706", background: "#D9770624", label: "SLIDES" },
+  archive: { color: "#7C3AED", background: "#7C3AED24", label: "ARCHIVE" },
+  file: { color: "#4B5563", background: "#4B556324", label: "FILE" },
 });
 
 export const BUBBLE_TRANSITION = Object.freeze({ duration: 0.14, ease: "easeOut" });

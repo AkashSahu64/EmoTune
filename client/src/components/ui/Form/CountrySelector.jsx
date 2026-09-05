@@ -82,17 +82,17 @@ const CountrySelector = memo(function CountrySelector({
   state = 'default',
   id = 'field-countryCode',
 }) {
-  const INPUT_BASE = 'w-full pl-10 pr-4 py-3 rounded-xl bg-surface backdrop-blur-glass border text-[13px] focus:outline-none transition-colors duration-200 appearance-none cursor-pointer';
+  const INPUT_BASE = 'w-full pl-10 pr-4 py-3 rounded-xl bg-surface dark:bg-surface-dark backdrop-blur-glass border text-[13px] focus:outline-none transition-colors duration-200 appearance-none cursor-pointer';
   const borderClass = state === 'error'
-    ? 'border-danger focus:border-danger focus:ring-1 focus:ring-[var(--theme-danger)]/30'
+    ? 'border-danger dark:border-danger-dark focus:border-danger dark:focus:border-danger-dark focus:ring-1 focus:ring-danger/30 dark:ring-danger-dark/30'
     : state === 'focused'
-    ? 'border-primary text-text-primary focus:border-primary focus:ring-1 focus:ring-focus/30'
-    : 'border-border text-text-primary';
+    ? 'border-primary dark:border-primary-dark text-text-primary dark:text-text-primary-dark focus:border-primary dark:focus:border-primary-dark focus:ring-1 focus:ring-focus/30 dark:focus:ring-focus-dark/30'
+    : 'border-border dark:border-border-dark text-text-primary dark:text-text-primary-dark';
 
   return (
     <div className="relative">
       <FiGlobe
-        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none z-10"
+        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary dark:text-text-secondary-dark pointer-events-none z-10"
         size={15}
       />
       <select

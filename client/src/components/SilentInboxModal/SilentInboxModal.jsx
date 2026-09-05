@@ -65,24 +65,24 @@ function SilentInboxModal({ onClose, onAccept, totalUnread: initialUnread }) {
           <EmptyState icon="silent" title="All caught up" description="No silent messages waiting" />
         ) : (
           groups.map((group) => (
-            <section key={group.chatId} className="bg-surface backdrop-blur-glass border border-border rounded-2xl overflow-hidden" aria-label={`Messages from ${group.chatName}`}>
-              <h4 className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-text-secondary uppercase tracking-wider border-b border-border bg-background/50">
+            <section key={group.chatId} className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-2xl overflow-hidden" aria-label={`Messages from ${group.chatName}`}>
+              <h4 className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-text-secondary dark:text-text-secondary-dark uppercase tracking-wider border-b border-border dark:border-border-dark bg-background/50 dark:bg-background-dark/50">
                 <FiMessageCircle size={12} />
                 {group.chatName}
                 <span className="text-[10px] font-normal normal-case ml-auto opacity-60">{group.messages.length} {group.messages.length === 1 ? 'message' : 'messages'}</span>
               </h4>
-              <div className="divide-y divide-[var(--theme-border)]">
+              <div className="divide-y divide-border dark:divide-border-dark">
                 {group.messages.map((msg) => (
-                  <div key={msg.messageId || msg.silentMessageId} className="px-4 py-3 hover:bg-background/30 transition-colors">
+                  <div key={msg.messageId || msg.silentMessageId} className="px-4 py-3 hover:bg-background/30 dark:hover:bg-background-dark/30 transition-colors">
                     <div className="flex items-start gap-3">
                       <Avatar src={msg.sender?.avatar} name={msg.sender?.username || '?'} size="sm" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-text-primary truncate">{msg.sender?.username || 'Unknown'}</span>
-                          <span className="text-[10px] text-text-secondary flex-shrink-0">{formatTime(msg.createdAt)}</span>
-                          {!msg.read && <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" aria-label="Unread" />}
+                          <span className="text-sm font-medium text-text-primary dark:text-text-primary-dark truncate">{msg.sender?.username || 'Unknown'}</span>
+                          <span className="text-[10px] text-text-secondary dark:text-text-secondary-dark flex-shrink-0">{formatTime(msg.createdAt)}</span>
+                          {!msg.read && <span className="w-2 h-2 rounded-full bg-primary dark:bg-primary-dark flex-shrink-0" aria-label="Unread" />}
                         </div>
-                        <p className="text-sm text-text-secondary mt-0.5 break-words line-clamp-2">{msg.content || (msg.type === 'image' ? '📷 Photo' : msg.type === 'file' ? '📎 File' : '')}</p>
+                        <p className="text-sm text-text-secondary dark:text-text-secondary-dark mt-0.5 break-words line-clamp-2">{msg.content || (msg.type === 'image' ? '📷 Photo' : msg.type === 'file' ? '📎 File' : '')}</p>
                         <div className="flex items-center gap-2 mt-2">
                           <Button variant="primary" size="xs" onClick={() => handleAccept(msg.messageId, group.chatId)} loading={accepting[msg.messageId]} disabled={accepting[msg.messageId]} icon={FiCheck}>
                             Accept

@@ -29,10 +29,10 @@ function PersonaSelector() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-focus ${
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark ${
           activePersona
-            ? 'bg-surface backdrop-blur-glass border border-border text-primary'
-            : 'text-text-secondary hover:bg-hover/[0.07]'
+            ? 'bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark text-primary dark:text-primary-dark'
+            : 'text-text-secondary dark:text-text-secondary-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07]'
         }`}
         title={activePersona ? `Active: ${activePersona.name}` : 'Select Persona'}
         aria-label={activePersona ? `Active persona: ${activePersona.name}` : 'Select persona'}
@@ -54,13 +54,13 @@ function PersonaSelector() {
             animate={{ }}
             exit={{ }}
           >
-            <div className="bg-surface backdrop-blur-glass border border-border rounded-2xl p-2 max-h-64 overflow-y-auto scrollbar-glass" role="menu" aria-label="Persona selection">
+            <div className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-2xl p-2 max-h-64 overflow-y-auto scrollbar-glass" role="menu" aria-label="Persona selection">
               <button
                 onClick={() => { clearActivePersona(); setIsOpen(false); }}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus ${
+                className={`w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus dark:focus:ring-focus-dark ${
                   !activePersona
-                    ? 'bg-primary text-white'
-                    : 'text-text-secondary hover:bg-hover/[0.07]'
+                    ? 'bg-primary dark:bg-primary-dark text-white'
+                    : 'text-text-secondary dark:text-text-secondary-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07]'
                 }`}
                 role="menuitem"
                 aria-pressed={!activePersona}
@@ -71,7 +71,7 @@ function PersonaSelector() {
               </button>
 
               {personas.length === 0 && (
-                <p className="px-3 py-2 text-[10px] text-text-secondary">
+                <p className="px-3 py-2 text-[10px] text-text-secondary dark:text-text-secondary-dark">
                   No personas yet. Create one in settings.
                 </p>
               )}
@@ -80,10 +80,10 @@ function PersonaSelector() {
                 <button
                   key={persona._id}
                   onClick={() => { setActivePersona(persona._id); setIsOpen(false); }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-colors mt-1 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus ${
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-colors mt-1 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus dark:focus:ring-focus-dark ${
                     activePersona?._id === persona._id
-                      ? 'bg-primary text-white'
-                      : 'text-text-secondary hover:bg-hover/[0.07]'
+                      ? 'bg-primary dark:bg-primary-dark text-white'
+                      : 'text-text-secondary dark:text-text-secondary-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07]'
                   }`}
                   role="menuitem"
                   aria-pressed={activePersona?._id === persona._id}

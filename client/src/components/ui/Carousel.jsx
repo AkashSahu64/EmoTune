@@ -27,7 +27,7 @@ export default function Carousel({ children, className = '' }) {
       </AnimatePresence>
       {total > 1 && (
         <div className="flex items-center justify-between mt-3">
-          <button onClick={prev} className="p-1.5 bg-surface backdrop-blur-glass border border-border rounded-lg hover:bg-hover/[0.07] text-text-secondary" aria-label="Previous">
+          <button onClick={prev} className="p-1.5 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-lg hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] text-text-secondary dark:text-text-secondary-dark" aria-label="Previous">
             <FiChevronLeft size={14} />
           </button>
           <div className="flex gap-1.5">
@@ -35,12 +35,12 @@ export default function Carousel({ children, className = '' }) {
               <button
                 key={i}
                 onClick={() => setCurrent(i)}
-                className={`w-1.5 h-1.5 rounded-full transition-colors ${i === current ? 'bg-primary w-4' : 'bg-[var(--theme-border)]'}`}
+                className={`w-1.5 h-1.5 rounded-full transition-colors ${i === current ? 'bg-primary dark:bg-primary-dark w-4' : 'bg-border dark:bg-border-dark'}`}
                 aria-label={`Go to item ${i + 1}`}
               />
             ))}
           </div>
-          <button onClick={next} className="p-1.5 bg-surface backdrop-blur-glass border border-border rounded-lg hover:bg-hover/[0.07] text-text-secondary" aria-label="Next">
+          <button onClick={next} className="p-1.5 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-lg hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] text-text-secondary dark:text-text-secondary-dark" aria-label="Next">
             <FiChevronRight size={14} />
           </button>
         </div>

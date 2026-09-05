@@ -72,7 +72,7 @@ export default function LandingPage() {
         ))}
       </Helmet>
 
-    <div className="landing-page-shell bg-landing-page min-h-screen">
+    <div className="landing-page-shell bg-landing dark:bg-landing-dark-page min-h-screen">
       <Hero />
       <StatsSection />
       <FeatureSection />

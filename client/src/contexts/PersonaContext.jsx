@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
@@ -64,8 +64,7 @@ export function PersonaProvider({ children }) {
     setActivePersonaState(null);
   }, []);
 
-  return (
-    <PersonaContext.Provider value={{
+  const value = useMemo(() => ({
       personas,
       activePersona,
       loading,
@@ -75,7 +74,20 @@ export function PersonaProvider({ children }) {
       deletePersona,
       setActivePersona,
       clearActivePersona,
-    }}>
+  }), [
+    personas,
+    activePersona,
+    loading,
+    fetchPersonas,
+    createPersona,
+    updatePersona,
+    deletePersona,
+    setActivePersona,
+    clearActivePersona,
+  ]);
+
+  return (
+    <PersonaContext.Provider value={value}>
       {children}
     </PersonaContext.Provider>
   );

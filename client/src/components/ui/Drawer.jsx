@@ -28,7 +28,7 @@ export default function Drawer({ isOpen, onClose, children, className = '' }) {
             animate={{}}
             exit={{}}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className={`absolute left-0 top-0 bottom-0 w-[85vw] max-w-sm bg-surface backdrop-blur-glass border-r border-border shadow-floating ${className}`}
+            className={`absolute left-0 top-0 bottom-0 w-[85vw] max-w-sm bg-surface dark:bg-surface-dark backdrop-blur-glass border-r border-border dark:border-border-dark shadow-floating dark:shadow-floating-dark ${className}`}
           >
             {children}
           </motion.div>

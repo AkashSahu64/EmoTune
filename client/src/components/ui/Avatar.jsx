@@ -9,17 +9,17 @@ const sizes = {
 };
 
 const ringColors = {
-  primary: 'ring-primary',
-  success: 'ring-success',
-  warning: 'ring-warning',
+  primary: 'ring-primary dark:ring-primary-dark',
+  success: 'ring-success dark:ring-success-dark',
+  warning: 'ring-warning dark:ring-warning-dark',
   none: 'ring-transparent',
 };
 
 const statusColors = {
-  online: 'bg-online',
-  away: 'bg-warning',
-  busy: 'bg-danger',
-  offline: 'bg-offline',
+  online: 'bg-online dark:bg-online-dark',
+  away: 'bg-warning dark:bg-warning-dark',
+  busy: 'bg-danger dark:bg-danger-dark',
+  offline: 'bg-offline dark:bg-offline-dark',
 };
 
 export default function Avatar({ src, name, size = 'md', className = '', ring = 'none', status, onClick }) {
@@ -28,7 +28,7 @@ export default function Avatar({ src, name, size = 'md', className = '', ring = 
   return (
     <div onClick={onClick} className={cn('relative shrink-0', onClick && 'cursor-pointer')}>
       <div className={cn(
-        'flex items-center justify-center overflow-hidden rounded-full bg-ai/16 font-semibold text-ai ring-2 ring-offset-1 ring-offset-background',
+        'flex items-center justify-center overflow-hidden rounded-full bg-ai/16 dark:bg-ai-dark/16 font-semibold text-ai dark:text-ai-dark ring-2 ring-offset-1 ring-offset-background dark:ring-offset-background-dark',
         sizes[size],
         ringColors[ring] || ringColors.none,
         className,
@@ -37,7 +37,7 @@ export default function Avatar({ src, name, size = 'md', className = '', ring = 
       </div>
       {status && (
         <span
-          className={cn('absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-surface', statusColors[status] || statusColors.offline)}
+          className={cn('absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-surface dark:border-surface-dark', statusColors[status] || statusColors.offline)}
           aria-label={status}
         />
       )}

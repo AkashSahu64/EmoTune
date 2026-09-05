@@ -21,7 +21,6 @@ import {
 } from "react-icons/fi";
 import { TypingIndicator } from "../Loaders/Loader";
 import { Avatar, StatusDot, Menu, MenuItem, IconButton, Divider } from "../ui";
-import TextLogo from "../common/TextLogo";
 
 function Navbar({
   activeChat,
@@ -74,7 +73,7 @@ function Navbar({
 
   return (
     <header
-      className="h-[55px] flex items-center justify-between px-4 flex-shrink-0 bg-surface backdrop-blur-glass border-b border-border"
+      className="h-[54px] flex items-center justify-between px-4 flex-shrink-0 bg-surface dark:bg-surface-dark backdrop-blur-glass border-b border-border dark:border-border-dark"
       role="banner"
     >
       <div className="flex items-center gap-3 min-w-0">
@@ -97,14 +96,15 @@ function Navbar({
                 src={getChatAvatar()}
                 name={getChatName()}
                 size="md"
-                ring={
-                  activeChat.type !== "group" && isOnline ? "success" : "none"
-                }
+                // Story rings belong to the Story feed only. The chat header
+                // keeps presence in the text below instead of surrounding the
+                // participant avatar with a green ring.
+                ring="none"
               />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h2 className="text-[18px] font-semibold text-text-primary truncate">
+                <h2 className="text-[18px] font-semibold text-text-primary dark:text-text-primary-dark truncate">
                   {getChatName()}
                 </h2>
                 {activeChat.otherUser?.isVerified && (
@@ -112,7 +112,7 @@ function Navbar({
                     width="14"
                     height="14"
                     viewBox="0 0 24 24"
-                    fill="var(--theme-primary)"
+                    fill="#3B5BFF"
                     aria-label="Verified"
                     className="flex-shrink-0"
                   >
@@ -126,7 +126,7 @@ function Navbar({
                 </div>
               ) : activeChat.type !== "group" ? (
                 <div className="flex items-center -mt-0.5">
-                  <span className="text-[10px] text-text-secondary">
+                  <span className="text-[10px] text-text-secondary dark:text-text-secondary-dark">
                     {isOnline ? "Online" : "Offline"}
                     {activeChat.otherUser?.lastSeen &&
                       !isOnline &&
@@ -135,13 +135,19 @@ function Navbar({
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5">
-                  <FiUsers size={10} className="text-text-secondary" />
-                  <span className="text-[11px] text-text-secondary">
+                  <FiUsers
+                    size={10}
+                    className="text-text-secondary dark:text-text-secondary-dark"
+                  />
+                  <span className="text-[11px] text-text-secondary dark:text-text-secondary-dark">
                     {activeChat.participants?.length || 0} members
                   </span>
-                  <span className="w-1 h-1 rounded-full bg-[var(--theme-border)]" />
-                  <FiShield size={10} className="text-text-secondary" />
-                  <span className="text-[10px] text-text-secondary">
+                  <span className="w-1 h-1 rounded-full bg-border dark:bg-border-dark" />
+                  <FiShield
+                    size={10}
+                    className="text-text-secondary dark:text-text-secondary-dark"
+                  />
+                  <span className="text-[10px] text-text-secondary dark:text-text-secondary-dark">
                     Encrypted
                   </span>
                 </div>
@@ -152,10 +158,10 @@ function Navbar({
           <div className="flex items-center gap-2.5" aria-label="Emotune">
             <img
               src="/logo.png"
-              alt=""
-              className="h-10 w-10 object-contain"
+              alt="Emotune"
+              className="h-11 w-11 object-contain"
             />
-            <TextLogo size="lg" showDecoration={false} />
+            <TextLogo size="xl" showDecoration={false} className="mt-2" />
           </div>
         )}
       </div>
@@ -173,7 +179,7 @@ function Navbar({
           </div>
 
           <div
-            className="w-px h-6 bg-[var(--theme-border)] mx-1 hidden md:block"
+            className="w-px h-6 bg-border dark:bg-border-dark mx-1 hidden md:block"
             aria-hidden="true"
           />
 
@@ -287,3 +293,4 @@ function Navbar({
 }
 
 export default memo(Navbar);
+import TextLogo from "../common/TextLogo";

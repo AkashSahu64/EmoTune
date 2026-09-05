@@ -7,8 +7,8 @@ const { logEvent, AUDIT_ACTIONS } = require('../utils/auditLogger');
 
 const SessionService = {
   async createSession(user, refreshToken, device, options = {}) {
-    const sessionId = generateSessionToken();
-    const family = require('./jwtService').generateTokenFamily();
+    const sessionId = options.sessionId || generateSessionToken();
+    const family = options.refreshTokenFamily || require('./jwtService').generateTokenFamily();
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     const maxSessions = IDENTITY_CONFIG.session.maxConcurrent;

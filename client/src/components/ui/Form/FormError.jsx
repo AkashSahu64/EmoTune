@@ -11,7 +11,7 @@ const FormError = memo(function FormError({ message, name }) {
           animate={{ }}
           exit={{ }}
           transition={{ duration: 0.15 }}
-          className="text-[10px] text-danger mt-1"
+          className="text-[10px] text-danger dark:text-danger-dark mt-1"
           role="alert"
         >
           {message}

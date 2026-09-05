@@ -69,17 +69,17 @@ const ShowcaseContent = memo(function ShowcaseContent({ section, index }) {
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.5, }}
     >
-      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-elevated backdrop-blur-glass border border-border text-primary text-xs font-medium mb-4">
-        <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-elevated dark:bg-surface-elevated-dark backdrop-blur-glass border border-border dark:border-border-dark text-primary dark:text-primary-dark text-xs font-medium mb-4">
+        <div className="w-1.5 h-1.5 rounded-full bg-primary dark:bg-primary-dark" />
         Feature {index + 1}
       </div>
-      <h3 className="text-[36px] font-bold text-text-primary mb-2">{section.title}</h3>
-      <p className="text-primary text-lg font-medium mb-4">{section.subtitle}</p>
-      <p className="text-[17px] text-text-secondary leading-relaxed mb-6">{section.desc}</p>
+      <h3 className="text-[36px] font-bold text-text-primary dark:text-text-primary-dark mb-2">{section.title}</h3>
+      <p className="text-primary dark:text-primary-dark text-lg font-medium mb-4">{section.subtitle}</p>
+      <p className="text-[17px] text-text-secondary dark:text-text-secondary-dark leading-relaxed mb-6">{section.desc}</p>
       <ul className="space-y-3">
         {section.features.map((f) => (
-          <li key={f} className="flex items-start gap-3 text-text-primary text-sm">
-            <FiCheck className="text-success mt-0.5 flex-shrink-0" size={16} />
+          <li key={f} className="flex items-start gap-3 text-text-primary dark:text-text-primary-dark text-sm">
+            <FiCheck className="text-success dark:text-success-dark mt-0.5 flex-shrink-0" size={16} />
             {f}
           </li>
         ))}
@@ -90,14 +90,14 @@ const ShowcaseContent = memo(function ShowcaseContent({ section, index }) {
 
 export default function ProductShowcase() {
   return (
-    <section id="product" className="landing-ai-surface relative z-10 py-24 bg-landing-ai" aria-labelledby="product-title">
+    <section id="product" className="landing-ai-surface relative z-10 py-24 bg-landing dark:bg-landing-dark-ai" aria-labelledby="product-title">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <p className="text-sm font-medium text-primary uppercase tracking-wider mb-3">Product</p>
-          <h2 id="product-title" className="text-[36px] md:text-[42px] font-bold text-text-primary mb-4">
+          <p className="text-sm font-medium text-primary dark:text-primary-dark uppercase tracking-wider mb-3">Product</p>
+          <h2 id="product-title" className="text-[36px] md:text-[42px] font-bold text-text-primary dark:text-text-primary-dark mb-4">
             Built for Modern Communication
           </h2>
-          <p className="text-[17px] text-text-secondary max-w-2xl mx-auto">
+          <p className="text-[17px] text-text-secondary dark:text-text-secondary-dark max-w-2xl mx-auto">
             Every feature designed to make your conversations smarter, faster, and more meaningful.
           </p>
         </div>

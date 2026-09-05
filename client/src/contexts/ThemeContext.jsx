@@ -1,72 +1,58 @@
-import { createContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { emotionThemeMap, legacyThemeAliases, themes, themeStorageKeys } from '../theme/tokens';
+import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import { themes, themeStorageKeys } from '../theme/tokens';
 
 export const ThemeContext = createContext(null);
 
+const LEGACY_LIGHT = new Set(['glass-white', 'glass-sand']);
+const LEGACY_DARK = new Set(['glass-black', 'glass-midnight', 'glass-ocean', 'glass-emerald', 'glass-lavender']);
+
+function detectSystemTheme() {
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function normalizeTheme(value) {
+  if (value === 'light' || value === 'dark') return value;
+  if (LEGACY_LIGHT.has(value)) return 'light';
+  if (LEGACY_DARK.has(value)) return 'dark';
+  return detectSystemTheme();
+}
+
 function readInitialTheme() {
-  const stored = localStorage.getItem(themeStorageKeys.preference);
-  return legacyThemeAliases[stored] || stored || 'system';
+  let stored = null;
+  try {
+    stored = window.localStorage.getItem(themeStorageKeys.preference);
+  } catch {
+    stored = null;
+  }
+
+  const theme = normalizeTheme(stored);
+  try {
+    window.localStorage.setItem(themeStorageKeys.preference, theme);
+  } catch {
+    // Private browsing/storage-disabled environments still get a valid theme.
+  }
+  return theme;
 }
 
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(readInitialTheme);
-  const [systemMode, setSystemMode] = useState(() => window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  const [emotionThemeEnabled, setEmotionThemeEnabled] = useState(() => localStorage.getItem(themeStorageKeys.emotionEnabled) !== 'false');
-
-  const resolvedTheme = useMemo(() => theme === 'system' ? (systemMode === 'dark' ? 'glass-black' : 'glass-white') : theme, [theme, systemMode]);
 
   useEffect(() => {
-    const media = window.matchMedia?.('(prefers-color-scheme: dark)');
-    if (!media) return undefined;
-    const update = (event) => setSystemMode(event.matches ? 'dark' : 'light');
-    media.addEventListener?.('change', update);
-    return () => media.removeEventListener?.('change', update);
+    const isDark = theme === 'dark';
+    document.documentElement.classList.toggle('dark', isDark);
+    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+    try {
+      window.localStorage.setItem(themeStorageKeys.preference, theme);
+    } catch {
+      // Keep the in-memory theme when storage is unavailable.
+    }
+  }, [theme]);
+
+  const setTheme = useCallback((nextTheme) => {
+    if (nextTheme === 'light' || nextTheme === 'dark') setThemeState(nextTheme);
   }, []);
 
-  useEffect(() => {
-    const definition = themes.find((item) => item.id === resolvedTheme);
-    const mode = definition?.mode || systemMode;
-    document.documentElement.setAttribute('data-theme', resolvedTheme);
-    document.documentElement.style.colorScheme = mode;
-    document.documentElement.classList.toggle('dark', mode === 'dark');
-    localStorage.setItem(themeStorageKeys.preference, theme);
-    requestAnimationFrame(() => {
-      const background = getComputedStyle(document.documentElement).getPropertyValue('--color-background').trim().split(/\s+/).join(', ');
-      const meta = document.querySelector('meta[name="theme-color"]');
-      if (meta && background) meta.setAttribute('content', `rgb(${background})`);
-    });
-  }, [theme, resolvedTheme, systemMode]);
+  const value = useMemo(() => ({ theme, resolvedTheme: theme, setTheme, themes }), [theme, setTheme]);
 
-  const setTheme = useCallback((newTheme) => {
-    const normalized = legacyThemeAliases[newTheme] || newTheme;
-    if (themes.some((item) => item.id === normalized)) setThemeState(normalized);
-  }, []);
-
-  const applyEmotionTheme = useCallback((emoji) => {
-    if (!emotionThemeEnabled) return;
-    const mappedTheme = emotionThemeMap[emoji];
-    if (mappedTheme) setThemeState(mappedTheme);
-  }, [emotionThemeEnabled]);
-
-  const toggleEmotionTheme = useCallback(() => {
-    setEmotionThemeEnabled((previous) => {
-      const next = !previous;
-      localStorage.setItem(themeStorageKeys.emotionEnabled, next.toString());
-      return next;
-    });
-  }, []);
-
-  return (
-    <ThemeContext.Provider value={{
-      theme,
-      resolvedTheme,
-      setTheme,
-      themes,
-      emotionThemeEnabled,
-      toggleEmotionTheme,
-      applyEmotionTheme,
-    }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

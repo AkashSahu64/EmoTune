@@ -12,7 +12,7 @@ export default function LoadingSpinner({ size = 'md', className = '', ...props }
     <motion.div
       animate={{}}
       transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-      className={`rounded-full border-border border-t-[var(--theme-primary)] ${sizes[size]} ${className}`}
+      className={`rounded-full border-border dark:border-border-dark border-t-primary dark:border-t-primary-dark ${sizes[size]} ${className}`}
       role="status"
       aria-label="Loading"
       {...props}

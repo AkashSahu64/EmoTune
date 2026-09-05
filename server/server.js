@@ -30,6 +30,7 @@ const presenceService = require('./core/presenceService');
 
 const app = express();
 const server = http.createServer(app);
+const healthCheck = require('./core/healthCheck');
 
 const io = new Server(server, {
   cors: {
@@ -41,10 +42,30 @@ const io = new Server(server, {
   pingInterval: 25000,
 });
 
+require('./core/socket').set(io);
 app.set('io', io);
 app.set('presenceService', presenceService);
 
-connectDB();
+// Keep orchestration probes independent from auth, CSRF and API rate limits.
+// HTTP starts only after MongoDB is ready, but these endpoints also expose
+// the state accurately during startup/recovery.
+app.get('/health', async (req, res) => {
+  const health = await healthCheck.getHealth();
+  res.status(health.status === 'down' ? 503 : 200).json(health);
+});
+
+app.get('/ready', (req, res) => {
+  const ready = mongoose.connection.readyState === 1;
+  res.status(ready ? 200 : 503).json({
+    status: ready ? 'ready' : 'not_ready',
+    mongodb: ready ? 'connected' : 'unavailable',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Wait for MongoDB before accepting traffic so the first login cannot pay
+// connection establishment latency inside the request.
+const databaseReady = connectDB();
 if (process.env.CLOUDINARY_CLOUD_NAME) {
   connectCloudinary();
 }
@@ -111,7 +132,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/api/health', async (req, res) => {
   const { metrics } = require('./core/logger');
-  const healthCheck = require('./core/healthCheck');
   const health = await healthCheck.getHealth();
   const cacheStatus = await cacheService.healthCheck();
   res.json({
@@ -132,11 +152,6 @@ app.get('/', (req, res) => {
 });
 
 app.use(errorHandler);
-
-if (process.env.NODE_ENV === 'development') {
-  const { seedTestUser } = require('./utils/seed');
-  setTimeout(() => seedTestUser(), 5000);
-}
 
 const onlineUsers = new Map();
 app.set('onlineUsers', onlineUsers);
@@ -198,9 +213,20 @@ io.on('connection', async (socket) => {
   userChats.forEach((chat) => { socket.join(chat._id.toString()); });
 
   const visibleOnlineIds = [];
+  // Resolve presence privacy in one query instead of one User.findById per
+  // currently connected user during every socket handshake.
+  const onlineUserIds = [...onlineUsers.entries()]
+    .filter(([, sockets]) => sockets.size > 0)
+    .map(([uid]) => uid);
+  const onlinePreferenceUsers = await User.find({ _id: { $in: onlineUserIds } })
+    .select('_id preferences')
+    .lean();
+  const onlinePreferences = new Map(
+    onlinePreferenceUsers.map((onlineUser) => [onlineUser._id.toString(), onlineUser]),
+  );
   for (const [uid, sockets] of onlineUsers) {
     if (sockets.size > 0) {
-      const uPrefs = uid === userId ? userPrefs : await User.findById(uid).select('preferences');
+      const uPrefs = uid === userId ? userPrefs : onlinePreferences.get(uid);
       const ghost = uPrefs?.preferences?.ghostMode || {};
       const privacy = uPrefs?.preferences?.privacy || {};
       const isGhost = ghost.autoEnable && ghost.visibility === 'offline';
@@ -305,9 +331,18 @@ const PORT = process.env.PORT || 5000;
 const { setupGracefulShutdown } = require('./core/gracefulShutdown');
 setupGracefulShutdown(server);
 
-server.listen(PORT, () => {
-  logger.info(`Emotune server running on port ${PORT}`);
-  console.log(`🚀 Emotune API running at http://localhost:${PORT}`);
+databaseReady.then(async () => {
+  if (process.env.NODE_ENV === 'development') {
+    const { seedTestUser } = require('./utils/seed');
+    await seedTestUser().catch((err) => logger.warn('Development seed skipped', { error: err.message }));
+  }
+  server.listen(PORT, () => {
+    logger.info(`Emotune server running on port ${PORT}`);
+    console.log(`🚀 Emotune API running at http://localhost:${PORT}`);
+  });
+}).catch((err) => {
+  logger.error('Server startup aborted because MongoDB is unavailable', { error: err.message });
+  process.exit(1);
 });
 
 process.on('unhandledRejection', (err) => {

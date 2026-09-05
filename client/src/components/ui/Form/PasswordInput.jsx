@@ -11,11 +11,11 @@ const PASSWORD_REQUIREMENTS = [
 ];
 
 const strengthConfig = [
-  { label: 'Weak', color: 'var(--theme-danger)', min: 0 },
-  { label: 'Fair', color: 'var(--theme-warning)', min: 2 },
-  { label: 'Good', color: 'var(--theme-primary)', min: 3 },
-  { label: 'Strong', color: 'var(--theme-success)', min: 4 },
-  { label: 'Very Strong', color: 'var(--theme-success)', min: 5 },
+  { label: 'Weak', color: '#DC2626', min: 0 },
+  { label: 'Fair', color: '#D97706', min: 2 },
+  { label: 'Good', color: '#3B5BFF', min: 3 },
+  { label: 'Strong', color: '#16A34A', min: 4 },
+  { label: 'Very Strong', color: '#16A34A', min: 5 },
 ];
 
 function calcStrength(pw) {
@@ -30,8 +30,8 @@ function getStrengthLabel(score) {
 const PasswordRequirementList = memo(function PasswordRequirementList({ password, visible }) {
   if (!visible || !password) return null;
   return (
-    <div className="space-y-1.5 p-3 rounded-lg bg-surface/60 backdrop-blur-glass border border-border">
-      <p className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider mb-2">
+    <div className="space-y-1.5 p-3 rounded-lg bg-surface/60 dark:bg-surface-dark/60 backdrop-blur-glass border border-border dark:border-border-dark">
+      <p className="text-[10px] font-semibold text-text-secondary dark:text-text-secondary-dark uppercase tracking-wider mb-2">
         Password requirements
       </p>
       {PASSWORD_REQUIREMENTS.map((req) => {
@@ -40,16 +40,16 @@ const PasswordRequirementList = memo(function PasswordRequirementList({ password
           <div key={req.key} className="flex items-center gap-2">
             <div
               className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-colors duration-200 ${
-                met ? 'bg-success/20' : 'bg-[var(--theme-border)]'
+                met ? 'bg-success/20 dark:bg-success-dark/20' : 'bg-border dark:bg-border-dark'
               }`}
             >
               {met && (
-                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--theme-success)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               )}
             </div>
-            <span className={`text-[10px] transition-colors duration-200 ${met ? 'text-success' : 'text-text-secondary'}`}>
+            <span className={`text-[10px] transition-colors duration-200 ${met ? 'text-success dark:text-success-dark' : 'text-text-secondary dark:text-text-secondary-dark'}`}>
               {req.label}
             </span>
           </div>
@@ -64,7 +64,7 @@ const PasswordStrengthBar = memo(function PasswordStrengthBar({ score }) {
   const strength = getStrengthLabel(score);
   return (
     <div className="mt-2 space-y-1">
-      <div className="h-1.5 rounded-full bg-surface-elevated backdrop-blur-glass overflow-hidden">
+      <div className="h-1.5 rounded-full bg-surface-elevated dark:bg-surface-elevated-dark backdrop-blur-glass overflow-hidden">
         <div
           className="h-full rounded-full transition-colors duration-normal ease-out"
           style={{
@@ -102,7 +102,7 @@ const PasswordInput = memo(forwardRef(function PasswordInput({
     <div>
       <div className="relative">
         <FiLock
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none z-10"
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary dark:text-text-secondary-dark pointer-events-none z-10"
           size={16}
         />
         <Input
@@ -123,7 +123,7 @@ const PasswordInput = memo(forwardRef(function PasswordInput({
         <button
           type="button"
           onClick={toggleVisibility}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-secondary transition-colors focus:outline-none"
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary dark:text-text-secondary-dark hover:text-text-secondary dark:hover:text-text-secondary-dark transition-colors focus:outline-none"
           aria-label={visible ? 'Hide password' : 'Show password'}
           tabIndex={-1}
         >

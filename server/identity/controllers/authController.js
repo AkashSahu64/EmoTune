@@ -8,6 +8,7 @@ const auditService = require('../services/auditService');
 const IdentityError = require('../errors/IdentityError');
 const { logEvent, AUDIT_ACTIONS } = require('../utils/auditLogger');
 const User = require('../../models/User');
+const authPerf = require('../utils/authPerf');
 
 const authController = {
   async signup(req, res, next) {
@@ -60,6 +61,7 @@ const authController = {
   },
 
   async login(req, res, next) {
+    const perf = authPerf.start('login_http_total');
     try {
       const { email, username, phone, password, rememberMe, countryCode, deviceName } = req.body;
 
@@ -113,6 +115,8 @@ const authController = {
         });
       }
       next(error);
+    } finally {
+      authPerf.end(perf);
     }
   },
 

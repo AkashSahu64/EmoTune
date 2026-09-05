@@ -64,7 +64,7 @@ function GroupModal({ onClose, onCreate }) {
         actions={
           <div className="flex gap-1">
             {STEPS.map((s, i) => (
-              <div key={s.id} className={`w-2 h-2 rounded-full transition-colors ${i === step ? 'w-6 bg-primary' : i < step ? 'bg-primary/50' : 'bg-[var(--theme-border)]'}`} />
+              <div key={s.id} className={`w-2 h-2 rounded-full transition-colors ${i === step ? 'w-6 bg-primary dark:bg-primary-dark' : i < step ? 'bg-primary/50 dark:bg-primary-dark/50' : 'bg-border dark:bg-border-dark'}`} />
             ))}
           </div>
         }
@@ -74,20 +74,20 @@ function GroupModal({ onClose, onCreate }) {
         {step === 0 && (
           <motion.div key="details" initial={{ }} animate={{ }} exit={{ }} className="p-4 space-y-4">
             <div className="flex flex-col items-center gap-3 mb-4">
-              <div className="w-20 h-20 rounded-2xl bg-primary flex items-center justify-center text-white text-3xl font-bold">
+              <div className="w-20 h-20 rounded-2xl bg-primary dark:bg-primary-dark flex items-center justify-center text-white text-3xl font-bold">
                 {name ? name[0].toUpperCase() : 'G'}
               </div>
-              <p className="text-xs text-text-secondary">Group Icon</p>
+              <p className="text-xs text-text-secondary dark:text-text-secondary-dark">Group Icon</p>
             </div>
 
             <div>
-              <label className="text-xs font-medium text-text-secondary block mb-1.5">Group Name *</label>
-              <input id="group-name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter group name" className="w-full px-4 py-3 text-sm rounded-2xl bg-surface backdrop-blur-glass border border-border text-text-primary placeholder:text-placeholder focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus transition-colors" aria-required="true" />
+              <label className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark block mb-1.5">Group Name *</label>
+              <input id="group-name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter group name" className="w-full px-4 py-3 text-sm rounded-2xl bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark text-text-primary dark:text-text-primary-dark placeholder:text-placeholder dark:placeholder:text-placeholder-dark focus:outline-none focus:border-primary dark:focus:border-primary-dark focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark transition-colors" aria-required="true" />
             </div>
 
             <div>
-              <label className="text-xs font-medium text-text-secondary block mb-1.5">Description</label>
-              <textarea id="group-desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What's this group about?" rows={3} className="w-full px-4 py-3 text-sm rounded-2xl bg-surface backdrop-blur-glass border border-border text-text-primary placeholder:text-placeholder focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus transition-colors resize-none" />
+              <label className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark block mb-1.5">Description</label>
+              <textarea id="group-desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What's this group about?" rows={3} className="w-full px-4 py-3 text-sm rounded-2xl bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark text-text-primary dark:text-text-primary-dark placeholder:text-placeholder dark:placeholder:text-placeholder-dark focus:outline-none focus:border-primary dark:focus:border-primary-dark focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark transition-colors resize-none" />
             </div>
           </motion.div>
         )}
@@ -109,62 +109,62 @@ function GroupModal({ onClose, onCreate }) {
               </div>
             )}
 
-            <p className="text-xs text-text-secondary font-medium">{selectedUsers.length} selected</p>
+            <p className="text-xs text-text-secondary dark:text-text-secondary-dark font-medium">{selectedUsers.length} selected</p>
 
             <ScrollArea className="max-h-48 space-y-1">
               {users.filter((u) => !selectedUsers.includes(u._id)).map((user) => (
-                <motion.button key={user._id} onClick={() => toggleUser(user._id)} className="w-full flex items-center gap-3 p-2.5 bg-surface backdrop-blur-glass border border-border rounded-xl hover:bg-hover/[0.07] transition-colors text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus" type="button">
+                <motion.button key={user._id} onClick={() => toggleUser(user._id)} className="w-full flex items-center gap-3 p-2.5 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] transition-colors text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus dark:focus:ring-focus-dark" type="button">
                   <Avatar src={user.avatar} name={user.username} size="sm" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-text-primary truncate">{user.username}</p>
-                    <p className="text-[10px] text-text-secondary">{user.email || ''}</p>
+                    <p className="text-sm font-medium text-text-primary dark:text-text-primary-dark truncate">{user.username}</p>
+                    <p className="text-[10px] text-text-secondary dark:text-text-secondary-dark">{user.email || ''}</p>
                   </div>
-                  <div className="w-7 h-7 rounded-lg bg-surface backdrop-blur-glass border border-border flex items-center justify-center text-primary"><FiUserPlus size={14} /></div>
+                  <div className="w-7 h-7 rounded-lg bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark flex items-center justify-center text-primary dark:text-primary-dark"><FiUserPlus size={14} /></div>
                 </motion.button>
               ))}
-              {users.length === 0 && <p className="text-xs text-text-secondary text-center py-4">No users found</p>}
+              {users.length === 0 && <p className="text-xs text-text-secondary dark:text-text-secondary-dark text-center py-4">No users found</p>}
             </ScrollArea>
           </motion.div>
         )}
 
         {step === 2 && (
           <motion.div key="permissions" initial={{ }} animate={{ }} exit={{ }} className="p-4 space-y-3">
-            <div className="flex items-center justify-between py-3 px-4 bg-surface backdrop-blur-glass border border-border rounded-xl">
-              <div><p className="text-sm font-medium text-text-primary">Anyone can send</p><p className="text-xs text-text-secondary">All members can send messages</p></div>
-              <button onClick={() => setPermissions({ ...permissions, anyoneCanSend: !permissions.anyoneCanSend, onlyAdminsCanSend: false })} className={`relative w-11 h-[22px] rounded-full transition-colors ${permissions.anyoneCanSend ? 'bg-primary' : 'bg-[var(--theme-border)]'}`} type="button">
+            <div className="flex items-center justify-between py-3 px-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl">
+              <div><p className="text-sm font-medium text-text-primary dark:text-text-primary-dark">Anyone can send</p><p className="text-xs text-text-secondary dark:text-text-secondary-dark">All members can send messages</p></div>
+              <button onClick={() => setPermissions({ ...permissions, anyoneCanSend: !permissions.anyoneCanSend, onlyAdminsCanSend: false })} className={`relative w-11 h-[22px] rounded-full transition-colors ${permissions.anyoneCanSend ? 'bg-primary dark:bg-primary-dark' : 'bg-border dark:bg-border-dark'}`} type="button">
                 <div className={`absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white shadow-sm transition-colors ${permissions.anyoneCanSend ? 'right-[2px]' : 'left-[2px]'}`} />
               </button>
             </div>
 
-            <div className="flex items-center justify-between py-3 px-4 bg-surface backdrop-blur-glass border border-border rounded-xl">
-              <div><p className="text-sm font-medium text-text-primary">Admins only</p><p className="text-xs text-text-secondary">Only admins can send messages</p></div>
-              <button onClick={() => setPermissions({ ...permissions, onlyAdminsCanSend: !permissions.onlyAdminsCanSend, anyoneCanSend: false })} className={`relative w-11 h-[22px] rounded-full transition-colors ${permissions.onlyAdminsCanSend ? 'bg-primary' : 'bg-[var(--theme-border)]'}`} type="button">
+            <div className="flex items-center justify-between py-3 px-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl">
+              <div><p className="text-sm font-medium text-text-primary dark:text-text-primary-dark">Admins only</p><p className="text-xs text-text-secondary dark:text-text-secondary-dark">Only admins can send messages</p></div>
+              <button onClick={() => setPermissions({ ...permissions, onlyAdminsCanSend: !permissions.onlyAdminsCanSend, anyoneCanSend: false })} className={`relative w-11 h-[22px] rounded-full transition-colors ${permissions.onlyAdminsCanSend ? 'bg-primary dark:bg-primary-dark' : 'bg-border dark:bg-border-dark'}`} type="button">
                 <div className={`absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white shadow-sm transition-colors ${permissions.onlyAdminsCanSend ? 'right-[2px]' : 'left-[2px]'}`} />
               </button>
             </div>
 
-            <div className="flex items-center justify-between py-3 px-4 bg-surface backdrop-blur-glass border border-border rounded-xl">
-              <div><p className="text-sm font-medium text-text-primary">Join Requests</p><p className="text-xs text-text-secondary">Require admin approval to join</p></div>
-              <button onClick={() => setPermissions({ ...permissions, joinRequests: !permissions.joinRequests })} className={`relative w-11 h-[22px] rounded-full transition-colors ${permissions.joinRequests ? 'bg-primary' : 'bg-[var(--theme-border)]'}`} type="button">
+            <div className="flex items-center justify-between py-3 px-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl">
+              <div><p className="text-sm font-medium text-text-primary dark:text-text-primary-dark">Join Requests</p><p className="text-xs text-text-secondary dark:text-text-secondary-dark">Require admin approval to join</p></div>
+              <button onClick={() => setPermissions({ ...permissions, joinRequests: !permissions.joinRequests })} className={`relative w-11 h-[22px] rounded-full transition-colors ${permissions.joinRequests ? 'bg-primary dark:bg-primary-dark' : 'bg-border dark:bg-border-dark'}`} type="button">
                 <div className={`absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white shadow-sm transition-colors ${permissions.joinRequests ? 'right-[2px]' : 'left-[2px]'}`} />
               </button>
             </div>
 
             <Divider />
 
-            <div className="bg-surface backdrop-blur-glass border border-border rounded-xl p-3">
-              <p className="text-xs font-medium text-text-primary mb-2">Summary</p>
+            <div className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl p-3">
+              <p className="text-xs font-medium text-text-primary dark:text-text-primary-dark mb-2">Summary</p>
               <div className="space-y-1.5">
-                <div className="flex justify-between text-xs"><span className="text-text-secondary">Group name</span><span className="text-text-primary">{name}</span></div>
-                <div className="flex justify-between text-xs"><span className="text-text-secondary">Members</span><span className="text-text-primary">{selectedUsers.length + 1} (including you)</span></div>
-                <div className="flex justify-between text-xs"><span className="text-text-secondary">Description</span><span className="text-text-primary truncate max-w-[200px]">{description || 'None'}</span></div>
+                <div className="flex justify-between text-xs"><span className="text-text-secondary dark:text-text-secondary-dark">Group name</span><span className="text-text-primary dark:text-text-primary-dark">{name}</span></div>
+                <div className="flex justify-between text-xs"><span className="text-text-secondary dark:text-text-secondary-dark">Members</span><span className="text-text-primary dark:text-text-primary-dark">{selectedUsers.length + 1} (including you)</span></div>
+                <div className="flex justify-between text-xs"><span className="text-text-secondary dark:text-text-secondary-dark">Description</span><span className="text-text-primary dark:text-text-primary-dark truncate max-w-[200px]">{description || 'None'}</span></div>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+      <div className="flex items-center justify-between px-4 py-3 border-t border-border dark:border-border-dark">
         <Button variant="ghost" size="sm" onClick={() => step > 0 ? setStep(step - 1) : onClose()} icon={FiChevronLeft}>
           {step === 0 ? 'Cancel' : 'Back'}
         </Button>

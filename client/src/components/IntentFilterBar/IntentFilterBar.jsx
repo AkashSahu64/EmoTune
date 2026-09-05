@@ -6,49 +6,49 @@ const intents = [
   {
     id: "all",
     label: "Live",
-    color: "var(--theme-primary)",
+    color: "#3B5BFF",
   },
   {
     id: "unread",
     label: "Unread",
-    color: "var(--theme-danger)",
+    color: "#DC2626",
   },
   {
     id: "task",
     label: "Tasks",
-    color: "var(--theme-success)",
+    color: "#16A34A",
   },
   {
     id: "question",
     label: "Questions",
-    color: "var(--theme-warning)",
+    color: "#D97706",
   },
-  { id: "idea", label: "Ideas", color: "var(--theme-accent)" },
+  { id: "idea", label: "Ideas", color: "#D97706" },
   {
     id: "important",
     label: "Important",
-    color: "var(--theme-danger)",
+    color: "#DC2626",
   },
   {
     id: "reminder",
     label: "Reminders",
-    color: "var(--theme-warning)",
+    color: "#D97706",
   },
-  { id: "ai", label: "AI", color: "var(--theme-primary)" },
+  { id: "ai", label: "AI", color: "#3B5BFF" },
   {
     id: "memory",
     label: "Memory",
-    color: "var(--theme-secondary)",
+    color: "#6B7280",
   },
   {
     id: "pinned",
     label: "Pinned",
-    color: "var(--theme-primary)",
+    color: "#3B5BFF",
   },
   {
     id: "mentions",
     label: "Mentions",
-    color: "var(--theme-accent)",
+    color: "#D97706",
   },
 ];
 
@@ -81,12 +81,12 @@ export default function IntentFilterBar({
 
   return (
     <nav
-      className="flex-shrink-0 border-r border-border bg-surface backdrop-blur-glass flex flex-col"
+      className="flex-shrink-0 border-r border-border dark:border-border-dark bg-surface dark:bg-surface-dark backdrop-blur-glass flex flex-col"
       aria-label="Message intent filter"
     >
       <button
         onClick={onToggle}
-        className="p-3 text-text-secondary hover:text-text-primary hover:bg-hover/[0.07] transition-colors border-b border-border focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus"
+        className="p-3 text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] transition-colors border-b border-border dark:border-border-dark focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus dark:focus:ring-focus-dark"
         aria-label={expanded ? "Collapse" : "Expand"}
         aria-expanded={expanded}
         type="button"
@@ -122,10 +122,10 @@ export default function IntentFilterBar({
                 <button
                   key={intent.id}
                   onClick={() => onFilter(intent.id)}
-                  className={`relative flex flex-col items-center gap-1 px-2 py-3 text-[10px] transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus ${
+                  className={`relative flex flex-col items-center gap-1 px-2 py-3 text-[10px] transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus dark:focus:ring-focus-dark ${
                     activeIntent === intent.id
-                      ? "text-white bg-primary border-l-2 border-primary"
-                      : "text-text-secondary hover:text-text-primary hover:bg-[var(--theme-glass)]"
+                      ? "text-white bg-primary dark:bg-primary-dark border-l-2 border-primary dark:border-primary-dark"
+                      : "text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark hover:bg-surface/80 dark:bg-surface-dark/80"
                   }`}
                   aria-label={`Filter: ${intent.label}${count != null ? `, ${count}` : ""}`}
                   aria-pressed={activeIntent === intent.id}
@@ -187,13 +187,13 @@ export function HorizontalIntentFilter({
   };
 
   return (
-    <div className="flex items-center gap-1 px-3 py-2 relative border-b border-border bg-surface/80 backdrop-blur-glass">
+    <div className="flex items-center gap-1 px-3 py-2 relative border-b border-border dark:border-border-dark bg-surface/80 dark:bg-surface-dark/80 backdrop-blur-glass">
       {canScrollLeft && (
         <button
           onClick={() => scroll(-1)}
-          className="absolute left-0 z-10 w-6 h-full flex items-center justify-center bg-primary"
+          className="absolute left-0 z-10 w-6 h-full flex items-center justify-center bg-primary dark:bg-primary-dark"
         >
-          <FiChevronLeft size={14} className="text-text-secondary" />
+          <FiChevronLeft size={14} className="text-text-secondary dark:text-text-secondary-dark" />
         </button>
       )}
       <div

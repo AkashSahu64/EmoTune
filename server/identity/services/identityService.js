@@ -11,6 +11,7 @@ const passwordService = require('./passwordService');
 const { hashPassword, comparePassword } = require('../utils/crypto');
 const { logEvent, AUDIT_ACTIONS } = require('../utils/auditLogger');
 const { ROLE_PERMISSIONS } = require('../rbac/permissions');
+const authPerf = require('../utils/authPerf');
 
 const IdentityService = {
   async signup(options = {}) {
@@ -99,8 +100,10 @@ const IdentityService = {
 
   async login(options = {}) {
     const { email, phone, username, password, ip, userAgent, deviceFingerprint, deviceName, location } = options;
+    const totalPerf = authPerf.start('login_controller_total');
 
     let user;
+    const lookupPerf = authPerf.start('user_find_one');
     if (email) {
       user = await User.findOne({ email: email.toLowerCase().trim() }).select('+password');
     } else if (phone) {
@@ -108,6 +111,7 @@ const IdentityService = {
     } else if (username) {
       user = await User.findOne({ username: username.trim() }).select('+password');
     }
+    authPerf.end(lookupPerf);
 
     if (!user) {
       throw IdentityError.invalidCredentials();
@@ -122,7 +126,9 @@ const IdentityService = {
     }
 
     if (password) {
+      const bcryptPerf = authPerf.start('bcrypt_compare');
       const isMatch = await comparePassword(password, user.password);
+      authPerf.end(bcryptPerf);
       if (!isMatch) {
         await loginHistoryService.recordLoginAttempt(user._id, 'login_failure', {
           ip, userAgent, deviceFingerprint, method: email ? 'email_password' : 'username_password',
@@ -133,15 +139,19 @@ const IdentityService = {
       }
     }
 
+    const lockPerf = authPerf.start('account_lock_check');
     const isLocked = await loginHistoryService.isAccountLocked(user._id);
+    authPerf.end(lockPerf);
     if (isLocked) {
       const remaining = await loginHistoryService.getRemainingLockoutTime(user._id);
       throw IdentityError.accountLocked(remaining);
     }
 
+    const riskPerf = authPerf.start('ai_risk_analysis');
     const risk = await aiSecurityService.shouldBlockLogin(user._id, {
-      ip, userAgent, deviceFingerprint, location,
+      ip, userAgent, deviceFingerprint, location, isLocked,
     });
+    authPerf.end(riskPerf);
 
     if (risk.shouldBlock) {
       await loginHistoryService.recordLoginAttempt(user._id, 'login_failure', {
@@ -154,13 +164,15 @@ const IdentityService = {
       throw IdentityError.verificationRequired();
     }
 
-    user.status = 'online';
-    user.lastActive = new Date();
-    await user.save({ validateBeforeSave: false });
+    const userUpdatePerf = authPerf.start('user_status_update');
+    await User.updateOne({ _id: user._id }, { $set: { status: 'online', lastActive: new Date() } });
+    authPerf.end(userUpdatePerf);
 
+    const sessionPerf = authPerf.start('device_and_session_creation');
     const tokens = await this._createSessionAndTokens(user, {
       ip, userAgent, deviceFingerprint, deviceName, location,
     });
+    authPerf.end(sessionPerf);
 
     if (tokens.device && deviceFingerprint && !tokens.device.isTrusted && !risk.requiresVerification) {
       if (IDENTITY_CONFIG.device.fingerprintEnabled) {
@@ -168,6 +180,7 @@ const IdentityService = {
       }
     }
 
+    const historyPerf = authPerf.start('login_history');
     await loginHistoryService.recordLoginAttempt(user._id, 'login_success', {
       ip, userAgent, deviceFingerprint,
       deviceId: tokens.device?.deviceId,
@@ -177,7 +190,9 @@ const IdentityService = {
       riskFactors: risk.risk.factors,
       success: true,
     });
+    authPerf.end(historyPerf);
 
+    const auditPerf = authPerf.start('login_audit_event');
     await logEvent({
       action: AUDIT_ACTIONS.LOGIN_SUCCESS,
       userId: user._id,
@@ -186,8 +201,9 @@ const IdentityService = {
       ip, userAgent,
       riskScore: risk.risk.score,
     });
+    authPerf.end(auditPerf);
 
-    return {
+    const result = {
       user: user.toPublicJSON(),
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
@@ -197,6 +213,8 @@ const IdentityService = {
       },
       risk: risk.risk,
     };
+    authPerf.end(totalPerf);
+    return result;
   },
 
   async logout(userId, sessionId, options = {}) {
@@ -252,12 +270,10 @@ const IdentityService = {
     const user = await User.findById(userId).select('-refreshToken -refreshTokens -encryptionKey');
     if (!user) throw IdentityError.userNotFound();
 
-    const loginStats = await loginHistoryService.getLoginStats(userId);
-
-    return {
-      ...user.toPublicJSON(),
-      loginStats,
-    };
+    // Keep session restoration focused on the profile needed by the app shell.
+    // Login analytics belongs to the dedicated history endpoint and must not
+    // block dashboard startup with multiple aggregate queries.
+    return user.toPublicJSON();
   },
 
   async updateProfile(userId, updates) {
@@ -268,8 +284,7 @@ const IdentityService = {
 
   async _createSessionAndTokens(user, options = {}) {
     const family = jwtService.generateTokenFamily();
-    const accessToken = jwtService.generateAccessToken(user._id, 'pending');
-    const refreshToken = require('../utils/crypto').generateSessionToken();
+    const sessionId = require('../utils/crypto').generateSessionToken();
 
     let device = null;
     if (options.deviceFingerprint) {
@@ -282,7 +297,16 @@ const IdentityService = {
       });
     }
 
-    const session = await sessionService.createSession(user, refreshToken, device, {
+    const finalRefreshToken = jwtService.generateRefreshToken(user._id, sessionId, family, 1, {
+      additionalPayload: {
+        roles: user.roles || ['user'],
+        deviceId: device?._id?.toString(),
+      },
+    });
+
+    const session = await sessionService.createSession(user, finalRefreshToken, device, {
+      sessionId,
+      refreshTokenFamily: family,
       deviceName: options.deviceName,
       deviceFingerprint: options.deviceFingerprint,
       platform: device?.platform,
@@ -302,26 +326,6 @@ const IdentityService = {
       },
     };
     const finalAccessToken = jwtService.generateAccessToken(user._id, session.sessionId, tokenContext);
-    const finalRefreshToken = require('jsonwebtoken').sign(
-      {
-        userId: user._id.toString(),
-        sessionId: session.sessionId,
-        family: session.refreshTokenFamily,
-        version: 1,
-        jti: require('crypto').randomBytes(16).toString('hex'),
-        iss: IDENTITY_CONFIG.jwt.refreshToken.issuer,
-        aud: IDENTITY_CONFIG.jwt.refreshToken.audience,
-        iat: Math.floor(Date.now() / 1000),
-        type: 'refresh',
-        roles: user.roles || ['user'],
-        deviceId: device?._id?.toString(),
-      },
-      IDENTITY_CONFIG.jwt.refreshToken.secret,
-      { expiresIn: IDENTITY_CONFIG.jwt.refreshToken.expiry }
-    );
-
-    session.refreshTokenHash = require('../utils/crypto').hashRefreshToken(finalRefreshToken);
-    await session.save();
 
     return { accessToken: finalAccessToken, refreshToken: finalRefreshToken, session, device };
   },

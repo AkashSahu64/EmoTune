@@ -31,7 +31,12 @@ const authenticate = async (req, res, next) => {
       throw new IdentityError('Session does not belong to user', 'SESSION_USER_MISMATCH', 401);
     }
 
-    const user = await User.findById(decoded.userId);
+    // Protected routes only consume identity, status, and role fields here.
+    // Keep session validation intact while avoiding hydration of the complete
+    // User document on every authenticated request.
+    const user = await User.findById(decoded.userId)
+      .select('_id roles deletedAt status')
+      .lean();
     if (!user) throw new IdentityError('User not found', 'USER_NOT_FOUND', 401);
     if (user.deletedAt || user.status === 'deleted') {
       throw new IdentityError('Account deleted', 'ACCOUNT_DELETED', 401);
@@ -47,6 +52,7 @@ const authenticate = async (req, res, next) => {
       throw new IdentityError('Device mismatch', 'DEVICE_MISMATCH', 401);
     }
 
+    user.id = user._id;
     user.sessionId = decoded.sessionId;
     user.roles = roles;
     user.permissions = decoded.permissions || [];
@@ -97,12 +103,15 @@ const optionalAuth = async (req, res, next) => {
 
     const session = await sessionService.getSessionById(decoded.sessionId);
     if (session && session.isActive) {
-      const user = await User.findById(decoded.userId);
+      const user = await User.findById(decoded.userId)
+        .select('_id roles deletedAt status')
+        .lean();
       if (!user || user.deletedAt || user.status === 'deleted' || user.status === 'blocked') {
         req.user = null;
         req.session = null;
         return next();
       }
+      user.id = user._id;
       user.sessionId = decoded.sessionId;
       user.roles = user.roles || decoded.roles || ['user'];
       user.permissions = decoded.permissions || [];

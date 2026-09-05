@@ -17,6 +17,7 @@ router.post('/translate', authMiddleware, aiRateLimiter, translateMessage);
 
 router.get('/emojis/:chatId', authMiddleware, requireChatMember, getEmojis);
 router.get('/gifs/:chatId', authMiddleware, requireChatMember, mediaRateLimiter, getGifs);
+router.get('/stickers', authMiddleware, mediaRateLimiter, getGifs);
 router.get('/shayari/:chatId', authMiddleware, requireChatMember, getShayari);
 router.get('/songs/:chatId', authMiddleware, requireChatMember, getSongs);
 router.get('/videos/:chatId', authMiddleware, requireChatMember, getVideos);

@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /messages
+Disallow: /settings
+Disallow: /notifications
+Disallow: /change-password
+Disallow: /reset-password
+Disallow: /verify-otp
+Disallow: /auth/google
+
+User-agent: Googlebot
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /messages
+Disallow: /settings
+Disallow: /notifications
+Disallow: /change-password
+Disallow: /reset-password
+Disallow: /verify-otp
+Disallow: /auth/google
+
+Sitemap: https://gaongram.com/sitemap.xml

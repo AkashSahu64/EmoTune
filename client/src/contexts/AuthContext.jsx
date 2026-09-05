@@ -1,10 +1,15 @@
-import { createContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useState, useEffect, useCallback, useMemo } from 'react';
 import api, { restoreSession } from '../services/api';
 import { getAccessToken, setAccessToken, clearAccessToken } from '../services/accessToken';
+import { queryClient } from '../services/queryClient';
 
 export const AuthContext = createContext(null);
 
 const USER_SNAPSHOT_KEY = 'emotune_user_snapshot';
+
+function clearBookmarkCache() {
+  queryClient.removeQueries({ queryKey: ['bookmarks'] });
+}
 
 function readUserSnapshot() {
   try {
@@ -43,9 +48,15 @@ export function AuthProvider({ children }) {
       const { data } = await restoreSession();
       const currentToken = getAccessToken();
       if (currentToken) setToken(currentToken);
-      setUser(data.data?.profile || data.user);
+      const nextUser = data.data?.profile || data.user;
+      const previousUser = readUserSnapshot();
+      if (previousUser?._id && nextUser?._id && String(previousUser._id) !== String(nextUser._id)) {
+        clearBookmarkCache();
+      }
+      setUser(nextUser);
       setSession(data.data?.profile?.session || null);
     } catch (err) {
+      clearBookmarkCache();
       clearAccessToken();
       setToken(null);
       setUser(null);
@@ -69,64 +80,72 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('emotune:token', onTokenChange);
   }, []);
 
-  const login = async (credential, password) => {
+  const login = useCallback(async (credential, password) => {
     const payload = typeof credential === 'object'
       ? credential
       : { email: credential, password };
 
     const { data } = await api.post('/identity/auth/login', payload);
+    clearBookmarkCache();
     if (data.data?.accessToken) {
       setToken(data.data.accessToken);
     }
     setUser(data.data.user);
     setSession(data.data.session);
     return data;
-  };
+  }, [setToken]);
 
-  const signup = async (username, email, password, extraFields) => {
+  const signup = useCallback(async (username, email, password, extraFields) => {
     const payload = typeof username === 'object'
       ? username
       : { username, email, password, ...extraFields };
 
     const { data } = await api.post('/identity/auth/signup', payload);
+    clearBookmarkCache();
     if (data.data?.accessToken) {
       setToken(data.data.accessToken);
     }
     setUser(data.data.user);
     setSession(data.data.session);
     return data;
-  };
+  }, [setToken]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await api.post('/identity/auth/logout');
     } catch {
       // Ignore errors
     }
     clearAccessToken();
+    clearBookmarkCache();
     writeUserSnapshot(null);
     setToken(null);
     setUser(null);
     setSession(null);
-  };
+  }, [setToken]);
 
-  const updateUser = (updates) => {
+  const updateUser = useCallback((updates) => {
     setUser((prev) => ({ ...prev, ...updates }));
-  };
+  }, []);
 
-  const updatePreferences = (preferences) => {
+  const updatePreferences = useCallback((preferences) => {
     setUser((prev) => prev ? { ...prev, preferences } : prev);
-  };
+  }, []);
 
-  const updateSettings = (settings) => {
+  const updateSettings = useCallback((settings) => {
     setUser((prev) => prev ? { ...prev, settings } : prev);
-  };
+  }, []);
+
+  const value = useMemo(() => ({
+    user, loading, token, session, login, signup, logout,
+    updateUser, updatePreferences, updateSettings, fetchUser,
+  }), [
+    user, loading, token, session, login, signup, logout,
+    updateUser, updatePreferences, updateSettings, fetchUser,
+  ]);
 
   return (
-    <AuthContext.Provider value={{
-      user, loading, token, session, login, signup, logout,
-      updateUser, updatePreferences, updateSettings, fetchUser,
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

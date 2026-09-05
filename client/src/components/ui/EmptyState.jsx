@@ -55,15 +55,15 @@ export default function EmptyState({
       animate={{ }}
       className={`flex flex-col items-center justify-center py-16 px-6 text-center ${className}`}
     >
-      <div className="relative w-20 h-20 mb-5 rounded-[22px] bg-surface backdrop-blur-glass border border-border flex items-center justify-center text-primary shadow-sm" aria-hidden="true">
-        <div className="absolute inset-3 rounded-2xl bg-primary/8" />
+      <div className="relative w-20 h-20 mb-5 rounded-[22px] bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark flex items-center justify-center text-primary dark:text-primary-dark shadow-sm" aria-hidden="true">
+        <div className="absolute inset-3 rounded-2xl bg-primary/8 dark:bg-primary-dark/8" />
         <Icon size={30} className="relative" />
       </div>
       {title && (
-        <h3 className="text-base font-semibold text-text-primary mb-1">{title}</h3>
+        <h3 className="text-base font-semibold text-text-primary dark:text-text-primary-dark mb-1">{title}</h3>
       )}
       {description && (
-        <p className="text-sm text-text-secondary max-w-[280px] leading-relaxed">{description}</p>
+        <p className="text-sm text-text-secondary dark:text-text-secondary-dark max-w-[280px] leading-relaxed">{description}</p>
       )}
       {action && (
         <div className="mt-5">{action}</div>

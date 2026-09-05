@@ -190,7 +190,7 @@ export default function LoginPage() {
         <div className="flex-1 flex items-center justify-center px-2 py-4 bg-transparent relative overflow-hidden">
           <FormCard maxWidth="max-w-[520px]">
             <motion.div
-              className="auth-surface-card w-full max-w-[520px] rounded-3xl border border-border/60 bg-surface/40 backdrop-blur-glass backdrop-blur-md px-3 lg:px-8 py-6 shadow-lg shadow-black/20 relative overflow-hidden"
+              className="auth-surface-card w-full max-w-[520px] rounded-3xl border border-border/60 dark:border-border-dark/60 bg-surface/40 dark:bg-surface-dark/40 backdrop-blur-glass backdrop-blur-md px-3 lg:px-8 py-6 shadow-lg shadow-black/20 relative overflow-hidden"
               initial={{ }}
               animate={{ }}
               transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
@@ -212,7 +212,7 @@ export default function LoginPage() {
                     />
                   </Link>
                   <motion.h1
-                    className="text-4xl font-bold text-text-primary tracking-tight"
+                    className="text-4xl font-bold text-text-primary dark:text-text-primary-dark tracking-tight"
                     initial={{ }}
                     animate={{ }}
                     transition={{ }}
@@ -220,7 +220,7 @@ export default function LoginPage() {
                     Welcome back
                   </motion.h1>
                   <motion.p
-                    className="text-[14px] text-text-secondary mt-1"
+                    className="text-[14px] text-text-secondary dark:text-text-secondary-dark mt-1"
                     initial={{ }}
                     animate={{ }}
                     transition={{ }}
@@ -269,8 +269,8 @@ export default function LoginPage() {
                             onClick={() => switchMode(mode.key)}
                             className={`flex items-center gap-1.5 px-1 py-0.5 rounded-md text-[10px] font-medium transition-colors duration-200 ${
                               isActive
-                                ? "bg-primary/10 text-primary border border-primary/20"
-                                : "text-text-muted hover:text-text-secondary hover:bg-surface-elevated backdrop-blur-glass border border-transparent"
+                                ? "bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark border border-primary/20 dark:border-primary-dark/20"
+                                : "text-text-muted dark:text-text-muted-dark hover:text-text-secondary dark:hover:text-text-secondary-dark hover:bg-surface-elevated dark:hover:bg-surface-elevated-dark backdrop-blur-glass border border-transparent"
                             }`}
                             aria-label={`Sign in with ${mode.label}`}
                             title={mode.label}
@@ -286,20 +286,20 @@ export default function LoginPage() {
                     <div className="flex items-center justify-between mb-2">
                       <label
                         htmlFor="login-password"
-                        className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider"
+                        className="text-[11px] font-semibold text-text-secondary dark:text-text-secondary-dark uppercase tracking-wider"
                       >
                         Password
                       </label>
                       <Link
                         to="/forgot-password"
-                        className="text-[11px] text-primary hover:text-primary transition-colors font-medium"
+                        className="text-[11px] text-primary dark:text-primary-dark hover:text-primary dark:hover:text-primary-dark transition-colors font-medium"
                       >
                         Forgot password?
                       </Link>
                     </div>
                     <div className="relative">
                       <FiLock
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none z-10"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary dark:text-text-secondary-dark pointer-events-none z-10"
                         size={16}
                       />
                       <Input
@@ -318,7 +318,7 @@ export default function LoginPage() {
                       <button
                         type="button"
                         onClick={() => setShowPassword((v) => !v)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-secondary transition-colors"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary dark:text-text-secondary-dark hover:text-text-secondary dark:hover:text-text-secondary-dark transition-colors"
                         aria-label={
                           showPassword ? "Hide password" : "Show password"
                         }
@@ -339,9 +339,9 @@ export default function LoginPage() {
                         type="checkbox"
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
-                        className="w-4 h-4 rounded border-border bg-surface backdrop-blur-glass text-primary focus:ring-focus/30 focus:ring-offset-0 cursor-pointer transition-colors"
+                        className="w-4 h-4 rounded border-border dark:border-border-dark bg-surface dark:bg-surface-dark backdrop-blur-glass text-primary dark:text-primary-dark focus:ring-focus/30 dark:focus:ring-focus-dark/30 focus:ring-offset-0 cursor-pointer transition-colors"
                       />
-                      <span className="text-[12px] text-text-secondary group-hover:text-text-secondary transition-colors">
+                      <span className="text-[12px] text-text-secondary dark:text-text-secondary-dark group-hover:text-text-secondary dark:group-hover:text-text-secondary-dark transition-colors">
                         Remember this device
                       </span>
                     </label>
@@ -350,7 +350,7 @@ export default function LoginPage() {
                   <motion.button
                     type="submit"
                     disabled={loading || anyError}
-                    className="relative w-full h-[46px] rounded-lg bg-primary text-white text-[14px] font-semibold  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center gap-2.5 shadow-md hover:shadow-[var(--theme-primary)]/15"
+                    className="relative w-full h-[46px] rounded-lg bg-primary dark:bg-primary-dark text-white text-[14px] font-semibold  disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center gap-2.5 shadow-md hover:shadow-primary/15 dark:shadow-primary-dark/15"
                     aria-label="Sign in to your account"
                   >
                     {loading ? (
@@ -379,7 +379,7 @@ export default function LoginPage() {
                 </motion.div>
 
                 <motion.p
-                  className="mt-6 text-center text-[13px] text-text-secondary"
+                  className="mt-6 text-center text-[13px] text-text-secondary dark:text-text-secondary-dark"
                   initial={{ }}
                   animate={{ }}
                   transition={{ }}
@@ -387,14 +387,14 @@ export default function LoginPage() {
                   Don&apos;t have an account?{" "}
                   <Link
                     to="/signup"
-                    className="text-primary hover:text-primary font-semibold transition-colors"
+                    className="text-primary dark:text-primary-dark hover:text-primary dark:hover:text-primary-dark font-semibold transition-colors"
                   >
                     Create one
                   </Link>
                 </motion.p>
 
                 <motion.div
-                  className="hidden sm:block mt-4 pt-3 border-t border-border/50"
+                  className="hidden sm:block mt-4 pt-3 border-t border-border/50 dark:border-border-dark/50"
                   initial={{ }}
                   animate={{ }}
                   transition={{ }}
@@ -411,7 +411,7 @@ export default function LoginPage() {
                 </motion.div>
 
                 <motion.div
-                  className="block sm:hidden mt-4 pt-3 lg:pt-0 border-t border-border/50"
+                  className="block sm:hidden mt-4 pt-3 lg:pt-0 border-t border-border/50 dark:border-border-dark/50"
                   initial={{ }}
                   animate={{ }}
                   transition={{ }}

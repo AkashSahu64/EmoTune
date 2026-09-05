@@ -1,30 +1,88 @@
 const mongoose = require('mongoose');
 const Message = require('../models/Message');
+const Story = require('../domain/models/Story');
 const Chat = require('../models/Chat');
 const { messageSchema } = require('../utils/validators');
 const { classifyMessageIntent, getUnreadIntentCounts, getMessageFilterQuery } = require('../services/intentService');
 const logger = require('../utils/logger');
+
+const storyReferencePopulate = {
+  path: 'storyRef',
+  select: 'type content createdAt user expiresAt deletedAt',
+  populate: { path: 'user', select: 'username avatar' },
+};
+
+async function hydrateLegacyStoryReferences(messages) {
+  const legacyReplies = messages.filter((message) => (
+    message.type === 'story_reply' && !message.storyRef
+  ));
+  if (!legacyReplies.length) return messages;
+
+  const ids = legacyReplies.map((message) => message._id);
+  const stories = await Story.find({ 'metadata.replies': { $in: ids } })
+    .select('type content createdAt user expiresAt deletedAt metadata.replies')
+    .populate('user', 'username avatar')
+    .lean();
+  const storyByReplyId = new Map();
+  for (const story of stories) {
+    for (const replyId of story.metadata?.replies || []) {
+      storyByReplyId.set(replyId.toString(), story);
+    }
+  }
+  for (const message of legacyReplies) {
+    const story = storyByReplyId.get(message._id.toString());
+    if (story) {
+      const { metadata, ...storyPreview } = story;
+      message.storyRef = storyPreview;
+    }
+  }
+  return messages;
+}
 
 function getIO(req) {
   return req.app.get('io');
 }
 
 exports.sendMessage = async (req, res) => {
+  let clientMessageId = null;
   try {
     const { error, value } = messageSchema.validate(req.body);
     if (error) return res.status(400).json({ error: error.details[0].message });
 
-    const { content, chatId, type, mediaUrl, mediaType, metadata, silent, personaUsed, replyTo } = value;
+    const {
+      clientMessageId: requestClientMessageId,
+      content,
+      chatId,
+      type,
+      mediaUrl,
+      mediaType,
+      metadata,
+      silent,
+      personaUsed,
+      replyTo,
+    } = value;
+    clientMessageId = requestClientMessageId || null;
 
-    const chat = await Chat.findById(chatId);
+    const chat = await Chat.findById(chatId)
+      .select('_id participants')
+      .lean();
     if (!chat) return res.status(404).json({ error: 'Chat not found' });
 
     const isParticipant = chat.participants.some((p) => p.user.toString() === req.userId.toString());
     if (!isParticipant) return res.status(403).json({ error: 'Not a participant of this chat' });
 
+    if (clientMessageId) {
+      const existing = await Message.findOne({ sender: req.userId, chat: chatId, clientMessageId })
+        .populate('sender', 'username avatar status')
+        .populate('replyTo')
+        .populate(storyReferencePopulate);
+      if (existing) return res.status(200).json({ message: existing, idempotent: true });
+    }
+
     const message = await Message.create({
       sender: req.userId,
       chat: chatId,
+      clientMessageId,
       content,
       type: type || 'text',
       mediaUrl,
@@ -35,27 +93,32 @@ exports.sendMessage = async (req, res) => {
       replyTo: replyTo || undefined,
     });
 
-    chat.lastMessage = {
+    const lastMessage = {
       content: content || (metadata?.emoji) || (metadata?.shayari) || (metadata?.songTitle) || (type === 'gif' ? 'GIF' : '') || (type || 'text'),
       sender: req.userId,
       type: type || 'text',
       createdAt: message.createdAt,
     };
 
+    const chatUpdate = { $set: { lastMessage } };
     if (silent) {
-      chat.silentMessages.push({
+      chatUpdate.$push = { silentMessages: {
         message: message._id,
         from: req.userId,
         read: false,
         accepted: false,
-      });
+      } };
     }
 
-    await chat.save();
+    // The message is already persisted. Update only the chat metadata that
+    // the sidebar needs instead of hydrating and saving the full Chat
+    // document on every send.
+    await Chat.updateOne({ _id: chatId }, chatUpdate);
 
     const populated = await Message.findById(message._id)
       .populate('sender', 'username avatar status')
-      .populate('replyTo');
+      .populate('replyTo')
+      .populate(storyReferencePopulate);
 
     req.app.get('io').to(chatId).emit('message:receive', {
       message: populated,
@@ -68,6 +131,13 @@ exports.sendMessage = async (req, res) => {
 
     res.status(201).json({ message: populated });
   } catch (err) {
+    if (err.code === 11000 && clientMessageId) {
+      const existing = await Message.findOne({ sender: req.userId, chat: req.body.chatId, clientMessageId })
+        .populate('sender', 'username avatar status')
+        .populate('replyTo')
+        .populate(storyReferencePopulate);
+      if (existing) return res.status(200).json({ message: existing, idempotent: true });
+    }
     logger.error('Send message error', { error: err.message });
     res.status(500).json({ error: 'Failed to send message' });
   }
@@ -76,9 +146,11 @@ exports.sendMessage = async (req, res) => {
 exports.getMessages = async (req, res) => {
   try {
     const { chatId } = req.params;
-    const { page = 1, limit = 50, intent, before } = req.query;
+    const { page = 1, limit = 50, intent, before, includeTotal } = req.query;
 
-    const chat = await Chat.findOne({ _id: chatId, 'participants.user': req.userId });
+    const chat = await Chat.findOne({ _id: chatId, 'participants.user': req.userId })
+      .select('_id')
+      .lean();
     if (!chat) return res.status(403).json({ error: 'Not a participant of this chat' });
     let query;
     try {
@@ -91,22 +163,31 @@ exports.getMessages = async (req, res) => {
     }
     if (before) query.createdAt = { $lt: new Date(before) };
 
+    const parsedPage = Math.max(parseInt(page, 10) || 1, 1);
+    const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 100);
+    const requestedTotal = includeTotal === 'true';
     const messages = await Message.find(query)
-      .populate('sender', 'username avatar status')
-      .populate('replyTo')
-      .populate('reactions.users', 'username avatar profileImage profile_image')
-      .populate('truthClaimRef')
-      .sort({ createdAt: -1 })
-      .skip((parseInt(page) - 1) * parseInt(limit))
-      .limit(parseInt(limit));
+        .populate('sender', 'username avatar status')
+        .populate('replyTo')
+        .populate(storyReferencePopulate)
+        .populate('reactions.users', 'username avatar profileImage profile_image')
+        .populate('truthClaimRef')
+        .sort({ createdAt: -1 })
+        .skip((parsedPage - 1) * parsedLimit)
+        .limit(parsedLimit + 1)
+        .lean();
 
-    const total = await Message.countDocuments(query);
+    const hasMore = messages.length > parsedLimit;
+    const visibleMessages = hasMore ? messages.slice(0, parsedLimit) : messages;
+    await hydrateLegacyStoryReferences(visibleMessages);
+    const total = requestedTotal ? await Message.countDocuments(query) : null;
 
     res.json({
-      messages: messages.reverse(),
+      messages: visibleMessages.reverse(),
       total,
-      page: parseInt(page),
-      totalPages: Math.ceil(total / parseInt(limit)),
+      page: parsedPage,
+      totalPages: requestedTotal ? Math.ceil(total / parsedLimit) : null,
+      hasMore,
     });
   } catch (err) {
     logger.error('Get messages error', { error: err.message });

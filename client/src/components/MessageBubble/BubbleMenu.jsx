@@ -10,6 +10,7 @@ import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import {
   FiAlertTriangle,
+  FiBookmark,
   FiCopy,
   FiCornerUpLeft,
   FiEdit2,
@@ -33,6 +34,7 @@ function BubbleMenu({
   onDeleteForMe,
   onDeleteForEveryone,
   onShowInfo,
+  onBookmark,
   anchorRef,
 }) {
   const [position, setPosition] = useState(null);
@@ -75,6 +77,11 @@ function BubbleMenu({
         label: isPinned ? "Unpin" : "Pin",
         action: () => (isPinned ? onUnpin?.(message) : onPin?.(message)),
       },
+      {
+        icon: FiBookmark,
+        label: message?.isBookmarked ? "Saved" : "Save bookmark",
+        action: () => onBookmark?.(message),
+      },
       { divider: true },
       {
         icon: FiAlertTriangle,
@@ -111,6 +118,7 @@ function BubbleMenu({
       onDeleteForMe,
       onDeleteForEveryone,
       onShowInfo,
+      onBookmark,
     ],
   );
 
@@ -155,7 +163,7 @@ function BubbleMenu({
   return createPortal(
     <div
       id={id}
-      className="fixed z-50 max-w-[calc(100vw-16px)] min-w-[190px] overflow-hidden rounded-xl border border-border/[.55] bg-surface-elevated text-text-primary shadow-[0_18px_40px_rgb(3_7_18_/_0.28)]"
+      className="fixed z-50 max-w-[calc(100vw-16px)] min-w-[190px] overflow-hidden rounded-xl border border-border/[.55] dark:border-border-dark/[.55] bg-surface-elevated dark:bg-surface-elevated-dark text-text-primary dark:text-text-primary-dark shadow-floating"
       style={position}
       role="menu"
       aria-label="Message menu"
@@ -189,7 +197,7 @@ function BubbleMenu({
     >
       {items.map((item, index) =>
         item.divider ? (
-          <div className="my-[3px] h-px bg-border/[.45]" key={`divider-${index}`} />
+          <div className="my-[3px] h-px bg-border/[.45] dark:bg-border-dark/[.45]" key={`divider-${index}`} />
         ) : (
           <button
             ref={(node) => {
@@ -200,7 +208,7 @@ function BubbleMenu({
             type="button"
             role="menuitem"
             data-bubble-action="true"
-            className={`flex w-full items-center gap-[9px] px-3 py-[9px] text-left text-[13px] hover:bg-text-primary/[.07] focus-visible:bg-text-primary/[.07] focus-visible:outline-none ${item.danger ? "text-danger" : ""}`}
+            className={`flex w-full items-center gap-[9px] px-3 py-[9px] text-left text-[13px] hover:bg-text-primary dark:hover:bg-text-primary-dark/[.07] focus-visible:bg-text-primary dark:focus-visible:bg-text-primary-dark/[.07] focus-visible:outline-none ${item.danger ? "text-danger dark:text-danger-dark" : ""}`}
             onClick={(event) => {
               event.stopPropagation();
               Promise.resolve(item.action?.()).finally(() => onClose?.());

@@ -8,7 +8,7 @@ const storySchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['text', 'image', 'video', 'voice', 'music', 'ai_generated', 'multi_image', 'memory'],
+    enum: ['text', 'image', 'video', 'voice', 'music', 'sticker', 'ai_generated', 'multi_image', 'memory'],
     default: 'image',
   },
   content: {
@@ -31,6 +31,7 @@ const storySchema = new mongoose.Schema({
     }],
     stickers: [{
       url: String,
+      mediaType: String,
       position: { x: Number, y: Number },
       size: Number,
       rotation: Number,
@@ -45,6 +46,19 @@ const storySchema = new mongoose.Schema({
     layout: String,
     mood: String,
     theme: String,
+    interactive: {
+      kind: { type: String, enum: ['poll', 'question', 'link', 'location', 'countdown', 'music', 'sticker', 'drawing'] },
+      prompt: String,
+      options: [{ text: String }],
+      linkUrl: String,
+      linkLabel: String,
+      countdownAt: Date,
+      countdownLabel: String,
+      musicId: String,
+      musicArtist: String,
+      drawingData: String,
+      sticker: String,
+    },
   },
   aiGenerated: {
     prompt: String,
@@ -55,7 +69,7 @@ const storySchema = new mongoose.Schema({
     confidence: Number,
   },
   audience: {
-    type: { type: String, enum: ['public', 'close_friends', 'custom', 'private'], default: 'public' },
+    type: { type: String, enum: ['public', 'friends', 'close_friends', 'custom', 'private'], default: 'public' },
     allowedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     excludedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   },
@@ -71,6 +85,12 @@ const storySchema = new mongoose.Schema({
   }],
   location: {
     name: String,
+    city: String,
+    country: String,
+    category: { type: String, enum: ['travel', 'food', 'nature', 'family', 'work', 'memory'], default: 'travel' },
+    visitedAt: Date,
+    placeId: String,
+    address: String,
     coordinates: {
       lat: Number,
       lng: Number,
@@ -79,6 +99,7 @@ const storySchema = new mongoose.Schema({
   metadata: {
     views: { type: Number, default: 0 },
     viewCount: { type: Number, default: 0 },
+    uniqueViewCount: { type: Number, default: 0 },
     viewDetails: [{
       user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
       viewedAt: { type: Date, default: Date.now },
@@ -97,10 +118,12 @@ const storySchema = new mongoose.Schema({
   scheduling: {
     scheduledAt: Date,
     isScheduled: { type: Boolean, default: false },
+    status: { type: String, enum: ['none', 'scheduled', 'published', 'cancelled'], default: 'none' },
     publishedAt: Date,
   },
   isArchived: { type: Boolean, default: false },
   isDraft: { type: Boolean, default: false },
+  deletedAt: { type: Date, default: null },
   expiresAt: { type: Date, default: () => Date.now() + 24 * 60 * 60 * 1000 },
   template: { type: String, default: '' },
   collectionId: { type: mongoose.Schema.Types.ObjectId, ref: 'StoryCollection' },
@@ -115,5 +138,6 @@ storySchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 storySchema.index({ 'audience.type': 1 });
 storySchema.index({ isArchived: 1, user: 1 });
 storySchema.index({ isDraft: 1, user: 1 });
+storySchema.index({ 'scheduling.status': 1, 'scheduling.scheduledAt': 1 });
 
 module.exports = mongoose.model('Story', storySchema);

@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import {
   FiX, FiSave, FiUser, FiEye, FiEyeOff, FiBell, FiLock, FiMessageCircle,
   FiZap, FiImage, FiHeart, FiSliders, FiTrash2, FiCamera,
-  FiSun, FiMonitor, FiChevronRight, FiAlertTriangle, FiClock,
+  FiSun, FiChevronRight, FiAlertTriangle, FiClock,
   FiSmartphone, FiGlobe, FiRefreshCw, FiDownload, FiPlus,
   FiEdit2, FiCheck, FiMaximize2, FiShield, FiCpu, FiSmile
 } from 'react-icons/fi';
@@ -55,12 +55,12 @@ CATEGORIES.forEach((c) => {
 
 function SettingRow({ icon: Icon, label, description, children }) {
   return (
-    <div className="flex items-center justify-between py-3 px-4 bg-surface backdrop-blur-glass border border-border rounded-xl hover:bg-hover/[0.07] transition-colors">
+    <div className="flex items-center justify-between py-3 px-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] transition-colors">
       <div className="flex items-start gap-3 flex-1 min-w-0">
-        {Icon && <Icon className="mt-0.5 text-text-secondary flex-shrink-0" size={16} />}
+        {Icon && <Icon className="mt-0.5 text-text-secondary dark:text-text-secondary-dark flex-shrink-0" size={16} />}
         <div className="min-w-0">
-          <p className="text-sm font-medium text-text-primary">{label}</p>
-          {description && <p className="text-xs text-text-secondary mt-0.5">{description}</p>}
+          <p className="text-sm font-medium text-text-primary dark:text-text-primary-dark">{label}</p>
+          {description && <p className="text-xs text-text-secondary dark:text-text-secondary-dark mt-0.5">{description}</p>}
         </div>
       </div>
       <div className="flex-shrink-0 ml-3">{children}</div>
@@ -71,8 +71,8 @@ function SettingRow({ icon: Icon, label, description, children }) {
 function SectionHeader({ title, description }) {
   return (
     <div className="mb-4">
-      <h3 className="text-sm font-semibold text-text-primary">{title}</h3>
-      {description && <p className="text-xs text-text-secondary mt-1">{description}</p>}
+      <h3 className="text-sm font-semibold text-text-primary dark:text-text-primary-dark">{title}</h3>
+      {description && <p className="text-xs text-text-secondary dark:text-text-secondary-dark mt-1">{description}</p>}
     </div>
   );
 }
@@ -95,7 +95,7 @@ function PersonasSettings({ user }) {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState({ name: '', tone: 'casual', customPrompt: '', color: 'var(--theme-primary)' });
+  const [form, setForm] = useState({ name: '', tone: 'casual', customPrompt: '', color: '#3B5BFF' });
   const [saving, setSaving] = useState(false);
 
   const fetchPersonas = async () => {
@@ -112,13 +112,13 @@ function PersonasSettings({ user }) {
   useEffect(() => { fetchPersonas(); }, []);
 
   const resetForm = () => {
-    setForm({ name: '', tone: 'casual', customPrompt: '', color: 'var(--theme-primary)' });
+    setForm({ name: '', tone: 'casual', customPrompt: '', color: '#3B5BFF' });
     setEditingId(null);
     setShowForm(false);
   };
 
   const handleEdit = (persona) => {
-    setForm({ name: persona.name, tone: persona.tone, customPrompt: persona.customPrompt || '', color: persona.color || 'var(--theme-primary)' });
+    setForm({ name: persona.name, tone: persona.tone, customPrompt: persona.customPrompt || '', color: persona.color || '#3B5BFF' });
     setEditingId(persona._id);
     setShowForm(true);
   };
@@ -169,7 +169,7 @@ function PersonasSettings({ user }) {
     return (
       <div className="space-y-4">
         <SectionHeader title="Personas" description="Create and manage AI personas" />
-        <div className="text-sm text-text-secondary">Loading personas...</div>
+        <div className="text-sm text-text-secondary dark:text-text-secondary-dark">Loading personas...</div>
       </div>
     );
   }
@@ -179,8 +179,8 @@ function PersonasSettings({ user }) {
       <SectionHeader title="Personas" description="Create and manage AI personas. Select one from the chat toolbar to use it." />
 
       {personas.length === 0 && !showForm && (
-        <div className="p-6 bg-surface backdrop-blur-glass border border-border rounded-xl text-center">
-          <p className="text-sm text-text-secondary mb-3">No personas yet. Create your first one!</p>
+        <div className="p-6 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl text-center">
+          <p className="text-sm text-text-secondary dark:text-text-secondary-dark mb-3">No personas yet. Create your first one!</p>
           <Button onClick={() => setShowForm(true)} variant="secondary">
             <FiPlus size={16} /> Create Persona
           </Button>
@@ -201,29 +201,29 @@ function PersonasSettings({ user }) {
           exit={{  height: 0 }}
           className="overflow-hidden"
         >
-          <div className="p-4 bg-surface backdrop-blur-glass border border-border rounded-xl space-y-3">
-            <h4 className="text-sm font-medium text-text-primary">{editingId ? 'Edit Persona' : 'New Persona'}</h4>
+          <div className="p-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl space-y-3">
+            <h4 className="text-sm font-medium text-text-primary dark:text-text-primary-dark">{editingId ? 'Edit Persona' : 'New Persona'}</h4>
 
             <div>
-              <label className="text-xs font-medium text-text-secondary block mb-1">Name *</label>
-              <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Friendly Assistant" maxLength={50} className="bg-surface backdrop-blur-glass border border-border w-full px-3 py-2 text-sm rounded-xl" />
+              <label className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark block mb-1">Name *</label>
+              <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Friendly Assistant" maxLength={50} className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-full px-3 py-2 text-sm rounded-xl" />
             </div>
 
             <div>
-              <label className="text-xs font-medium text-text-secondary block mb-1">Tone</label>
+              <label className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark block mb-1">Tone</label>
               <Select value={form.tone} onChange={(v) => setForm({ ...form, tone: v })} options={TONES_WITH_EMOJI} />
             </div>
 
             <div>
-              <label className="text-xs font-medium text-text-secondary block mb-1">Custom Prompt</label>
-              <textarea value={form.customPrompt} onChange={(e) => setForm({ ...form, customPrompt: e.target.value })} placeholder="Instructions for the AI persona..." maxLength={500} rows={3} className="bg-surface backdrop-blur-glass border border-border w-full px-3 py-2 text-sm rounded-xl resize-none" />
+              <label className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark block mb-1">Custom Prompt</label>
+              <textarea value={form.customPrompt} onChange={(e) => setForm({ ...form, customPrompt: e.target.value })} placeholder="Instructions for the AI persona..." maxLength={500} rows={3} className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-full px-3 py-2 text-sm rounded-xl resize-none" />
             </div>
 
             <div>
-              <label className="text-xs font-medium text-text-secondary block mb-1">Color</label>
+              <label className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark block mb-1">Color</label>
               <div className="flex items-center gap-3">
-                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-10 rounded-xl cursor-pointer border border-border" />
-                <span className="text-xs text-text-secondary">{form.color}</span>
+                <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="w-10 h-10 rounded-xl cursor-pointer border border-border dark:border-border-dark" />
+                <span className="text-xs text-text-secondary dark:text-text-secondary-dark">{form.color}</span>
               </div>
             </div>
 
@@ -239,34 +239,34 @@ function PersonasSettings({ user }) {
           {personas.map((persona) => (
             <div
               key={persona._id}
-              className={`p-4 bg-surface backdrop-blur-glass border border-border rounded-xl border transition-colors ${persona.isActive ? 'border-primary' : 'border-transparent'}`}
+              className={`p-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl border transition-colors ${persona.isActive ? 'border-primary dark:border-primary-dark' : 'border-transparent'}`}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold" style={{ background: persona.color || 'var(--theme-primary)', color: '#fff' }}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold" style={{ background: persona.color || '#3B5BFF', color: '#fff' }}>
                   {persona.name[0]?.toUpperCase() || '?'}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-text-primary truncate">{persona.name}</p>
+                    <p className="text-sm font-medium text-text-primary dark:text-text-primary-dark truncate">{persona.name}</p>
                     {persona.isActive && (
                       <Badge variant="primary">Active</Badge>
                     )}
                   </div>
-                  <p className="text-xs text-text-secondary capitalize">{persona.tone}</p>
+                  <p className="text-xs text-text-secondary dark:text-text-secondary-dark capitalize">{persona.tone}</p>
                   {persona.customPrompt && (
-                    <p className="text-xs text-text-secondary mt-1 truncate">{persona.customPrompt}</p>
+                    <p className="text-xs text-text-secondary dark:text-text-secondary-dark mt-1 truncate">{persona.customPrompt}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {!persona.isActive && (
-                    <button onClick={() => handleActivate(persona._id)} className="p-2 rounded-lg hover:bg-hover/[0.07] text-text-secondary hover:text-primary transition-colors" title="Activate" type="button">
+                    <button onClick={() => handleActivate(persona._id)} className="p-2 rounded-lg hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] text-text-secondary dark:text-text-secondary-dark hover:text-primary dark:hover:text-primary-dark transition-colors" title="Activate" type="button">
                       <FiCheck size={16} />
                     </button>
                   )}
-                  <button onClick={() => handleEdit(persona)} className="p-2 rounded-lg hover:bg-hover/[0.07] text-text-secondary hover:text-text-primary transition-colors" title="Edit" type="button">
+                  <button onClick={() => handleEdit(persona)} className="p-2 rounded-lg hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark transition-colors" title="Edit" type="button">
                     <FiEdit2 size={14} />
                   </button>
-                  <button onClick={() => handleDelete(persona._id)} className="p-2 rounded-lg hover:bg-hover/[0.07] text-text-secondary hover:text-danger transition-colors" title="Delete" type="button">
+                  <button onClick={() => handleDelete(persona._id)} className="p-2 rounded-lg hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] text-text-secondary dark:text-text-secondary-dark hover:text-danger dark:hover:text-danger-dark transition-colors" title="Delete" type="button">
                     <FiTrash2 size={14} />
                   </button>
                 </div>
@@ -294,7 +294,7 @@ function AvatarPreviewModal({ src, onClose }) {
         initial={{ }} animate={{ }} exit={{ }}
         onClick={(e) => e.stopPropagation()}
       >
-        <img src={src} alt="Profile photo preview" className="max-w-full max-h-[80vh] rounded-2xl shadow-floating" />
+        <img src={src} alt="Profile photo preview" className="max-w-full max-h-[80vh] rounded-2xl shadow-floating dark:shadow-floating-dark" />
         <IconButton icon={FiX} onClick={onClose} className="absolute -top-3 -right-3 shadow-lg" aria-label="Close preview" />
       </motion.div>
     </motion.div>
@@ -380,10 +380,10 @@ function AccountSettings({ pref, onUpdate, user, onProfileUpdate }) {
     <div className="space-y-4">
       <SectionHeader title="Account" description="Manage your profile information" />
 
-      <div className="flex items-center gap-4 p-4 bg-surface backdrop-blur-glass border border-border rounded-xl">
+      <div className="flex items-center gap-4 p-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl">
         <div className="relative">
           <div
-            className="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold overflow-hidden cursor-pointer group"
+            className="w-20 h-20 rounded-full bg-primary dark:bg-primary-dark flex items-center justify-center text-white text-2xl font-bold overflow-hidden cursor-pointer group"
             onClick={() => form.avatar && setShowPreview(true)}
           >
             {form.avatar ? (
@@ -401,7 +401,7 @@ function AccountSettings({ pref, onUpdate, user, onProfileUpdate }) {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white shadow-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary dark:bg-primary-dark flex items-center justify-center text-white shadow-lg hover:opacity-90 transition-opacity disabled:opacity-50"
             aria-label="Upload avatar"
             type="button"
           >
@@ -409,31 +409,31 @@ function AccountSettings({ pref, onUpdate, user, onProfileUpdate }) {
           </button>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-text-primary">{user?.username}</p>
-          <p className="text-xs text-text-secondary">{user?.email}</p>
+          <p className="text-sm font-semibold text-text-primary dark:text-text-primary-dark">{user?.username}</p>
+          <p className="text-xs text-text-secondary dark:text-text-secondary-dark">{user?.email}</p>
         </div>
       </div>
 
       <div className="space-y-3">
         <div>
-          <label className="text-xs font-medium text-text-secondary block mb-1">Display Name</label>
-          <input type="text" value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} placeholder="Your display name" className="bg-surface backdrop-blur-glass border border-border w-full px-3 py-2 text-sm rounded-xl" />
+          <label className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark block mb-1">Display Name</label>
+          <input type="text" value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} placeholder="Your display name" className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-full px-3 py-2 text-sm rounded-xl" />
         </div>
         <div>
-          <label className="text-xs font-medium text-text-secondary block mb-1">Username</label>
-          <input type="text" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} className="bg-surface backdrop-blur-glass border border-border w-full px-3 py-2 text-sm rounded-xl" />
+          <label className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark block mb-1">Username</label>
+          <input type="text" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-full px-3 py-2 text-sm rounded-xl" />
         </div>
         <div>
-          <label className="text-xs font-medium text-text-secondary block mb-1">Bio</label>
-          <textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={2} maxLength={200} className="bg-surface backdrop-blur-glass border border-border w-full px-3 py-2 text-sm rounded-xl resize-none" />
+          <label className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark block mb-1">Bio</label>
+          <textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={2} maxLength={200} className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-full px-3 py-2 text-sm rounded-xl resize-none" />
         </div>
         <div>
-          <label className="text-xs font-medium text-text-secondary block mb-1">About</label>
-          <textarea value={form.about} onChange={(e) => setForm({ ...form, about: e.target.value })} rows={2} maxLength={500} className="bg-surface backdrop-blur-glass border border-border w-full px-3 py-2 text-sm rounded-xl resize-none" />
+          <label className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark block mb-1">About</label>
+          <textarea value={form.about} onChange={(e) => setForm({ ...form, about: e.target.value })} rows={2} maxLength={500} className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-full px-3 py-2 text-sm rounded-xl resize-none" />
         </div>
         <div>
-          <label className="text-xs font-medium text-text-secondary block mb-1">Phone</label>
-          <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+1 (555) 123-4567" className="bg-surface backdrop-blur-glass border border-border w-full px-3 py-2 text-sm rounded-xl" />
+          <label className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark block mb-1">Phone</label>
+          <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+1 (555) 123-4567" className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-full px-3 py-2 text-sm rounded-xl" />
         </div>
       </div>
 
@@ -450,7 +450,7 @@ function AccountSettings({ pref, onUpdate, user, onProfileUpdate }) {
   );
 }
 
-function AppearanceSettings({ pref, onUpdate, theme, setTheme, themes, emotionThemeEnabled, toggleEmotionTheme }) {
+function AppearanceSettings({ pref, onUpdate, theme, setTheme, themes }) {
   const p = pref.appearance || defaultPreferences.appearance;
 
   const handleChange = (key, value) => {
@@ -471,24 +471,23 @@ function AppearanceSettings({ pref, onUpdate, theme, setTheme, themes, emotionTh
       <SectionHeader title="Appearance" description="Customize how the chat looks" />
 
       <div className="glass-elevated space-y-4 rounded-xl p-4">
-        <p className="text-xs font-medium uppercase tracking-wider text-text-secondary">Theme</p>
+        <p className="text-xs font-medium uppercase tracking-wider text-text-secondary dark:text-text-secondary-dark">Theme</p>
         <div className="grid grid-cols-3 gap-3">
-          {themes.slice(0, 6).map((t) => (
+          {themes.map((t) => (
             <button
               key={t.id}
-              data-theme={t.id === 'system' ? undefined : t.id}
               onClick={() => setTheme(t.id)}
-              className={`interactive relative aspect-[4/3] overflow-hidden rounded-xl border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 ${
-                theme === t.id ? 'border-primary bg-selection/10' : 'border-border/25 bg-surface/65 hover:border-border/50'
+              className={`interactive relative aspect-[4/3] overflow-hidden rounded-xl border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50 dark:focus-visible:ring-focus-dark/50 ${
+                theme === t.id ? 'border-primary dark:border-primary-dark bg-selection/10 dark:bg-selection-dark/10' : 'border-border/25 dark:border-border-dark/25 bg-surface/65 dark:bg-surface-dark/65 hover:border-border/50 dark:hover:border-border-dark/50'
               }`}
             >
               <div className="w-full h-full flex flex-col">
-                <div className="flex h-1/3 items-center justify-center bg-primary text-[10px] font-medium text-on-primary">
+                <div className="flex h-1/3 items-center justify-center bg-primary dark:bg-primary-dark text-[10px] font-medium text-on-primary dark:text-on-primary-dark">
                   {t.name || t.id}
                 </div>
-                <div className="flex flex-1 gap-1 bg-background/80 p-2">
+                <div className="flex flex-1 gap-1 bg-background/80 dark:bg-background-dark/80 p-2">
                   {[0, 1, 2].map((i) => (
-                    <div key={i} className="flex-1 rounded bg-surface-elevated/80" style={{
+                    <div key={i} className="flex-1 rounded bg-surface-elevated/80 dark:bg-surface-elevated-dark/80" style={{
                       height: `${50 + i * 20}%`,
                       alignSelf: i === 2 ? 'flex-end' : i === 1 ? 'center' : 'flex-start',
                     }} />
@@ -496,8 +495,8 @@ function AppearanceSettings({ pref, onUpdate, theme, setTheme, themes, emotionTh
                 </div>
               </div>
               {theme === t.id && (
-                <div className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary">
-                  <FiCheck size={10} className="text-on-primary" />
+                <div className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary dark:bg-primary-dark">
+                  <FiCheck size={10} className="text-on-primary dark:text-on-primary-dark" />
                 </div>
               )}
             </button>
@@ -505,12 +504,8 @@ function AppearanceSettings({ pref, onUpdate, theme, setTheme, themes, emotionTh
         </div>
       </div>
 
-      <div className="p-4 bg-surface backdrop-blur-glass border border-border rounded-xl space-y-3">
-        <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">Customization</p>
-
-        <SettingRow icon={FiMonitor} label="Emotion Auto-Theme" description="Automatically change theme based on conversation mood">
-          <Toggle value={emotionThemeEnabled} onChange={toggleEmotionTheme} />
-        </SettingRow>
+      <div className="p-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl space-y-3">
+        <p className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark uppercase tracking-wider">Customization</p>
 
         <SettingRow label="Font Size" description="Adjust text size in chats">
           <Select value={p.fontSize} onChange={(v) => handleChange('fontSize', v)} options={[
@@ -574,8 +569,8 @@ function NotificationSettings({ pref, onUpdate }) {
     <div className="space-y-4">
       <SectionHeader title="Notifications" description="Control what alerts you receive" />
 
-      <div className="p-4 bg-surface backdrop-blur-glass border border-border rounded-xl space-y-3">
-        <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">General</p>
+      <div className="p-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl space-y-3">
+        <p className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark uppercase tracking-wider">General</p>
 
         <SettingRow icon={FiBell} label="Push Notifications" description="Receive push notifications">
           <Toggle value={p.pushEnabled} onChange={(v) => handleChange('pushEnabled', v)} />
@@ -591,7 +586,7 @@ function NotificationSettings({ pref, onUpdate }) {
 
         <Divider />
 
-        <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">Sounds & Haptics</p>
+        <p className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark uppercase tracking-wider">Sounds & Haptics</p>
 
         <SettingRow label="Sound" description="Play sound for new messages">
           <Toggle value={p.soundEnabled} onChange={(v) => onUpdate('notifications', { ...p, soundEnabled: v })} disabled={p.silentMode} />
@@ -609,8 +604,8 @@ function NotificationSettings({ pref, onUpdate }) {
       <Card className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-text-primary">Do Not Disturb</p>
-            <p className="text-xs text-text-secondary">Mute notifications during set hours</p>
+            <p className="text-sm font-medium text-text-primary dark:text-text-primary-dark">Do Not Disturb</p>
+            <p className="text-xs text-text-secondary dark:text-text-secondary-dark">Mute notifications during set hours</p>
           </div>
           <Toggle value={p.doNotDisturb.enabled} onChange={(v) => handleDND('enabled', v)} />
         </div>
@@ -621,13 +616,13 @@ function NotificationSettings({ pref, onUpdate }) {
             className="flex items-center gap-3 overflow-hidden"
           >
             <div className="flex-1">
-              <label className="text-[10px] text-text-secondary block mb-1">From</label>
-              <input type="time" value={p.doNotDisturb.startTime} onChange={(e) => handleDND('startTime', e.target.value)} className="bg-surface backdrop-blur-glass border border-border w-full px-2 py-1.5 text-xs rounded-xl" />
+              <label className="text-[10px] text-text-secondary dark:text-text-secondary-dark block mb-1">From</label>
+              <input type="time" value={p.doNotDisturb.startTime} onChange={(e) => handleDND('startTime', e.target.value)} className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-full px-2 py-1.5 text-xs rounded-xl" />
             </div>
-            <FiChevronRight size={14} className="text-text-secondary mt-4 flex-shrink-0" />
+            <FiChevronRight size={14} className="text-text-secondary dark:text-text-secondary-dark mt-4 flex-shrink-0" />
             <div className="flex-1">
-              <label className="text-[10px] text-text-secondary block mb-1">To</label>
-              <input type="time" value={p.doNotDisturb.endTime} onChange={(e) => handleDND('endTime', e.target.value)} className="bg-surface backdrop-blur-glass border border-border w-full px-2 py-1.5 text-xs rounded-xl" />
+              <label className="text-[10px] text-text-secondary dark:text-text-secondary-dark block mb-1">To</label>
+              <input type="time" value={p.doNotDisturb.endTime} onChange={(e) => handleDND('endTime', e.target.value)} className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-full px-2 py-1.5 text-xs rounded-xl" />
             </div>
           </motion.div>
         )}
@@ -649,8 +644,8 @@ function PrivacySecuritySettings({ pref, onUpdate, user }) {
     <div className="space-y-4">
       <SectionHeader title="Privacy" description="Control your visibility and data" />
 
-      <div className="p-4 bg-surface backdrop-blur-glass border border-border rounded-xl space-y-3">
-        <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">Visibility</p>
+      <div className="p-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl space-y-3">
+        <p className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark uppercase tracking-wider">Visibility</p>
 
         <SettingRow icon={FiEye} label="Last Seen" description="Who can see your last seen time">
           <Select value={p.lastSeen} onChange={(v) => onUpdate('privacy', { ...p, lastSeen: v })} options={visibilityOptions} />
@@ -671,7 +666,7 @@ function PrivacySecuritySettings({ pref, onUpdate, user }) {
 
       <SectionHeader title="Security" description="Protect your account" />
 
-      <div className="p-4 bg-surface backdrop-blur-glass border border-border rounded-xl space-y-3">
+      <div className="p-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl space-y-3">
         <SettingRow icon={FiLock} label="Two-Factor Authentication" description="Add an extra layer of security">
           <Toggle value={p.twoFactorEnabled} onChange={(v) => onUpdate('privacy', { ...p, twoFactorEnabled: v })} />
         </SettingRow>
@@ -707,7 +702,7 @@ function ChangePasswordSection() {
 
   return (
     <Card className="p-4 space-y-3">
-      <button onClick={() => setShow(!show)} className="flex items-center gap-2 text-sm font-medium text-text-primary">
+      <button onClick={() => setShow(!show)} className="flex items-center gap-2 text-sm font-medium text-text-primary dark:text-text-primary-dark">
         <FiLock size={16} /> Change Password
       </button>
       <AnimatePresence>
@@ -718,9 +713,9 @@ function ChangePasswordSection() {
             exit={{  height: 0 }}
             className="space-y-3 overflow-hidden"
           >
-            <input type="password" value={form.currentPassword} onChange={(e) => setForm({ ...form, currentPassword: e.target.value })} placeholder="Current password" className="bg-surface backdrop-blur-glass border border-border w-full px-3 py-2 text-sm rounded-xl" />
-            <input type="password" value={form.newPassword} onChange={(e) => setForm({ ...form, newPassword: e.target.value })} placeholder="New password" className="bg-surface backdrop-blur-glass border border-border w-full px-3 py-2 text-sm rounded-xl" />
-            <input type="password" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} placeholder="Confirm new password" className="bg-surface backdrop-blur-glass border border-border w-full px-3 py-2 text-sm rounded-xl" />
+            <input type="password" value={form.currentPassword} onChange={(e) => setForm({ ...form, currentPassword: e.target.value })} placeholder="Current password" className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-full px-3 py-2 text-sm rounded-xl" />
+            <input type="password" value={form.newPassword} onChange={(e) => setForm({ ...form, newPassword: e.target.value })} placeholder="New password" className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-full px-3 py-2 text-sm rounded-xl" />
+            <input type="password" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} placeholder="Confirm new password" className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-full px-3 py-2 text-sm rounded-xl" />
             <Button onClick={handleChange} disabled={saving} variant="secondary" className="w-full">
               {saving ? 'Changing...' : 'Change Password'}
             </Button>
@@ -761,27 +756,27 @@ function SessionsSection() {
     <Card className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <FiSmartphone size={16} className="text-text-secondary" />
-          <span className="text-sm font-medium text-text-primary">Active Sessions</span>
+          <FiSmartphone size={16} className="text-text-secondary dark:text-text-secondary-dark" />
+          <span className="text-sm font-medium text-text-primary dark:text-text-primary-dark">Active Sessions</span>
         </div>
-        <button onClick={fetchSessions} className="text-xs text-primary hover:underline focus:outline-none">
+        <button onClick={fetchSessions} className="text-xs text-primary dark:text-primary-dark hover:underline focus:outline-none">
           {loading ? 'Loading...' : 'Refresh'}
         </button>
       </div>
       {sessions.length > 0 ? (
         <div className="space-y-2 max-h-32 overflow-y-auto">
           {sessions.map((s) => (
-            <div key={s.id} className="flex items-center justify-between text-xs text-text-secondary py-1 border-b border-border last:border-0">
+            <div key={s.id} className="flex items-center justify-between text-xs text-text-secondary dark:text-text-secondary-dark py-1 border-b border-border dark:border-border-dark last:border-0">
               <span>{s.userAgent?.slice(0, 30)}</span>
-              <span className={`${s.isCurrent ? 'text-success' : ''}`}>{s.isCurrent ? 'Current' : new Date(s.createdAt).toLocaleDateString()}</span>
+              <span className={`${s.isCurrent ? 'text-success dark:text-success-dark' : ''}`}>{s.isCurrent ? 'Current' : new Date(s.createdAt).toLocaleDateString()}</span>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-xs text-text-secondary">No active sessions found</p>
+        <p className="text-xs text-text-secondary dark:text-text-secondary-dark">No active sessions found</p>
       )}
       {sessions.length > 1 && (
-        <Button onClick={logoutOthers} variant="secondary" className="w-full text-danger">
+        <Button onClick={logoutOthers} variant="secondary" className="w-full text-danger dark:text-danger-dark">
           Terminate other sessions
         </Button>
       )}
@@ -796,7 +791,7 @@ function ChatSettings({ pref, onUpdate }) {
     <div className="space-y-4">
       <SectionHeader title="Chat" description="Configure chat behavior" />
 
-      <div className="p-4 bg-surface backdrop-blur-glass border border-border rounded-xl space-y-3">
+      <div className="p-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl space-y-3">
         <SettingRow icon={FiMessageCircle} label="Enter to Send" description="Press Enter to send, Shift+Enter for new line">
           <Toggle value={p.enterToSend} onChange={(v) => onUpdate('chat', { ...p, enterToSend: v })} />
         </SettingRow>
@@ -840,8 +835,8 @@ function AISettings({ pref, onUpdate }) {
     <div className="space-y-4">
       <SectionHeader title="AI Features" description="Control AI-powered features" />
 
-      <div className="p-4 bg-surface backdrop-blur-glass border border-border rounded-xl space-y-3">
-        <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">Suggestions</p>
+      <div className="p-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl space-y-3">
+        <p className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark uppercase tracking-wider">Suggestions</p>
 
         <SettingRow icon={FiZap} label="Auto-Suggestions" description="AI suggests replies and content">
           <Toggle value={p.autoSuggestions} onChange={(v) => onUpdate('ai', { ...p, autoSuggestions: v })} />
@@ -853,7 +848,7 @@ function AISettings({ pref, onUpdate }) {
 
         <Divider />
 
-        <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">Detection</p>
+        <p className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark uppercase tracking-wider">Detection</p>
 
         <SettingRow label="Emotion Detection" description="Analyze conversation mood automatically">
           <Toggle value={p.emotionDetection} onChange={(v) => onUpdate('ai', { ...p, emotionDetection: v })} />
@@ -869,7 +864,7 @@ function AISettings({ pref, onUpdate }) {
 
         <Divider />
 
-        <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">Response Settings</p>
+        <p className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark uppercase tracking-wider">Response Settings</p>
 
         <SettingRow label="Persona Creativity" description="AI creativity level for persona responses">
           <Slider value={p.personaCreativity} onChange={(v) => onUpdate('ai', { ...p, personaCreativity: v })} min={0} max={100} label="%" />
@@ -890,7 +885,7 @@ function GhostModeSettings({ pref, onUpdate }) {
     <div className="space-y-4">
       <SectionHeader title="Ghost Mode" description="Browse chats invisibly" />
 
-      <div className="p-4 bg-surface backdrop-blur-glass border border-border rounded-xl space-y-3">
+      <div className="p-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl space-y-3">
         <SettingRow icon={FiEyeOff} label="Auto-Enable" description="Automatically enable ghost mode">
           <Toggle value={p.autoEnable} onChange={(v) => onUpdate('ghostMode', { ...p, autoEnable: v })} />
         </SettingRow>
@@ -922,8 +917,8 @@ function MediaSettings({ pref, onUpdate }) {
     <div className="space-y-4">
       <SectionHeader title="Media" description="Control media downloads and data usage" />
 
-      <div className="p-4 bg-surface backdrop-blur-glass border border-border rounded-xl space-y-3">
-        <p className="text-xs font-medium text-text-secondary uppercase tracking-wider">Auto-Download</p>
+      <div className="p-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl space-y-3">
+        <p className="text-xs font-medium text-text-secondary dark:text-text-secondary-dark uppercase tracking-wider">Auto-Download</p>
 
         <SettingRow icon={FiImage} label="Photos" description="Automatically download photos">
           <Toggle value={p.autoDownloadPhotos} onChange={(v) => onUpdate('media', { ...p, autoDownloadPhotos: v })} />
@@ -944,7 +939,7 @@ function MediaSettings({ pref, onUpdate }) {
         </SettingRow>
 
         <SettingRow icon={FiGlobe} label="Default Wallpaper" description="Set chat background wallpaper">
-          <input type="text" value={p.defaultWallpaper} onChange={(e) => onUpdate('media', { ...p, defaultWallpaper: e.target.value })} placeholder="Wallpaper URL" className="bg-surface backdrop-blur-glass border border-border w-full px-3 py-2 text-sm rounded-xl" />
+          <input type="text" value={p.defaultWallpaper} onChange={(e) => onUpdate('media', { ...p, defaultWallpaper: e.target.value })} placeholder="Wallpaper URL" className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-full px-3 py-2 text-sm rounded-xl" />
         </SettingRow>
       </div>
     </div>
@@ -974,7 +969,7 @@ function AccessibilitySettings({ pref, onUpdate }) {
     <div className="space-y-4">
       <SectionHeader title="Accessibility" description="Make Emotume easier to use" />
 
-      <div className="p-4 bg-surface backdrop-blur-glass border border-border rounded-xl space-y-3">
+      <div className="p-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl space-y-3">
         <SettingRow icon={FiHeart} label="Font Size" description="Adjust text size">
           <Select value={p.fontSize} onChange={(v) => handleChange('fontSize', v)} options={[
             { value: 'small', label: 'Small' },
@@ -1041,7 +1036,7 @@ function AdvancedSettings({ pref, onUpdate, onOpenDelete }) {
     <div className="space-y-4">
       <SectionHeader title="Advanced" description="Advanced settings and data management" />
 
-      <div className="p-4 bg-surface backdrop-blur-glass border border-border rounded-xl space-y-3">
+      <div className="p-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl space-y-3">
         <SettingRow icon={FiClock} label="Message History" description="Keep messages for">
           <Select value={String(p.messageHistoryDays)} onChange={(v) => onUpdate('advanced', { ...p, messageHistoryDays: Number(v) })} options={[
             { value: '30', label: '30 days' },
@@ -1083,10 +1078,10 @@ function AdvancedSettings({ pref, onUpdate, onOpenDelete }) {
         <div className="space-y-1.5 max-h-48 overflow-y-auto">
           {SHORTCUTS.map((s, i) => (
             <div key={i} className="flex items-center justify-between py-1">
-              <span className="text-xs text-text-secondary">{s.desc}</span>
+              <span className="text-xs text-text-secondary dark:text-text-secondary-dark">{s.desc}</span>
               <div className="flex gap-1">
                 {s.keys.map((k, j) => (
-                  <kbd key={j} className="px-1.5 py-0.5 text-[10px] font-mono bg-surface backdrop-blur-glass border border-border rounded border border-border text-text-primary">{k}</kbd>
+                  <kbd key={j} className="px-1.5 py-0.5 text-[10px] font-mono bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded border border-border dark:border-border-dark text-text-primary dark:text-text-primary-dark">{k}</kbd>
                 ))}
               </div>
             </div>
@@ -1094,13 +1089,13 @@ function AdvancedSettings({ pref, onUpdate, onOpenDelete }) {
         </div>
       </Card>
 
-      <div className="p-4 bg-surface backdrop-blur-glass border border-border rounded-xl border border-danger/30">
+      <div className="p-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-xl border border-danger/30 dark:border-danger-dark/30">
         <div className="flex items-center justify-between">
           <div className="flex items-start gap-3">
-            <FiAlertTriangle className="text-danger mt-0.5" size={16} />
+            <FiAlertTriangle className="text-danger dark:text-danger-dark mt-0.5" size={16} />
             <div>
-              <p className="text-sm font-semibold text-danger">Delete Account</p>
-              <p className="text-xs text-text-secondary mt-0.5">Permanently delete your account and all data</p>
+              <p className="text-sm font-semibold text-danger dark:text-danger-dark">Delete Account</p>
+              <p className="text-xs text-text-secondary dark:text-text-secondary-dark mt-0.5">Permanently delete your account and all data</p>
             </div>
           </div>
           <Button onClick={onOpenDelete} variant="danger" size="sm">
@@ -1144,21 +1139,21 @@ function DeleteAccountModal({ onClose }) {
     >
       <motion.div className="absolute inset-0 bg-black/70 backdrop-blur-sm" initial={{ }} animate={{ }} onClick={onClose} aria-label="Close delete confirmation" role="button" tabIndex={0} />
       <motion.div
-        className="bg-surface backdrop-blur-glass border border-border -card p-6 w-full max-w-md relative z-10 border border-danger/30"
+        className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark -card p-6 w-full max-w-md relative z-10 border border-danger/30 dark:border-danger-dark/30"
         initial={{ }} animate={{ }} exit={{ }}
       >
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-danger/20 flex items-center justify-center">
-            <FiAlertTriangle className="text-danger" size={20} />
+          <div className="w-10 h-10 rounded-xl bg-danger/20 dark:bg-danger-dark/20 flex items-center justify-center">
+            <FiAlertTriangle className="text-danger dark:text-danger-dark" size={20} />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-text-primary">Delete Account</h2>
-            <p className="text-xs text-text-secondary">This action cannot be undone</p>
+            <h2 className="text-lg font-bold text-text-primary dark:text-text-primary-dark">Delete Account</h2>
+            <p className="text-xs text-text-secondary dark:text-text-secondary-dark">This action cannot be undone</p>
           </div>
         </div>
 
         <div className="space-y-3">
-          <p className="text-sm text-text-secondary">
+          <p className="text-sm text-text-secondary dark:text-text-secondary-dark">
             All your data will be permanently deleted. This includes your messages, media, bookmarks, and account information.
           </p>
           <label htmlFor="delete-password" className="sr-only">Enter your password</label>
@@ -1168,7 +1163,7 @@ function DeleteAccountModal({ onClose }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password"
-            className="bg-surface backdrop-blur-glass border border-border w-full px-3 py-2.5 text-sm rounded-xl"
+            className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-full px-3 py-2.5 text-sm rounded-xl"
             aria-required="true"
           />
           <label htmlFor="delete-confirm" className="sr-only">Type DELETE to confirm</label>
@@ -1178,7 +1173,7 @@ function DeleteAccountModal({ onClose }) {
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             placeholder='Type "DELETE" to confirm'
-            className="bg-surface backdrop-blur-glass border border-border w-full px-3 py-2.5 text-sm rounded-xl"
+            className="bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark w-full px-3 py-2.5 text-sm rounded-xl"
             aria-required="true"
           />
           <div className="flex gap-2">
@@ -1202,7 +1197,7 @@ function DeleteAccountModal({ onClose }) {
 
 export default function Settings({ onClose }) {
   const { user, updateUser, updatePreferences, updateSettings } = useAuth();
-  const { theme, setTheme, themes, emotionThemeEnabled, toggleEmotionTheme } = useTheme();
+  const { theme, setTheme, themes } = useTheme();
   const [activeCategory, setActiveCategory] = useState('account');
   const [pref, setPref] = useState(user?.preferences || defaultPreferences);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -1250,7 +1245,7 @@ export default function Settings({ onClose }) {
   const renderCategory = () => {
     const props = {
       pref, onUpdate: handleCategoryUpdate, user,
-      theme, setTheme, themes, emotionThemeEnabled, toggleEmotionTheme,
+      theme, setTheme, themes,
       onProfileUpdate: handleProfileUpdate,
       onOpenDelete: () => setShowDeleteModal(true),
     };
@@ -1298,24 +1293,24 @@ export default function Settings({ onClose }) {
           exit={{ }}
           transition={{ duration: 0.16 }}
         >
-          <header className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
+          <header className="flex items-center justify-between px-6 py-4 border-b border-border dark:border-border-dark flex-shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-primary dark:bg-primary-dark flex items-center justify-center">
                 <FiSliders size={14} className="text-white" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-text-primary">Settings</h2>
-                <p className="text-[11px] text-text-secondary">{CATEGORIES.find((c) => c.id === activeCategory)?.label}</p>
+                <h2 className="text-base font-bold text-text-primary dark:text-text-primary-dark">Settings</h2>
+                <p className="text-[11px] text-text-secondary dark:text-text-secondary-dark">{CATEGORIES.find((c) => c.id === activeCategory)?.label}</p>
               </div>
             </div>
-            <button onClick={onClose} className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-hover/[0.07] rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-focus" aria-label="Close settings" type="button">
+            <button onClick={onClose} className="p-1.5 text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark" aria-label="Close settings" type="button">
               <FiX size={18} />
             </button>
           </header>
 
           <div className="flex flex-1 overflow-hidden flex-col sm:flex-row">
             <nav
-              className="sm:w-56 flex-shrink-0 overflow-y-auto border-b sm:border-b-0 sm:border-r border-border"
+              className="sm:w-56 flex-shrink-0 overflow-y-auto border-b sm:border-b-0 sm:border-r border-border dark:border-border-dark"
               aria-label="Settings categories"
             >
               <div className="p-3" role="tablist" aria-orientation="vertical">
@@ -1324,7 +1319,7 @@ export default function Settings({ onClose }) {
                   if (groupCats.length === 0) return null;
                   return (
                     <div key={group} className="mb-3 last:mb-0">
-                      <p className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest px-3 mb-1">
+                      <p className="text-[10px] font-semibold text-text-secondary dark:text-text-secondary-dark uppercase tracking-widest px-3 mb-1">
                         {group}
                       </p>
                       {groupCats.map((cat) => {
@@ -1334,10 +1329,10 @@ export default function Settings({ onClose }) {
                           <button
                             key={cat.id}
                             onClick={() => setActiveCategory(cat.id)}
-                            className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus ${
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-focus dark:focus:ring-focus-dark ${
                               isActive
-                                ? 'bg-primary/10 text-primary font-medium'
-                                : 'text-text-secondary hover:text-text-primary hover:bg-hover/[0.07]'
+                                ? 'bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark font-medium'
+                                : 'text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07]'
                             }`}
                             role="tab"
                             aria-selected={isActive}

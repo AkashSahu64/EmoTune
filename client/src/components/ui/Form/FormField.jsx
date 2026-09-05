@@ -20,7 +20,7 @@ const FormField = memo(function FormField({
       )}
       <div className="relative">
         {icon && (
-          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none z-10">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary dark:text-text-secondary-dark pointer-events-none z-10">
             {icon}
           </div>
         )}

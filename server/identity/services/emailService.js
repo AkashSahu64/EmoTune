@@ -42,7 +42,7 @@ function buildResetOTPEmail(otp, email, expiryMinutes = 15) {
             </td>
           </tr>
           <tr>
-            <td style="background:linear-gradient(135deg,rgba(18,24,38,0.95),rgba(18,24,38,0.8));border:1px solid rgba(37,47,69,0.6);border-radius:24px;padding:40px 32px;backdrop-filter:blur(20px);">
+            <td style="background:linear-gradient(135deg,#121826F2,#121826CC);border:1px solid #252F4599;border-radius:24px;padding:40px 32px;backdrop-filter:blur(20px);">
               <h1 style="color:#F8FAFC;font-size:24px;font-weight:700;margin:0 0 8px 0;text-align:center;">Reset your password</h1>
               <p style="color:#64748B;font-size:14px;line-height:1.6;margin:0 0 32px 0;text-align:center;">
                 We received a request to reset the password for your Emotune account associated with <strong style="color:#94A3B8;">${email}</strong>.
@@ -56,7 +56,7 @@ function buildResetOTPEmail(otp, email, expiryMinutes = 15) {
               <p style="color:#64748B;font-size:13px;line-height:1.5;margin:0 0 24px 0;text-align:center;">
                 This code expires in <strong style="color:#F59E0B;">${expiryMinutes} minutes</strong>. If you didn't request this, please ignore this email.
               </p>
-              <div style="border-top:1px solid rgba(37,47,69,0.5);padding-top:20px;margin-top:20px;">
+              <div style="border-top:1px solid #252F4580;padding-top:20px;margin-top:20px;">
                 <p style="color:#475569;font-size:12px;line-height:1.5;margin:0 0 4px 0;text-align:center;">
                   Need help? Contact <a href="mailto:support@emotune.app" style="color:#3B82F6;text-decoration:none;">support@emotune.app</a>
                 </p>
@@ -103,9 +103,9 @@ function buildPasswordResetSuccessEmail(email) {
             </td>
           </tr>
           <tr>
-            <td style="background:linear-gradient(135deg,rgba(18,24,38,0.95),rgba(18,24,38,0.8));border:1px solid rgba(37,47,69,0.6);border-radius:24px;padding:40px 32px;backdrop-filter:blur(20px);">
+            <td style="background:linear-gradient(135deg,#121826F2,#121826CC);border:1px solid #252F4599;border-radius:24px;padding:40px 32px;backdrop-filter:blur(20px);">
               <div style="text-align:center;margin-bottom:24px;">
-                <div style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;background:rgba(34,197,94,0.15);">
+                <div style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;background:#22C55E26;">
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
               </div>
@@ -118,7 +118,7 @@ function buildPasswordResetSuccessEmail(email) {
                   Sign In to Emotune
                 </a>
               </div>
-              <div style="border-top:1px solid rgba(37,47,69,0.5);padding-top:20px;margin-top:28px;">
+              <div style="border-top:1px solid #252F4580;padding-top:20px;margin-top:28px;">
                 <p style="color:#475569;font-size:11px;line-height:1.5;margin:0;text-align:center;">
                   If you did not make this change, please contact <a href="mailto:support@emotune.app" style="color:#3B82F6;text-decoration:none;">support@emotune.app</a> immediately.
                 </p>

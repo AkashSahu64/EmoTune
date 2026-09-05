@@ -156,7 +156,9 @@ const AISecurityService = {
     const risk = await this.assessLoginRisk(userId, options);
 
     const LoginHistoryService = require('./loginHistoryService');
-    const isLocked = await LoginHistoryService.isAccountLocked(userId);
+    const isLocked = typeof options.isLocked === 'boolean'
+      ? options.isLocked
+      : await LoginHistoryService.isAccountLocked(userId);
 
     return {
       shouldBlock: isLocked || (risk.score >= 90),

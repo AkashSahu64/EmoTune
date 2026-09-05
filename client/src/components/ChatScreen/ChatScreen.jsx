@@ -6,7 +6,6 @@ import ChatLoadingSkeleton from "./ChatLoadingSkeleton";
 
 function ChatScreen({
   messages,
-  messagesEndRef,
   loading,
   userId,
   activeChat,
@@ -18,11 +17,14 @@ function ChatScreen({
   onUnpin,
   onForward,
   onShowInfo,
+  onBookmark,
   onReact,
+  onOpenStory,
   pinnedMessages,
   currentUserAvatar,
 }) {
   const scrollRef = useRef(null);
+  const messageContentRef = useRef(null);
   const [activePopup, setActivePopup] = useState(null);
   const lastPopupTrigger = useRef(null);
   const updateActivePopup = useCallback((next) => {
@@ -37,6 +39,7 @@ function ChatScreen({
   const [newMessagesCount, setNewMessagesCount] = useState(0);
   const prevMessagesLength = useRef(messages.length);
   const initialLoadDone = useRef(false);
+  const lastChatId = useRef(activeChat?._id || null);
   const isNearBottomRef = useRef(true);
 
   const getIsNearBottom = useCallback(() => {
@@ -50,8 +53,17 @@ function ChatScreen({
     if (!el) return;
     el.scrollTo({
       top: el.scrollHeight,
-      behavior: smooth ? "smooth" : "instant",
+      behavior: smooth ? "smooth" : "auto",
     });
+    setShowScrollBtn(false);
+    setNewMessagesCount(0);
+    isNearBottomRef.current = true;
+  }, []);
+
+  const positionAtLatest = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
     setShowScrollBtn(false);
     setNewMessagesCount(0);
     isNearBottomRef.current = true;
@@ -110,16 +122,55 @@ function ChatScreen({
   }, [handleScroll]);
 
   useEffect(() => {
+    const scrollElement = scrollRef.current;
+    const contentElement = messageContentRef.current;
+    if (!scrollElement || !contentElement || typeof ResizeObserver === "undefined") {
+      return undefined;
+    }
+
+    let frame = 0;
+    let previousScrollHeight = scrollElement.scrollHeight;
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const nextScrollHeight = scrollElement.scrollHeight;
+        if (
+          nextScrollHeight !== previousScrollHeight &&
+          isNearBottomRef.current
+        ) {
+          scrollElement.scrollTop = nextScrollHeight;
+        }
+        previousScrollHeight = nextScrollHeight;
+      });
+    });
+
+    observer.observe(contentElement);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [activeChat?._id, loading]);
+
+  useEffect(() => {
+    const chatId = activeChat?._id || null;
     const len = messages.length;
     const prevLen = prevMessagesLength.current;
 
-    if (len > 0 && prevLen === 0) {
-      if (!initialLoadDone.current) {
-        initialLoadDone.current = true;
-        requestAnimationFrame(() => scrollToBottom(false));
-      } else {
-        scrollToBottom(false);
-      }
+    if (lastChatId.current !== chatId) {
+      lastChatId.current = chatId;
+      prevMessagesLength.current = 0;
+      initialLoadDone.current = false;
+      isNearBottomRef.current = true;
+    }
+
+    if (len === 0) {
+      prevMessagesLength.current = 0;
+      return;
+    }
+
+    if (!initialLoadDone.current) {
+      initialLoadDone.current = true;
+      requestAnimationFrame(positionAtLatest);
     } else if (len > prevLen && prevLen > 0) {
       if (isNearBottomRef.current) {
         scrollToBottom(true);
@@ -130,7 +181,7 @@ function ChatScreen({
     }
 
     prevMessagesLength.current = len;
-  }, [messages.length, scrollToBottom]);
+  }, [activeChat?._id, messages.length, positionAtLatest, scrollToBottom]);
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -227,10 +278,10 @@ function ChatScreen({
           className="mb-5 h-64 w-64 object-contain"
           aria-hidden="true"
         />
-        <h2 className="mb-2 text-base font-semibold text-text-primary">
+        <h2 className="mb-2 text-base font-semibold text-text-primary dark:text-text-primary-dark">
           No messages yet
         </h2>
-        <p className="max-w-sm text-sm leading-relaxed text-text-secondary">
+        <p className="max-w-sm text-sm leading-relaxed text-text-secondary dark:text-text-secondary-dark">
           Start with a thought, a file, a song, or a simple hello.
         </p>
       </div>
@@ -238,46 +289,47 @@ function ChatScreen({
   }
 
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col [--wa-incoming:#ffffff] [--wa-outgoing:#008f6b] [--wa-incoming-text:#111827] [--wa-outgoing-text:#ffffff] [--wa-muted:#6b7280] bg-[#e5e5e5] text-[#111827]">
+    <div className="relative flex min-h-0 flex-1 flex-col bg-chat-background dark:bg-chat-background-dark text-chat-incoming-text dark:text-chat-incoming-text-dark">
       {pinnedMessages?.length > 0 && (
         <div
-          className="absolute top-3 left-1/2 z-20 flex w-[min(440px,calc(100%-32px))] min-h-[46px] -translate-x-1/2 items-center gap-2 rounded-2xl border border-border bg-surface-elevated/90 backdrop-blur-glass px-3 py-2 shadow-lg"
+          className="absolute top-3 left-1/2 z-20 flex w-[min(440px,calc(100%-32px))] min-h-[46px] -translate-x-1/2 items-center gap-2 rounded-2xl border border-border dark:border-border-dark bg-surface-elevated/90 dark:bg-surface-elevated-dark/90 backdrop-blur-glass px-3 py-2 shadow-lg"
           role="status"
         >
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark">
             <FiMapPin aria-hidden="true" size={14} />
           </span>
           <span className="flex-1 text-sm">
-            <strong className="text-text-primary">Pinned messages</strong>
-            <span className="ml-1 text-text-secondary">
+            <strong className="text-text-primary dark:text-text-primary-dark">Pinned messages</strong>
+            <span className="ml-1 text-text-secondary dark:text-text-secondary-dark">
               {pinnedMessages.length} saved in this conversation
             </span>
           </span>
-          <span className="rounded-lg bg-primary/10 px-2 py-1 text-[9px] font-bold text-primary">
+          <span className="rounded-lg bg-primary/10 dark:bg-primary-dark/10 px-2 py-1 text-[9px] font-bold text-primary dark:text-primary-dark">
             Pinned
           </span>
         </div>
       )}
       <div
         ref={scrollRef}
-        className="flex min-h-0 flex-1 overflow-y-auto py-2 scrollbar-glass [scrollbar-color:rgb(156_163_175_/_0.65)_transparent] [&::-webkit-scrollbar]:w-[7px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[rgb(156_163_175_/_0.65)]"
+        className="flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-y-auto py-2 scrollbar-glass [scrollbar-color:#9CA3AF_transparent] [&::-webkit-scrollbar]:w-[7px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#9CA3AF]"
         role="log"
         aria-label="Messages"
         aria-live="polite"
       >
-        <AnimatePresence initial={false}>
-          {messages.map((message, index) => {
+        <div ref={messageContentRef} className="w-full min-w-0">
+          <AnimatePresence initial={false}>
+            {messages.map((message, index) => {
             const { isFirstInGroup, isLastInGroup } = getGroupInfo(index);
             const isOwn = String(message.sender?._id || message.sender) === String(userId);
 
             return (
               <div
-                key={message._id || index}
-                className="[content-visibility:auto] [contain-intrinsic-size:0_78px]"
+                key={message.clientMessageId || message._id || index}
+                className="w-full min-w-0 [content-visibility:auto] [contain-intrinsic-size:0_78px]"
               >
                 {index === firstUnreadIndex && firstUnreadIndex > 0 && (
                   <div
-                    className="flex items-center gap-2.5 px-4 py-3 text-[9px] font-bold text-primary uppercase tracking-wider"
+                    className="flex items-center gap-2.5 px-4 py-3 text-[9px] font-bold text-primary dark:text-primary-dark uppercase tracking-wider"
                     role="separator"
                     aria-label="Unread messages"
                   >
@@ -290,7 +342,7 @@ function ChatScreen({
                       initial={{}}
                       animate={{}}
                       transition={{ duration: 0.2 }}
-                      className="rounded-full bg-white/[.95] px-3 py-1 text-[11px] font-semibold text-gray-600 shadow-[0_1px_2px_rgb(0_0_0_/_0.08)]"
+                      className="rounded-full bg-surface px-3 py-1 text-[11px] font-semibold text-text-secondary shadow-xs"
                     >
                       {formatDate(message.createdAt)}
                     </motion.span>
@@ -316,7 +368,9 @@ function ChatScreen({
                     onUnpin={onUnpin}
                     onForward={onForward}
                     onShowInfo={onShowInfo}
+                    onBookmark={onBookmark}
                     onReact={onReact}
+                    onOpenStory={onOpenStory}
                     isPinned={findPinnedMessage(message._id)}
                     currentUserAvatar={currentUserAvatar}
                     activePopup={activePopup}
@@ -336,9 +390,9 @@ function ChatScreen({
                 </motion.div>
               </div>
             );
-          })}
-        </AnimatePresence>
-        <div ref={messagesEndRef} />
+            })}
+          </AnimatePresence>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -348,7 +402,7 @@ function ChatScreen({
             animate={{}}
             exit={{}}
             onClick={() => scrollToBottom(true)}
-            className="absolute bottom-4 right-4 h-10 rounded-full bg-surface-elevated backdrop-blur-glass border border-border flex items-center gap-2 px-3 shadow-lg transition-colors z-10 focus:outline-none focus:ring-2 focus:ring-focus hover:bg-hover/[0.07]"
+            className="absolute bottom-4 right-4 h-10 rounded-full bg-surface-elevated dark:bg-surface-elevated-dark backdrop-blur-glass border border-border dark:border-border-dark flex items-center gap-2 px-3 shadow-lg transition-colors z-10 focus:outline-none focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07]"
             aria-label={
               newMessagesCount > 0
                 ? `${newMessagesCount} new message${newMessagesCount > 1 ? "s" : ""}`
@@ -357,11 +411,11 @@ function ChatScreen({
             type="button"
           >
             {newMessagesCount > 0 && (
-              <span className="text-[11px] font-medium tabular-nums text-primary">
+              <span className="text-[11px] font-medium tabular-nums text-primary dark:text-primary-dark">
                 {newMessagesCount}
               </span>
             )}
-            <FiChevronDown size={16} className="text-text-secondary" />
+            <FiChevronDown size={16} className="text-text-secondary dark:text-text-secondary-dark" />
           </motion.button>
         )}
       </AnimatePresence>

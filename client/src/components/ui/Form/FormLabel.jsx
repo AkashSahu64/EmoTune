@@ -4,10 +4,10 @@ const FormLabel = memo(function FormLabel({ htmlFor, children, required, classNa
   return (
     <label
       htmlFor={htmlFor}
-      className={`block text-[12px] font-semibold text-text-secondary uppercase tracking-wider mb-2 ${className}`}
+      className={`block text-[12px] font-semibold text-text-secondary dark:text-text-secondary-dark uppercase tracking-wider mb-2 ${className}`}
     >
       {children}
-      {required && <span className="text-danger ml-0.5">*</span>}
+      {required && <span className="text-danger dark:text-danger-dark ml-0.5">*</span>}
     </label>
   );
 });

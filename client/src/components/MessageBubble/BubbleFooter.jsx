@@ -21,7 +21,7 @@ function BubbleFooter({
         floating
           ? "absolute bottom-1 right-1 rounded-full bg-black/55 px-1.5 py-1 text-white opacity-100"
           : "",
-        isOwn ? "text-white/80" : "text-gray-400",
+        isOwn ? "text-chat-meta-dark" : "text-chat-meta",
       ]
         .filter(Boolean)
         .join(" ")}

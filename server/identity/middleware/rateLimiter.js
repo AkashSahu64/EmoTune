@@ -1,5 +1,6 @@
 const { IDENTITY_CONFIG } = require('../config/identityConfig');
 const cacheService = require('../../core/cacheService');
+const authPerf = require('../utils/authPerf');
 
 const memoryStore = new Map();
 
@@ -28,6 +29,7 @@ class RateLimiter {
 
       const key = this.keyGenerator(req);
       const now = Date.now();
+      const perf = authPerf.start('rate_limiter');
 
       let entry;
       if (cacheService.isRedisAvailable()) {
@@ -49,6 +51,7 @@ class RateLimiter {
         const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
         res.setHeader('Retry-After', retryAfter);
 
+        authPerf.end(perf, { backend: cacheService.isRedisAvailable() ? 'redis' : 'memory', limited: true });
         return res.status(429).json({
           success: false,
           error: this.message,
@@ -57,6 +60,7 @@ class RateLimiter {
         });
       }
 
+      authPerf.end(perf, { backend: cacheService.isRedisAvailable() ? 'redis' : 'memory', limited: false });
       next();
     };
   }

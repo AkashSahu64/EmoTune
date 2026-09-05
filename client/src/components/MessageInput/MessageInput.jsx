@@ -106,7 +106,7 @@ const FALLBACK_STICKER_PRESETS = [
   ["CRY", "#0284C7", "#E0F2FE"],
   ["OMG", "#EA580C", "#FFF7ED"],
   ["FIRE", "#DC2626", "#FEF2F2"],
-  ["COOL", "#4F46E5", "#EEF2FF"],
+  ["COOL", "#3B5BFF", "#EEF1FF"],
   ["MEOW", "#F97316", "#FFF7ED"],
   ["WOOF", "#84CC16", "#F7FEE7"],
 ];
@@ -585,7 +585,7 @@ function MessageInput({
     <form
       onSubmit={handleSubmit}
       ref={composerRef}
-      className="relative border-t border-border/70 bg-surface/95 p-1 backdrop-blur-xl"
+      className="relative border-t border-border/70 dark:border-border-dark/70 bg-surface/95 dark:bg-surface-dark/95 p-1 backdrop-blur-xl"
       aria-label="Message input"
     >
       <AnimatePresence>
@@ -594,22 +594,22 @@ function MessageInput({
             initial={{}}
             animate={{}}
             exit={{}}
-            className="mx-auto flex max-w-[1180px] items-center gap-3 rounded-full border border-border bg-surface px-3 py-2 mb-2 backdrop-blur-glass"
+            className="mx-auto flex max-w-[1180px] items-center gap-3 rounded-full border border-border dark:border-border-dark bg-surface dark:bg-surface-dark px-3 py-2 mb-2 backdrop-blur-glass"
             role="status"
             aria-live="polite"
           >
             <div className="flex-shrink-0">
               {editingMessage ? (
-                <FiEdit2 size={14} className="text-primary" />
+                <FiEdit2 size={14} className="text-primary dark:text-primary-dark" />
               ) : (
                 <FiCornerUpLeft
                   size={14}
-                  className="text-[var(--theme-accent)]"
+                  className="text-warning dark:text-warning-dark"
                 />
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-medium text-primary">
+              <p className="text-[11px] font-medium text-primary dark:text-primary-dark">
                 {editingMessage
                   ? "Editing message"
                   : `Replying to ${replyTo?.sender?.username || "message"}`}
@@ -628,7 +628,7 @@ function MessageInput({
                   setText("");
                 } else onCancelReply?.();
               }}
-              className="p-1 rounded-lg hover:bg-hover/[0.07] text-text-secondary focus:outline-none focus:ring-2 focus:ring-focus"
+              className="p-1 rounded-lg hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] text-text-secondary dark:text-text-secondary-dark focus:outline-none focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark"
               aria-label={editingMessage ? "Cancel edit" : "Cancel reply"}
             >
               <FiX size={16} />
@@ -664,14 +664,14 @@ function MessageInput({
                   className="relative group"
                   role="listitem"
                 >
-                  <div className="w-16 h-16 rounded-xl bg-surface backdrop-blur-glass border border-border overflow-hidden flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-xl bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark overflow-hidden flex items-center justify-center">
                     {progress != null && progress < 100 ? (
                       <div className="flex flex-col items-center gap-1">
                         <FiUploadCloud
                           size={18}
-                          className="text-primary animate-pulse"
+                          className="text-primary dark:text-primary-dark animate-pulse"
                         />
-                        <span className="text-[9px] text-primary font-medium">
+                        <span className="text-[9px] text-primary dark:text-primary-dark font-medium">
                           {progress}%
                         </span>
                       </div>
@@ -690,24 +690,24 @@ function MessageInput({
                         aria-label={file.name}
                       />
                     ) : (
-                      <Icon size={24} className="text-primary" />
+                      <Icon size={24} className="text-primary dark:text-primary-dark" />
                     )}
                   </div>
                   <button
                     type="button"
                     onClick={() => removeFile(index)}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-danger text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-[var(--theme-danger)]"
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-danger dark:bg-danger-dark text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-danger dark:ring-danger-dark"
                     aria-label={`Remove ${file.name}`}
                   >
                     <FiX size={10} />
                   </button>
-                  <p className="text-[9px] text-text-secondary truncate max-w-16 mt-0.5 text-center">
+                  <p className="text-[9px] text-text-secondary dark:text-text-secondary-dark truncate max-w-16 mt-0.5 text-center">
                     {file.name.split(".").pop()}
                   </p>
                 </motion.div>
               );
             })}
-            <div className="flex items-center text-xs text-text-secondary px-2">
+            <div className="flex items-center text-xs text-text-secondary dark:text-text-secondary-dark px-2">
               {selectedFiles.length} file{selectedFiles.length > 1 ? "s" : ""}{" "}
               selected
             </div>
@@ -722,7 +722,7 @@ function MessageInput({
             setShowEmoji((v) => !v);
             setEmojiPanelTab("emoji");
           }}
-          className="inline-flex h-10 w-10 flex-none items-center justify-center rounded-full border border-border bg-surface text-text-secondary transition hover:bg-hover/[0.07] hover:text-text-primary cursor-pointer"
+          className="inline-flex h-10 w-10 flex-none items-center justify-center rounded-full border border-border dark:border-border-dark bg-surface dark:bg-surface-dark text-text-secondary dark:text-text-secondary-dark transition hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] hover:text-text-primary dark:hover:text-text-primary-dark cursor-pointer"
           aria-label={showEmoji ? "Close emoji picker" : "Open emoji picker"}
           aria-expanded={showEmoji}
         >
@@ -752,7 +752,7 @@ function MessageInput({
                   : "Type a message..."
             }
             rows={1}
-            className="min-h-[42px] w-full max-h-[148px] resize-none overflow-y-hidden scrollbar-hide rounded-3xl border border-border bg-surface px-3 py-[11px] pr-[84px] text-[14px] leading-[18px] text-text-primary placeholder:text-placeholder shadow-sm backdrop-blur-glass transition-colors focus:border-border focus:outline-none focus:ring-0"
+            className="min-h-[42px] w-full max-h-[148px] resize-none overflow-y-hidden scrollbar-hide rounded-3xl border border-border dark:border-border-dark bg-surface dark:bg-surface-dark px-3 py-[11px] pr-[84px] text-[14px] leading-[18px] text-text-primary dark:text-text-primary-dark placeholder:text-placeholder dark:placeholder:text-placeholder-dark shadow-sm backdrop-blur-glass transition-colors focus:border-border dark:focus:border-border-dark focus:outline-none focus:ring-0"
             aria-label={
               editingMessage
                 ? "Edit message"
@@ -770,7 +770,7 @@ function MessageInput({
                   setShowEmoji(false);
                 }}
                 disabled={uploading}
-                className="inline-flex h-8 min-w-[28px] items-center justify-center rounded-full border-0 bg-transparent px-1 text-text-secondary transition hover:bg-hover/[0.07] hover:text-text-primary cursor-pointer"
+                className="inline-flex h-8 min-w-[28px] items-center justify-center rounded-full border-0 bg-transparent px-1 text-text-secondary dark:text-text-secondary-dark transition hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] hover:text-text-primary dark:hover:text-text-primary-dark cursor-pointer"
                 aria-label="Open attachment options"
                 aria-expanded={showAttachmentMenu}
                 aria-haspopup="menu"
@@ -780,7 +780,7 @@ function MessageInput({
 
               {showAttachmentMenu && (
                 <div
-                  className="absolute bottom-full right-0 z-50 mb-2 grid w-[230px] grid-cols-2 gap-1 rounded-lg border border-border bg-surface-elevated py-2 shadow-floating"
+                  className="absolute bottom-full right-0 z-50 mb-2 grid w-[230px] grid-cols-2 gap-1 rounded-lg border border-border dark:border-border-dark bg-surface-elevated dark:bg-surface-elevated-dark py-2 shadow-floating dark:shadow-floating-dark"
                   role="menu"
                   aria-label="Attachment options"
                 >
@@ -791,10 +791,10 @@ function MessageInput({
                         key={option.id}
                         type="button"
                         onClick={() => handleAttachmentOption(option)}
-                        className="flex items-center gap-2 rounded-xl px-1.5 py-1 text-left text-sm font-medium text-text-secondary transition hover:bg-hover/[0.08] hover:text-text-primary"
+                        className="flex items-center gap-2 rounded-xl px-1.5 py-1 text-left text-sm font-medium text-text-secondary dark:text-text-secondary-dark transition hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-text-primary dark:hover:text-text-primary-dark"
                         role="menuitem"
                       >
-                        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary/10 dark:bg-primary-dark/10 text-primary dark:text-primary-dark">
                           <Icon size={15} aria-hidden="true" />
                         </span>
                         {option.label}
@@ -810,10 +810,10 @@ function MessageInput({
         <motion.button
           type="submit"
           disabled={!hasContent || uploading}
-          className={`inline-flex h-10 w-10 items-center justify-center rounded-full flex-shrink-0 transition-all focus:outline-none focus:ring-2 focus:ring-focus ${
+          className={`inline-flex h-10 w-10 items-center justify-center rounded-full flex-shrink-0 transition-all focus:outline-none focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark ${
             hasContent && !uploading
-              ? "bg-primary text-white shadow-[0_0_18px_rgba(85,94,255,0.35)] hover:brightness-110"
-              : "border border-border bg-surface/80 text-text-secondary backdrop-blur-glass"
+              ? "bg-primary dark:bg-primary-dark text-white shadow-[0_0_18px_#3B5BFF59] hover:brightness-110"
+              : "border border-border dark:border-border-dark bg-surface/80 dark:bg-surface-dark/80 text-text-secondary dark:text-text-secondary-dark backdrop-blur-glass"
           }`}
           aria-label={
             editingMessage
@@ -843,10 +843,10 @@ function MessageInput({
             initial={{}}
             animate={{}}
             exit={{}}
-            className="absolute bottom-full left-1 right-auto z-50 w-[350px] max-w-[calc(100vw-1rem)] overflow-hidden border border-border bg-surface-muted/30 shadow-floating backdrop-blur-glass rounded-lg"
+            className="absolute bottom-full left-1 right-auto z-50 w-[350px] max-w-[calc(100vw-1rem)] overflow-hidden border border-border dark:border-border-dark bg-surface-muted/30 dark:bg-surface-muted-dark/30 shadow-floating dark:shadow-floating-dark backdrop-blur-glass rounded-lg"
           >
             <div className="flex h-[380px] w-full max-h-[calc(100vh-1rem)] flex-col overflow-hidden rounded-lg">
-              <div className="flex w-full bg-surface-muted/90 shrink-0 items-center gap-1 border-b border-border py-1.5">
+              <div className="flex w-full bg-surface-muted/90 dark:bg-surface-muted-dark/90 shrink-0 items-center gap-1 border-b border-border dark:border-border-dark py-1.5">
                 {[
                   { id: "emoji", label: "Emoji", icon: FiSmile },
                   { id: "sticker", label: "Sticker", icon: RiEmojiStickerLine },
@@ -868,8 +868,8 @@ function MessageInput({
                       }}
                       className={`inline-flex h-[28px] w-12 items-center justify-center transition ${
                         isActive
-                          ? "text-primary"
-                          : "text-text-secondary hover:text-text-primary"
+                          ? "text-primary dark:text-primary-dark"
+                          : "text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark"
                       }`}
                       aria-label={`Open ${tab.label} picker`}
                       aria-pressed={isActive}
@@ -897,7 +897,7 @@ function MessageInput({
                 </div>
               ) : emojiPanelTab === "sticker" ? (
                 <>
-                  <div className="flex shrink-0 items-center bg-surface-muted/90 gap-2 border-b border-border px-2 py-1.5">
+                  <div className="flex shrink-0 items-center bg-surface-muted/90 dark:bg-surface-muted-dark/90 gap-2 border-b border-border dark:border-border-dark px-2 py-1.5">
                     <div className="min-w-0 flex-1">
                       <input
                         value={stickerSearch}
@@ -905,7 +905,7 @@ function MessageInput({
                           handleStickerSearch(event.target.value)
                         }
                         placeholder="Search stickers"
-                        className="h-8 w-full rounded-full border border-border bg-surface px-3 text-xs text-text-primary outline-none placeholder:text-placeholder focus:border-primary"
+                        className="h-8 w-full rounded-full border border-border dark:border-border-dark bg-surface dark:bg-surface-dark px-3 text-xs text-text-primary dark:text-text-primary-dark outline-none placeholder:text-placeholder dark:placeholder:text-placeholder-dark focus:border-primary dark:focus:border-primary-dark"
                         aria-label="Search stickers"
                       />
                     </div>
@@ -915,10 +915,10 @@ function MessageInput({
                           key={category}
                           type="button"
                           onClick={() => handleStickerCategory(category)}
-                          className={`shrink-0 rounded-full px-2.5 py-1 border border-border text-[10px] font-semibold transition ${
+                          className={`shrink-0 rounded-full px-2.5 py-1 border border-border dark:border-border-dark text-[10px] font-semibold transition ${
                             stickerCategory === category
-                              ? "bg-primary text-white"
-                              : "bg-surface text-text-secondary hover:bg-hover/[0.08] hover:text-text-primary"
+                              ? "bg-primary dark:bg-primary-dark text-white"
+                              : "bg-surface dark:bg-surface-dark text-text-secondary dark:text-text-secondary-dark hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-text-primary dark:hover:text-text-primary-dark"
                           }`}
                         >
                           {category}
@@ -928,20 +928,20 @@ function MessageInput({
                   </div>
                   {loadingGifs ? (
                     <div
-                      className="grid min-h-0 flex-1 grid-cols-4 bg-surface-muted/90 content-start gap-2 overflow-y-auto p-1"
+                      className="grid min-h-0 flex-1 grid-cols-4 bg-surface-muted/90 dark:bg-surface-muted-dark/90 content-start gap-2 overflow-y-auto p-1"
                       role="status"
                       aria-label="Loading stickers"
                     >
                       {Array.from({ length: 12 }).map((_, index) => (
                         <div
                           key={index}
-                          className="h-16 animate-pulse rounded-md bg-hover/[0.08]"
+                          className="h-16 animate-pulse rounded-md bg-hover/[0.08] dark:bg-hover-dark/[0.08]"
                         />
                       ))}
                     </div>
                   ) : stickers.filter((sticker) => getStickerPreview(sticker))
                       .length > 0 ? (
-                    <div className="grid min-h-0 flex-1 grid-cols-4 bg-surface-muted/90 content-start gap-2 overflow-y-auto p-1">
+                    <div className="grid min-h-0 flex-1 grid-cols-4 bg-surface-muted/90 dark:bg-surface-muted-dark/90 content-start gap-2 overflow-y-auto p-1">
                       {stickers
                         .filter((sticker) => getStickerPreview(sticker))
                         .map((sticker) => (
@@ -949,7 +949,7 @@ function MessageInput({
                             key={sticker.id || sticker.url}
                             type="button"
                             onClick={() => handleStickerSelect(sticker)}
-                            className="flex aspect-square items-center justify-center rounded-md bg-surface p-1 transition hover:bg-hover/[0.08] focus:outline-none focus:ring-2 focus:ring-focus"
+                            className="flex aspect-square items-center justify-center rounded-md bg-surface dark:bg-surface-dark p-1 transition hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] focus:outline-none focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark"
                             aria-label={sticker.title || "Sticker"}
                           >
                             <img
@@ -962,7 +962,7 @@ function MessageInput({
                         ))}
                     </div>
                   ) : (
-                    <div className="flex min-h-0 flex-1 items-center justify-center px-5 text-center text-xs text-text-secondary">
+                    <div className="flex min-h-0 flex-1 items-center justify-center px-5 text-center text-xs text-text-secondary dark:text-text-secondary-dark">
                       No stickers available.
                     </div>
                   )}
@@ -970,7 +970,7 @@ function MessageInput({
               ) : (
                 <>
                   <div
-                    className="flex shrink-0 items-center gap-2 bg-surface-muted/90 border-b border-border px-2 py-1.5"
+                    className="flex shrink-0 items-center gap-2 bg-surface-muted/90 dark:bg-surface-muted-dark/90 border-b border-border dark:border-border-dark px-2 py-1.5"
                     role="search"
                     aria-label="Search GIFs"
                   >
@@ -982,7 +982,7 @@ function MessageInput({
                           handleGifSearch(event.target.value)
                         }
                         placeholder="Search GIFs..."
-                        className="h-8 w-full rounded-full border border-border bg-surface px-3 pl-3 text-xs text-text-primary placeholder:text-placeholder transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus"
+                        className="h-8 w-full rounded-full border border-border dark:border-border-dark bg-surface dark:bg-surface-dark px-3 pl-3 text-xs text-text-primary dark:text-text-primary-dark placeholder:text-placeholder dark:placeholder:text-placeholder-dark transition-colors focus:border-primary dark:focus:border-primary-dark focus:outline-none focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark"
                         aria-label="Search GIFs"
                       />
                     </div>
@@ -992,10 +992,10 @@ function MessageInput({
                           key={category}
                           type="button"
                           onClick={() => handleGifCategory(category)}
-                          className={`shrink-0 rounded-full px-2.5 py-1 border border-border text-[10px] font-semibold transition ${
+                          className={`shrink-0 rounded-full px-2.5 py-1 border border-border dark:border-border-dark text-[10px] font-semibold transition ${
                             gifCategory === category
-                              ? "bg-primary text-white"
-                              : "bg-surface text-text-secondary hover:bg-hover/[0.08] hover:text-text-primary"
+                              ? "bg-primary dark:bg-primary-dark text-white"
+                              : "bg-surface dark:bg-surface-dark text-text-secondary dark:text-text-secondary-dark hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-text-primary dark:hover:text-text-primary-dark"
                           }`}
                         >
                           {category}
@@ -1013,12 +1013,12 @@ function MessageInput({
                         {Array.from({ length: 9 }).map((_, index) => (
                           <div
                             key={index}
-                            className="aspect-square animate-pulse rounded-xl bg-hover/[0.08]"
+                            className="aspect-square animate-pulse rounded-xl bg-hover/[0.08] dark:bg-hover-dark/[0.08]"
                           />
                         ))}
                       </div>
                     ) : gifs.length === 0 ? (
-                      <div className="py-8 text-center text-sm text-text-secondary">
+                      <div className="py-8 text-center text-sm text-text-secondary dark:text-text-secondary-dark">
                         {gifSearch.trim()
                           ? "No GIFs found"
                           : "No trending GIFs available"}
@@ -1030,7 +1030,7 @@ function MessageInput({
                             key={gif.id}
                             type="button"
                             onClick={() => handleGifSelect(gif)}
-                            className="aspect-square overflow-hidden bg-surface-muted/90 rounded-md transition-colors hover:opacity-85 focus:outline-none focus:ring-2 focus:ring-focus"
+                            className="aspect-square overflow-hidden bg-surface-muted/90 dark:bg-surface-muted-dark/90 rounded-md transition-colors hover:opacity-85 focus:outline-none focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark"
                             aria-label={gif.title || "GIF"}
                           >
                             <img
@@ -1059,4 +1059,5 @@ function MessageInput({
   );
 }
 
+export { STICKER_CATEGORIES, getFallbackStickers, getStickerPreview };
 export default memo(MessageInput);

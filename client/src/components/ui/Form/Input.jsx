@@ -29,7 +29,7 @@ const Input = memo(forwardRef(function Input({
       tabIndex={tabIndex}
       className={cn(
         'glass-input h-11 w-full rounded-lg py-3 pl-10 pr-4 text-body focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-40',
-        state === 'error' ? 'border-danger text-danger focus-visible:ring-danger/25' : 'text-text-primary focus-visible:ring-focus/30',
+        state === 'error' ? 'border-danger dark:border-danger-dark text-danger dark:text-danger-dark focus-visible:ring-danger/25 dark:focus-visible:ring-danger-dark/25' : 'text-text-primary dark:text-text-primary-dark focus-visible:ring-focus/30 dark:focus-visible:ring-focus-dark/30',
         className,
       )}
       aria-label={ariaLabel}

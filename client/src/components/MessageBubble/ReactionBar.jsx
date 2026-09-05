@@ -8,12 +8,12 @@ const ReactionBar = forwardRef(function ReactionBar({ reactions = [], userId, on
   return (
     <div ref={ref} className="mt-1 flex max-w-full flex-wrap gap-1 px-1" aria-label="Message reactions">
       {normalized.map((reaction) => (
-        <div className={`inline-flex items-stretch overflow-hidden rounded-full border bg-surface-elevated ${reaction.emoji === myReaction ? 'border-primary/70 bg-primary/10' : 'border-border/60'}`} key={reaction.emoji}>
-          <button type="button" className="inline-flex items-center gap-1 px-2 py-0.5 text-sm hover:bg-hover/[.08] focus:outline-none focus:ring-2 focus:ring-focus" onClick={() => onOpenDetails?.()} aria-label={`View ${reaction.emoji} reactions`}>
+        <div className={`inline-flex items-stretch overflow-hidden rounded-full border bg-surface-elevated dark:bg-surface-elevated-dark ${reaction.emoji === myReaction ? 'border-primary/70 dark:border-primary-dark/70 bg-primary/10 dark:bg-primary-dark/10' : 'border-border/60 dark:border-border-dark/60'}`} key={reaction.emoji}>
+          <button type="button" className="inline-flex items-center gap-1 px-2 py-0.5 text-sm hover:bg-hover/[.08] dark:hover:bg-hover-dark/[.08] focus:outline-none focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark" onClick={() => onOpenDetails?.()} aria-label={`View ${reaction.emoji} reactions`}>
             <span>{reaction.emoji}</span>
-            <span className="text-[10px] text-text-secondary">{reaction.count}</span>
+            <span className="text-[10px] text-text-secondary dark:text-text-secondary-dark">{reaction.count}</span>
           </button>
-          <button type="button" className="w-6 border-l border-border/40 text-xs text-text-secondary hover:bg-hover/[.08] focus:outline-none focus:ring-2 focus:ring-focus" onClick={() => onReact?.(reaction.emoji)} aria-label={reaction.emoji === myReaction ? `Remove ${reaction.emoji} reaction` : `React with ${reaction.emoji}`}>
+          <button type="button" className="w-6 border-l border-border/40 dark:border-border-dark/40 text-xs text-text-secondary dark:text-text-secondary-dark hover:bg-hover/[.08] dark:hover:bg-hover-dark/[.08] focus:outline-none focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark" onClick={() => onReact?.(reaction.emoji)} aria-label={reaction.emoji === myReaction ? `Remove ${reaction.emoji} reaction` : `React with ${reaction.emoji}`}>
             {reaction.emoji === myReaction ? '✓' : '+'}
           </button>
         </div>

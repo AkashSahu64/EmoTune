@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../hooks/useAuth";
 import { useSocket } from "../hooks/useSocket";
 import { useTheme } from "../hooks/useTheme";
@@ -26,6 +27,7 @@ import {
 import Sidebar from "../components/Sidebar/Sidebar";
 import Navbar from "../components/Navbar/Navbar";
 import StoryFeed from "../components/Stories/StoryFeed";
+import StoryViewer from "../components/Stories/StoryViewer";
 import ChatScreen from "../components/ChatScreen/ChatScreen";
 import MessageInput from "../components/MessageInput/MessageInput";
 import SuggestionPanel from "../components/SuggestionPanel/SuggestionPanel";
@@ -47,6 +49,7 @@ import api, {
   ghostService,
   decideService,
   chatService,
+  bookmarkService,
 } from "../services/api";
 import AI_SERVICE from "../services/aiService";
 const GhostCollaboration = lazy(
@@ -60,6 +63,11 @@ import useChatSocket from "../features/chat/hooks/useChatSocket";
 import useNormalizedChatState from "../features/chat/hooks/useNormalizedChatState";
 import useTyping from "../features/chat/hooks/useTyping";
 import { applyReactionSelection, normalizeReactions } from "../components/MessageBubble/utils/reactionHelpers";
+import {
+  createClientMessageId,
+  markMessageFailed,
+  reconcileMessage,
+} from "../features/chat/utils/messageReconciliation";
 
 import {
   FiSearch,
@@ -89,13 +97,11 @@ function Dashboard() {
   const navigate = useNavigate();
   const { chatId } = useParams();
   const { user, logout } = useAuth();
+  const queryClient = useQueryClient();
   const { socket, isConnected, onlineUsers } = useSocket();
   const {
     theme,
     setTheme,
-    applyEmotionTheme,
-    emotionThemeEnabled,
-    toggleEmotionTheme,
   } = useTheme();
   const { activePersona, personas, setActivePersona, clearActivePersona } =
     usePersona();
@@ -121,6 +127,8 @@ function Dashboard() {
   const [activeIntent, setActiveIntent] = useState("all");
   const [intentCounts, setIntentCounts] = useState({});
   const [showNewChat, setShowNewChat] = useState(false);
+  const [pendingBookmark, setPendingBookmark] = useState(null);
+  const bookmarkRequests = useRef(new Set());
   const { typingUsers, handleTyping, handleTypingStart, handleTypingStop } =
     useTyping({ socket, chatId: activeChat?._id, currentUserId: user?._id });
   const { messages, setMessages, loadingMessages } = useMessages(
@@ -144,6 +152,7 @@ function Dashboard() {
   const [showPersonaModal, setShowPersonaModal] = useState(false);
   const [showSilentInbox, setShowSilentInbox] = useState(false);
   const [showStoryPanel, setShowStoryPanel] = useState(false);
+  const [chatStoryViewer, setChatStoryViewer] = useState(null);
   const [showIntroVideo, setShowIntroVideo] = useState(() => {
     try {
       return (
@@ -157,7 +166,6 @@ function Dashboard() {
   const [ghostSession, setGhostSession] = useState(null);
   const [showDecideFlow, setShowDecideFlow] = useState(false);
   const [intentFilterExpanded, setIntentFilterExpanded] = useState(true);
-  const messagesEndRef = useRef(null);
   const pendingReactionRequests = useRef(new Map());
   const optimisticReactionState = useRef(new Map());
   const canonicalReactionState = useRef(new Map());
@@ -189,12 +197,11 @@ function Dashboard() {
       try {
         const data = await AI_SERVICE.getSuggestions(chatId);
         setSuggestions(data);
-        if (emotionThemeEnabled && data.emoji) applyEmotionTheme(data.emoji);
       } catch {
         setSuggestions(null);
       }
     },
-    [emotionThemeEnabled, applyEmotionTheme],
+    [],
   );
 
   useEffect(() => {
@@ -240,14 +247,7 @@ function Dashboard() {
         message.chat?._id === activeChat?._id
       ) {
         if (!silent) {
-          setMessages((prev) =>
-            prev.some((m) => m._id === message._id) ? prev : [...prev, message],
-          );
-          setTimeout(
-            () =>
-              messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }),
-            100,
-          );
+          setMessages((prev) => reconcileMessage(prev, message));
         }
         if (message.sender !== user?._id && message.sender?._id !== user?._id)
           socket?.emit("message:delivered", {
@@ -262,7 +262,6 @@ function Dashboard() {
         play();
       if (silent) setSilentInboxCount((prev) => prev + 1);
       applyMessageEvent(message, user?._id);
-      if (activeChat) fetchIntentCounts(activeChat._id);
     },
     [
       activeChat,
@@ -271,7 +270,6 @@ function Dashboard() {
       playAllowed,
       socket,
       applyMessageEvent,
-      fetchIntentCounts,
     ],
   );
 
@@ -376,9 +374,9 @@ function Dashboard() {
   const handleSendMessage = useCallback(
     async (content, type = "text", metadata = {}) => {
       if (!activeChat) return;
-      const sendKey = editingMessage ? `edit:${editingMessage._id}` : `send:${activeChat._id}`;
-      if (actionRequests.current.has(sendKey)) return;
-      actionRequests.current.add(sendKey);
+      const editKey = editingMessage ? `edit:${editingMessage._id}` : null;
+      if (editKey && actionRequests.current.has(editKey)) return;
+      if (editKey) actionRequests.current.add(editKey);
       try {
         if (editingMessage) {
           await messageService.edit(editingMessage._id, content);
@@ -393,9 +391,33 @@ function Dashboard() {
           toast.success("Message edited");
           return;
         }
-        if (!content.trim()) return;
+        if (!content.trim()) return false;
         const { mediaUrl, fileType: mType, ...restMetadata } = metadata;
-        await messageService.send({
+        const clientMessageId = createClientMessageId();
+        const now = new Date().toISOString();
+        const optimisticMessage = {
+          _id: `optimistic-${clientMessageId}`,
+          clientMessageId,
+          sender: user,
+          chat: activeChat._id,
+          content,
+          type,
+          metadata: restMetadata,
+          mediaUrl: mediaUrl || "",
+          mediaType: mType || "",
+          silent: isSilent,
+          personaUsed: activePersona?.name || "",
+          replyTo: replyToMessage?._id,
+          createdAt: now,
+          updatedAt: now,
+          isOptimistic: true,
+          messageStatus: "sending",
+          status: "sending",
+        };
+        setMessages((prev) => reconcileMessage(prev, optimisticMessage));
+
+        const { data } = await messageService.send({
+          clientMessageId,
           content,
           chatId: activeChat._id,
           type,
@@ -406,27 +428,76 @@ function Dashboard() {
           personaUsed: activePersona?.name || "",
           ...(replyToMessage ? { replyTo: replyToMessage._id } : {}),
         });
+        if (data?.message) {
+          setMessages((prev) => reconcileMessage(prev, data.message));
+        }
         setReplyToMessage(null);
-        setTimeout(
-          () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }),
-          100,
-        );
-        fetchSuggestions(activeChat._id);
+        return true;
       } catch (err) {
+        if (!editingMessage) {
+          let clientMessageId = null;
+          try {
+            const payload = typeof err.config?.data === "string"
+              ? JSON.parse(err.config.data)
+              : err.config?.data || {};
+            clientMessageId = payload.clientMessageId;
+          } catch {
+            clientMessageId = null;
+          }
+          if (clientMessageId) {
+            setMessages((prev) =>
+              markMessageFailed(prev, clientMessageId, "Failed to send message"),
+            );
+          }
+        }
         toast.error("Failed to send message");
+        return false;
       } finally {
-        actionRequests.current.delete(sendKey);
+        if (editKey) actionRequests.current.delete(editKey);
       }
     },
     [
       activeChat,
+      user,
       editingMessage,
       isSilent,
       activePersona,
       replyToMessage,
-      fetchSuggestions,
+      setMessages,
     ],
   );
+
+  const sendBookmarkToChat = useCallback(async (bookmark, chat = activeChat) => {
+    if (!chat || !bookmark) return false;
+    const content = bookmark.content || bookmark.metadata?.shayari || bookmark.metadata?.songTitle || bookmark.metadata?.emoji || bookmark.metadata?.videoQuery || "Saved bookmark";
+    const sent = await handleSendMessage(content, bookmark.type || "text", bookmark.metadata || {});
+    if (!sent) return false;
+    try {
+      await bookmarkService.increment(bookmark._id);
+      toast.success("Bookmark sent");
+      return true;
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Message sent, but bookmark usage was not updated");
+      return true;
+    }
+  }, [activeChat, handleSendMessage]);
+
+  const handleSendBookmark = useCallback((bookmark) => {
+    if (activeChat) {
+      return sendBookmarkToChat(bookmark);
+    }
+    setPendingBookmark(bookmark);
+    setShowNewChat(true);
+    toast.info("Choose a conversation to send this bookmark");
+    return true;
+  }, [activeChat, sendBookmarkToChat]);
+
+  useEffect(() => {
+    if (!activeChat || !pendingBookmark) return;
+    const bookmark = pendingBookmark;
+    setPendingBookmark(null);
+    sendBookmarkToChat(bookmark, activeChat);
+  }, [activeChat, pendingBookmark, sendBookmarkToChat]);
 
   const handleSelectChat = useCallback(
     (chat) => {
@@ -444,6 +515,27 @@ function Dashboard() {
     setShowRightPanel(false);
     if (chatId) navigate("/app");
   }, [chatId, navigate, setShowRightPanel]);
+  const handleOpenStoryFromMessage = useCallback((story) => {
+    if (!story?._id) return;
+    const owner = story.user && typeof story.user === "object" ? story.user : null;
+    const ownerId = owner?._id || story.user;
+    setChatStoryViewer({
+      stories: [{
+        user: ownerId,
+        userInfo: {
+          username: owner?.username || owner?.name || "",
+          avatar: owner?.avatar || "",
+        },
+        stories: [story],
+        isOwn: String(ownerId || "") === String(user?._id || ""),
+      }],
+      initialIndex: 0,
+    });
+    setShowAIPanel(false);
+    setShowBookmarks(false);
+    setShowDecideFlow(false);
+    setShowRightPanel(true);
+  }, [user?._id]);
   const finishIntroVideo = useCallback(() => {
     try {
       window.sessionStorage.setItem("emotune-logo-intro-played", "true");
@@ -668,6 +760,73 @@ function Dashboard() {
   );
   const isTyping = Object.values(typingUsers).some(Boolean);
 
+  const handleBookmark = useCallback(async (typeOrPayload, legacyData) => {
+    const payload = typeOrPayload && typeof typeOrPayload === "object"
+      ? typeOrPayload
+      : {
+          type: typeOrPayload,
+          source: "ai",
+          content: typeof legacyData === "string" ? legacyData : undefined,
+          metadata: typeof legacyData === "object" ? legacyData : {},
+        };
+    const metadata = payload.metadata || {};
+    const content = payload.content || metadata.shayari || metadata.songTitle || metadata.emoji || metadata.videoQuery || "";
+    const type = payload.type;
+    const source = payload.source || "other";
+    const requestKey = `${type}:${source}:${content}:${JSON.stringify(metadata)}`;
+    if (bookmarkRequests.current.has(requestKey)) return;
+    bookmarkRequests.current.add(requestKey);
+    try {
+      await bookmarkService.create({
+        type,
+        source,
+        content,
+        metadata,
+        ...(Array.isArray(payload.tags) ? { tags: payload.tags } : {}),
+      });
+      await queryClient.invalidateQueries({ queryKey: ["bookmarks", user?._id] });
+      toast.success("Saved to bookmarks");
+      return true;
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to save bookmark");
+      return false;
+    } finally {
+      bookmarkRequests.current.delete(requestKey);
+    }
+  }, [queryClient, user?._id]);
+
+  const handleBookmarkMessage = useCallback(async (message) => {
+    if (!message) return false;
+    const rawType = String(message.type || "text").toLowerCase();
+    const type = rawType === "song" ? "song" : rawType === "video" ? "video" : ["image", "gif", "sticker", "audio", "voice", "file", "document"].includes(rawType) ? "image" : "text";
+    const metadata = message.metadata || {};
+    const content = String((type === "image" && message.mediaUrl) || message.content || metadata.emoji || metadata.fileName || message.mediaUrl || "").trim();
+    const objectId = /^[a-f\d]{24}$/i;
+    const sourceChatId = message.chat?._id || message.chat || activeChat?._id;
+    const referenceMetadata = {
+      ...(metadata.emoji ? { emoji: metadata.emoji } : {}),
+      ...(metadata.songTitle ? { songTitle: metadata.songTitle } : {}),
+      ...(metadata.songArtist ? { songArtist: metadata.songArtist } : {}),
+      ...(metadata.songClipUrl ? { songClipUrl: metadata.songClipUrl } : {}),
+      ...(metadata.videoQuery ? { videoQuery: metadata.videoQuery } : {}),
+      ...(metadata.videoEmbedUrl ? { videoEmbedUrl: metadata.videoEmbedUrl } : {}),
+      ...(metadata.lyrics ? { lyrics: metadata.lyrics } : {}),
+      ...(objectId.test(String(message._id || "")) ? { originalMessageId: String(message._id) } : {}),
+      ...(objectId.test(String(sourceChatId || "")) ? { sourceChatId: String(sourceChatId) } : {}),
+    };
+    const saved = await handleBookmark({
+      type,
+      source: "chat",
+      content,
+      metadata: referenceMetadata,
+    });
+    if (saved) {
+      setMessages((current) => current.map((item) => String(item._id) === String(message._id) ? { ...item, isBookmarked: true } : item));
+      toast.success("Message saved to Knowledge Library");
+    }
+    return saved;
+  }, [activeChat?._id, handleBookmark, setMessages]);
+
   const TONE_EMOJIS = {
     professional: "💼",
     casual: "😊",
@@ -678,7 +837,23 @@ function Dashboard() {
 
   if (!user) return null;
 
-  const rightPanelContent = showDecideFlow ? (
+  const rightPanelContent = chatStoryViewer ? (
+    <StoryViewer
+      stories={chatStoryViewer.stories}
+      initialIndex={chatStoryViewer.initialIndex}
+      user={user}
+      chats={chats}
+      embedded
+      onClose={() => {
+        setChatStoryViewer(null);
+        setShowRightPanel(false);
+      }}
+      onChanged={() => {
+        setChatStoryViewer(null);
+        setShowRightPanel(false);
+      }}
+    />
+  ) : showDecideFlow ? (
     <DecideFlow
       chatId={activeChat?._id}
       onClose={() => {
@@ -688,18 +863,18 @@ function Dashboard() {
     />
   ) : showAIPanel ? (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border dark:border-border-dark">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-primary flex items-center justify-center text-white text-[10px] font-bold">
+          <div className="w-6 h-6 rounded-lg bg-primary dark:bg-primary-dark flex items-center justify-center text-white text-[10px] font-bold">
             AI
           </div>
-          <h3 className="text-sm font-semibold text-text-primary">
+          <h3 className="text-sm font-semibold text-text-primary dark:text-text-primary-dark">
             AI Assistant
           </h3>
         </div>
         <button
           onClick={() => setShowAIPanel(false)}
-          className="p-1.5 rounded-lg hover:bg-hover/[0.07] text-text-secondary hover:text-text-primary transition-colors"
+          className="p-1.5 rounded-lg hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark transition-colors"
           aria-label="Close AI suggestions"
           type="button"
         >
@@ -721,17 +896,12 @@ function Dashboard() {
           suggestions={suggestions}
           onSend={handleSendMessage}
           chatId={activeChat._id}
-          onBookmark={(type, data) => {
-            api
-              .post("/bookmarks", { type, content: data, metadata: data })
-              .catch(() => {});
-            toast.success("Saved to bookmarks");
-          }}
+          onBookmark={handleBookmark}
         />
       </div>
     </div>
   ) : showBookmarks ? (
-    <BookmarksPanel onClose={() => setShowBookmarks(false)} />
+    <BookmarksPanel userId={user._id} onSendBookmark={handleSendBookmark} onClose={() => setShowBookmarks(false)} />
   ) : (
     <RightPanel
       chat={activeChat}
@@ -773,12 +943,11 @@ function Dashboard() {
         </script>
       </Helmet>
 
-      <div className="h-screen flex bg-transparent theme-transition overflow-hidden">
+      <div className="flex h-screen min-h-0 gap-1 overflow-hidden bg-background dark:bg-background-dark p-1">
         <AnimatePresence>
           {(showSidebar || window.innerWidth >= 1024) && (
             <aside
-              className="w-[var(--sidebar-width)] flex-shrink-0 hidden lg:flex flex-col border-r"
-              style={{ borderColor: "var(--theme-text)" }}
+              className="w-sidebar flex-shrink-0 hidden overflow-hidden rounded-2xl border border-border bg-surface dark:border-border-dark dark:bg-surface-dark lg:flex flex-col"
               aria-label="Chat sidebar"
             >
               <Sidebar
@@ -806,19 +975,32 @@ function Dashboard() {
           )}
         </AnimatePresence>
 
-        {showSidebar && window.innerWidth < 1024 && (
-          <div className="fixed inset-0 z-40 lg:hidden">
-            <div
+        <AnimatePresence>
+          {showSidebar && window.innerWidth < 1024 && (
+            <motion.div
+              className="fixed inset-0 z-40 lg:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+            <motion.div
               className="absolute inset-0 bg-black/60"
               onClick={() => setShowSidebar(false)}
               aria-label="Close sidebar"
               role="button"
               tabIndex={0}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
             />
-            <aside
-              className="absolute bottom-0 left-0 top-0 w-[var(--sidebar-width)] flex flex-col border-r"
-              style={{ borderColor: "var(--theme-text)" }}
+            <motion.aside
+              className="absolute bottom-0 left-0 top-0 w-sidebar overflow-hidden rounded-r-2xl border-r border-border bg-surface dark:border-border-dark dark:bg-surface-dark shadow-floating dark:shadow-floating-dark"
               aria-label="Chat sidebar"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", stiffness: 360, damping: 34 }}
             >
               <Sidebar
                 user={user}
@@ -850,11 +1032,12 @@ function Dashboard() {
                 onUpdateChatPreference={handleUpdateChatPreference}
                 onMarkAllChatsRead={handleMarkAllChatsRead}
               />
-            </aside>
-          </div>
-        )}
+            </motion.aside>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <main className="app-main-shell flex-1 flex flex-col min-w-0 pb-16 lg:pb-0">
+        <main className="app-main-shell flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-surface dark:border-border-dark dark:bg-surface-dark pb-16 lg:pb-0">
           <Navbar
             activeChat={activeChat}
             isOnline={
@@ -878,35 +1061,25 @@ function Dashboard() {
             onOpenDecideFlow={handleOpenDecideFlow}
           />
 
+          <AnimatePresence mode="wait" initial={false}>
           {showStoryPanel ? (
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-              <div className="flex shrink-0 items-center justify-between border-b border-border/25 bg-surface/35 px-4 py-2 backdrop-blur-glass">
-                <div>
-                  <p className="text-[20px] font-semibold text-text-primary">
-                    Stories
-                  </p>
-                  <p className="text-[12px] text-text-secondary -mt-0.5">
-                    Share moments and see what your people are up to.
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setShowStoryPanel(false)}
-                >
-                  Back to chats
-                </Button>
-              </div>
+            <motion.div
+              key="stories-panel"
+              className="flex min-h-0 flex-1 flex-col overflow-hidden"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 12 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+            >
               <div className="min-h-0 flex-1 overflow-y-auto">
-                <StoryFeed user={user} chats={chats} socket={socket} />
+                <StoryFeed user={user} chats={chats} socket={socket} onClose={() => setShowStoryPanel(false)} />
               </div>
-            </div>
+            </motion.div>
           ) : (
             <>
               {activeChat ? (
-                <div className="flex flex-1 min-h-0">
-                  <div className="app-chat-column flex-1 flex flex-col min-w-0 min-h-0">
+                <div className="flex min-h-0 min-w-0 flex-1">
+                  <div className="app-chat-column flex min-h-0 min-w-0 flex-1 flex-col">
                     <div
                       className={`relative shrink-0 ${intentFilterExpanded ? "" : "h-8"}`}
                     >
@@ -930,7 +1103,7 @@ function Dashboard() {
                       >
                         <span
                           aria-hidden="true"
-                          className="h-[35px] w-[4px] hover:h-[38px] hover:w-[6px] rounded-full bg-primary/80 group-hover:bg-primary mr-5 hover:mr-4 transition-all duration-200"
+                          className="h-[35px] w-[4px] hover:h-[38px] hover:w-[6px] rounded-full bg-primary/80 dark:bg-primary-dark/80 group-hover:bg-primary dark:group-hover:bg-primary-dark mr-5 hover:mr-4 transition-all duration-200"
                         />
                       </button>
                       <AnimatePresence initial={false}>
@@ -955,7 +1128,6 @@ function Dashboard() {
                     </div>
                     <ChatScreen
                       messages={messages}
-                      messagesEndRef={messagesEndRef}
                       loading={loadingMessages}
                       userId={user._id}
                       activeChat={activeChat}
@@ -971,6 +1143,8 @@ function Dashboard() {
                       }}
                       onShowInfo={handleShowInfo}
                       onReact={handleReact}
+                      onBookmark={handleBookmarkMessage}
+                      onOpenStory={handleOpenStoryFromMessage}
                       pinnedMessages={activeChat?.pinnedMessages || []}
                       currentUserAvatar={
                         user?.profileImage ||
@@ -998,7 +1172,7 @@ function Dashboard() {
                   aria-live="polite"
                 >
                   {showIntroVideo ? (
-                    <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-surface/20">
+                    <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-surface/20 dark:bg-surface-dark/20">
                       <video
                         src="/assets/emotune-logo-intro.mp4"
                         autoPlay
@@ -1023,7 +1197,7 @@ function Dashboard() {
                       <button
                         type="button"
                         onClick={finishIntroVideo}
-                        className="absolute bottom-5 right-5 rounded-lg border border-border/30 bg-surface/75 px-3 py-2 text-xs text-text-secondary backdrop-blur-glass hover:bg-hover/[0.08] hover:text-text-primary"
+                        className="absolute bottom-5 right-5 rounded-lg border border-border/30 dark:border-border-dark/30 bg-surface/75 dark:bg-surface-dark/75 px-3 py-2 text-xs text-text-secondary dark:text-text-secondary-dark backdrop-blur-glass hover:bg-hover/[0.08] dark:hover:bg-hover-dark/[0.08] hover:text-text-primary dark:hover:text-text-primary-dark"
                       >
                         Skip intro
                       </button>
@@ -1044,10 +1218,10 @@ function Dashboard() {
                           className="h-full w-full object-contain drop-shadow-2xl"
                         />
                       </div>
-                      <h2 className="mb-3 text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
+                      <h2 className="mb-3 text-3xl font-semibold tracking-tight text-text-primary dark:text-text-primary-dark sm:text-4xl">
                         Your conversations start here
                       </h2>
-                      <p className="mb-8 max-w-xl text-base leading-relaxed text-text-secondary sm:text-lg">
+                      <p className="mb-8 max-w-xl text-base leading-relaxed text-text-secondary dark:text-text-secondary-dark sm:text-lg">
                         Select a chat from the list to start messaging or create
                         a new conversation.
                       </p>
@@ -1055,7 +1229,7 @@ function Dashboard() {
                         variant="primary"
                         size="lg"
                         icon={FiEdit3}
-                        className="w-72 max-w-full"
+                        className="w-56 max-w-full text-xl"
                         onClick={() => setShowNewChat(true)}
                       >
                         Start a new chat
@@ -1066,16 +1240,17 @@ function Dashboard() {
               )}
             </>
           )}
+          </AnimatePresence>
         </main>
 
         <AnimatePresence>
           {(showRightPanel || showBookmarks || showAIPanel || showDecideFlow) &&
             window.innerWidth >= 1024 && (
               <motion.aside
-                className="w-[var(--right-panel-width)] flex-shrink-0 hidden lg:flex flex-col bg-surface backdrop-blur-glass border-l border-border"
-                initial={{}}
-                animate={{}}
-                exit={{}}
+                className="relative w-right-panel flex-shrink-0 hidden overflow-hidden rounded-2xl border border-border bg-surface dark:border-border-dark dark:bg-surface-dark backdrop-blur-glass lg:flex flex-col"
+                initial={{ opacity: 0, x: 28 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 28 }}
                 transition={{
                   type: "spring",
                   stiffness: 300,
@@ -1094,11 +1269,12 @@ function Dashboard() {
             window.innerWidth < 1024 && (
               <motion.div
                 className="fixed inset-0 z-40 lg:hidden"
-                initial={{}}
-                animate={{}}
-                exit={{}}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
               >
-                <div
+                <motion.div
                   className="absolute inset-0 bg-black/55"
                   onClick={() => {
                     setShowRightPanel(false);
@@ -1109,12 +1285,15 @@ function Dashboard() {
                   aria-label="Close panel"
                   role="button"
                   tabIndex={0}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                 />
                 <motion.aside
-                  className="absolute right-0 top-0 bottom-0 w-[min(92vw,380px)] bg-surface backdrop-blur-glass border-l border-border shadow-floating flex flex-col"
-                  initial={{}}
-                  animate={{}}
-                  exit={{}}
+                  className="absolute right-0 top-0 bottom-0 w-[min(92vw,380px)] bg-surface dark:bg-surface-dark backdrop-blur-glass border-l border-border dark:border-border-dark shadow-floating dark:shadow-floating-dark flex flex-col"
+                  initial={{ x: "100%" }}
+                  animate={{ x: 0 }}
+                  exit={{ x: "100%" }}
                   transition={{ type: "spring", stiffness: 320, damping: 34 }}
                   aria-label="Side panel"
                 >
@@ -1125,12 +1304,12 @@ function Dashboard() {
         </AnimatePresence>
 
         <nav
-          className="fixed bottom-0 left-0 right-0 h-16 lg:hidden z-30 flex items-center justify-around px-2 bg-surface backdrop-blur-glass border-t border-border shadow-floating"
+          className="fixed bottom-0 left-0 right-0 h-16 lg:hidden z-30 flex items-center justify-around px-2 bg-surface dark:bg-surface-dark backdrop-blur-glass border-t border-border dark:border-border-dark shadow-floating dark:shadow-floating-dark"
           aria-label="Mobile navigation"
         >
           <button
             onClick={() => setShowSidebar(true)}
-            className="flex flex-col items-center gap-0.5 text-text-secondary hover:text-text-primary transition-colors py-1 px-3 rounded-xl"
+            className="flex flex-col items-center gap-0.5 text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark transition-colors py-1 px-3 rounded-xl"
             aria-label="Chats"
           >
             <svg
@@ -1148,7 +1327,7 @@ function Dashboard() {
           </button>
           <button
             onClick={() => (window.location.href = "/app/memory")}
-            className="flex flex-col items-center gap-0.5 text-text-secondary hover:text-text-primary transition-colors py-1 px-3 rounded-xl"
+            className="flex flex-col items-center gap-0.5 text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark transition-colors py-1 px-3 rounded-xl"
             aria-label="Memory search"
           >
             <svg
@@ -1167,7 +1346,7 @@ function Dashboard() {
           </button>
           <button
             onClick={() => setShowSilentInbox(true)}
-            className="flex flex-col items-center gap-0.5 text-text-secondary hover:text-text-primary transition-colors py-1 px-3 rounded-xl relative"
+            className="flex flex-col items-center gap-0.5 text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark transition-colors py-1 px-3 rounded-xl relative"
             aria-label={`Silent inbox${silentInboxCount > 0 ? `, ${silentInboxCount} unread` : ""}`}
           >
             <svg
@@ -1183,17 +1362,17 @@ function Dashboard() {
             </svg>
             <span className="text-[10px] font-medium">Silent</span>
             {silentInboxCount > 0 && (
-              <span className="absolute -top-0.5 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center shadow-lg">
+              <span className="absolute -top-0.5 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-primary dark:bg-primary-dark text-white text-[9px] font-bold flex items-center justify-center shadow-lg">
                 {silentInboxCount > 99 ? "99+" : silentInboxCount}
               </span>
             )}
           </button>
           <button
             onClick={() => setShowRightPanel(!showRightPanel)}
-            className="flex flex-col items-center gap-0.5 text-text-secondary hover:text-text-primary transition-colors py-1 px-3 rounded-xl"
+            className="flex flex-col items-center gap-0.5 text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark transition-colors py-1 px-3 rounded-xl"
             aria-label="Profile"
           >
-            <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-[8px] font-bold overflow-hidden">
+            <div className="w-5 h-5 rounded-full bg-primary dark:bg-primary-dark flex items-center justify-center text-white text-[8px] font-bold overflow-hidden">
               {user?.avatar ? (
                 <img
                   src={user.avatar}
@@ -1225,8 +1404,6 @@ function Dashboard() {
             currentTheme={theme}
             onSelect={setTheme}
             onClose={() => setShowThemeSwitcher(false)}
-            emotionThemeEnabled={emotionThemeEnabled}
-            onToggleEmotionTheme={toggleEmotionTheme}
           />
         )}
         {showSettings && <Settings onClose={() => setShowSettings(false)} />}
@@ -1286,7 +1463,7 @@ function Dashboard() {
             >
               <Suspense
                 fallback={
-                  <div className="flex h-full items-center justify-center text-sm text-text-secondary">
+                  <div className="flex h-full items-center justify-center text-sm text-text-secondary dark:text-text-secondary-dark">
                     Loading Ghost Session...
                   </div>
                 }
@@ -1317,7 +1494,7 @@ function Dashboard() {
               tabIndex={0}
             />
             <motion.div
-              className="relative p-6 w-full max-w-sm mx-4 bg-surface backdrop-blur-glass border border-border rounded-2xl shadow-floating"
+              className="relative p-6 w-full max-w-sm mx-4 bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark rounded-2xl shadow-floating dark:shadow-floating-dark"
               initial={{}}
               animate={{}}
               exit={{}}
@@ -1328,16 +1505,16 @@ function Dashboard() {
             >
               <div className="flex items-center justify-between mb-5">
                 <div>
-                  <h3 className="text-sm font-semibold text-text-primary">
+                  <h3 className="text-sm font-semibold text-text-primary dark:text-text-primary-dark">
                     Select Persona
                   </h3>
-                  <p className="text-[10px] text-text-secondary mt-0.5">
+                  <p className="text-[10px] text-text-secondary dark:text-text-secondary-dark mt-0.5">
                     Choose an AI persona for your chat
                   </p>
                 </div>
                 <button
                   onClick={() => setShowPersonaModal(false)}
-                  className="p-1.5 rounded-lg hover:bg-hover/[0.07] text-text-secondary hover:text-text-primary transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark transition-colors"
                   aria-label="Close persona selector"
                   type="button"
                 >
@@ -1360,12 +1537,12 @@ function Dashboard() {
                     clearActivePersona();
                     setShowPersonaModal(false);
                   }}
-                  className={`w-full flex items-center gap-3 px-3 py-3 text-sm rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-focus ${!activePersona ? "bg-primary/10 border border-primary/30 text-primary" : "text-text-secondary hover:bg-hover/[0.07] border border-transparent"}`}
+                  className={`w-full flex items-center gap-3 px-3 py-3 text-sm rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark ${!activePersona ? "bg-primary/10 dark:bg-primary-dark/10 border border-primary/30 dark:border-primary-dark/30 text-primary dark:text-primary-dark" : "text-text-secondary dark:text-text-secondary-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] border border-transparent"}`}
                   aria-pressed={!activePersona}
                   type="button"
                 >
                   <div
-                    className="w-9 h-9 rounded-xl bg-surface backdrop-blur-glass border border-border flex items-center justify-center text-base"
+                    className="w-9 h-9 rounded-xl bg-surface dark:bg-surface-dark backdrop-blur-glass border border-border dark:border-border-dark flex items-center justify-center text-base"
                     aria-hidden="true"
                   >
                     👤
@@ -1375,7 +1552,7 @@ function Dashboard() {
                     <p className="text-[10px] opacity-60">Standard chat mode</p>
                   </div>
                   {!activePersona && (
-                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                    <div className="w-5 h-5 rounded-full bg-primary dark:bg-primary-dark flex items-center justify-center">
                       <svg
                         width="12"
                         height="12"
@@ -1390,7 +1567,7 @@ function Dashboard() {
                   )}
                 </motion.button>
                 {personas.length === 0 && (
-                  <p className="px-3 py-3 text-xs text-text-secondary text-center">
+                  <p className="px-3 py-3 text-xs text-text-secondary dark:text-text-secondary-dark text-center">
                     No personas yet. Create one in settings.
                   </p>
                 )}
@@ -1401,14 +1578,14 @@ function Dashboard() {
                       setActivePersona(persona._id);
                       setShowPersonaModal(false);
                     }}
-                    className={`w-full flex items-center gap-3 px-3 py-3 text-sm rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-focus ${activePersona?._id === persona._id ? "bg-primary/10 border border-primary/30 text-primary" : "text-text-secondary hover:bg-hover/[0.07] border border-transparent"}`}
+                    className={`w-full flex items-center gap-3 px-3 py-3 text-sm rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-focus dark:focus:ring-focus-dark ${activePersona?._id === persona._id ? "bg-primary/10 dark:bg-primary-dark/10 border border-primary/30 dark:border-primary-dark/30 text-primary dark:text-primary-dark" : "text-text-secondary dark:text-text-secondary-dark hover:bg-hover/[0.07] dark:hover:bg-hover-dark/[0.07] border border-transparent"}`}
                     aria-pressed={activePersona?._id === persona._id}
                     type="button"
                   >
                     <div
                       className="w-9 h-9 rounded-xl flex items-center justify-center text-lg font-bold"
                       style={{
-                        background: persona.color || "var(--theme-primary)",
+                        background: persona.color || "#3B5BFF",
                         color: "#fff",
                       }}
                       aria-hidden="true"
@@ -1422,7 +1599,7 @@ function Dashboard() {
                       </p>
                     </div>
                     {activePersona?._id === persona._id && (
-                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                      <div className="w-5 h-5 rounded-full bg-primary dark:bg-primary-dark flex items-center justify-center">
                         <svg
                           width="12"
                           height="12"

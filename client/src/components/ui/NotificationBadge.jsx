@@ -10,7 +10,7 @@ export default function NotificationBadge({ count, className = '', size = 'sm' }
           initial={{}}
           animate={{}}
           exit={{}}
-          className={`inline-flex items-center justify-center px-1 rounded-full bg-primary text-white font-bold ${sizes[size]} ${className}`}
+          className={`inline-flex items-center justify-center px-1 rounded-full bg-primary dark:bg-primary-dark text-white font-bold ${sizes[size]} ${className}`}
           aria-label={`${count} unread`}
         >
           {count > 99 ? '99+' : count}

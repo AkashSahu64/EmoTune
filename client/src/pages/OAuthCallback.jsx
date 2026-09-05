@@ -63,17 +63,17 @@ export default function OAuthCallback() {
           initial={{ }}
           animate={{ }}
         >
-          <div className="w-16 h-16 rounded-full bg-danger/10 flex items-center justify-center mx-auto mb-4">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--theme-danger)" strokeWidth="2">
+          <div className="w-16 h-16 rounded-full bg-danger/10 dark:bg-danger-dark/10 flex items-center justify-center mx-auto mb-4">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
               <line x1="15" y1="9" x2="9" y2="15" />
               <line x1="9" y1="9" x2="15" y2="15" />
             </svg>
           </div>
-          <p className="text-danger text-sm font-medium mb-2">Authentication failed</p>
-          <p className="text-text-secondary text-xs">{error}</p>
-          <div className="mt-4 w-8 h-8 border-2 border-border border-t-[var(--theme-primary)] rounded-full animate-spin mx-auto" />
-          <p className="text-[10px] text-text-muted mt-2">Redirecting...</p>
+          <p className="text-danger dark:text-danger-dark text-sm font-medium mb-2">Authentication failed</p>
+          <p className="text-text-secondary dark:text-text-secondary-dark text-xs">{error}</p>
+          <div className="mt-4 w-8 h-8 border-2 border-border dark:border-border-dark border-t-primary dark:border-t-primary-dark rounded-full animate-spin mx-auto" />
+          <p className="text-[10px] text-text-muted dark:text-text-muted-dark mt-2">Redirecting...</p>
         </motion.div>
       </div>
     );
@@ -87,11 +87,11 @@ export default function OAuthCallback() {
         animate={{ }}
         transition={{ duration: 0.5 }}
       >
-        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="w-16 h-16 rounded-full bg-primary/10 dark:bg-primary-dark/10 flex items-center justify-center mx-auto mb-4">
+          <div className="w-8 h-8 border-2 border-primary dark:border-primary-dark border-t-transparent rounded-full animate-spin" />
         </div>
-        <p className="text-text-secondary text-sm font-medium">{status}</p>
-        <p className="text-text-secondary text-xs mt-2">Please wait while we securely sign you in</p>
+        <p className="text-text-secondary dark:text-text-secondary-dark text-sm font-medium">{status}</p>
+        <p className="text-text-secondary dark:text-text-secondary-dark text-xs mt-2">Please wait while we securely sign you in</p>
       </motion.div>
     </div>
   );

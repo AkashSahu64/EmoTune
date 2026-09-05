@@ -12,7 +12,8 @@
     "test:identity": "jest --config jest.config.js tests/unit/identity tests/integration/identity --detectOpenHandles --forceExit",
     "worker:embedding": "node workers/embeddingWorker.js",
     "worker:intent": "node workers/intentWorker.js",
-    "worker:truth": "node workers/truthWorker.js"
+    "worker:truth": "node workers/truthWorker.js",
+    "worker:story": "node workers/storyWorker.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.1.3",

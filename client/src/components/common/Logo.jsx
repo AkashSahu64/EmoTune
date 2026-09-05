@@ -12,7 +12,7 @@ export default function Logo({ variant = 'full', size = 'md', className = '' }) 
     return (
       <img
         src="/logo.png"
-        alt="Emotume brand icon"
+        alt="Emotune brand icon"
         className={`block ${className}`}
         style={{ width: s.icon, height: s.icon }}
       />
@@ -23,8 +23,8 @@ export default function Logo({ variant = 'full', size = 'md', className = '' }) 
     return (
       <img
         src="/textLogo.png"
-        alt="Emotume"
-        className={`block ${className}`}
+        alt="Emotune"
+        className={`block object-contain ${className}`}
         style={{ height: s.textH, width: 'auto' }}
       />
     );
@@ -34,15 +34,15 @@ export default function Logo({ variant = 'full', size = 'md', className = '' }) 
     <div className={`inline-flex items-center ${className}`} style={{ gap: s.gap }}>
       <img
         src="/logo.png"
-        alt="Emotume brand icon"
+        alt="Emotune brand icon"
         style={{ width: s.icon, height: s.icon }}
-        className="block flex-shrink-0"
+        className="block flex-shrink-0 object-contain"
       />
       <img
         src="/textLogo.png"
-        alt="Emotume"
+        alt="Emotune"
         style={{ height: s.textH, width: 'auto' }}
-        className="block"
+        className="block object-contain"
       />
     </div>
   );

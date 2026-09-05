@@ -91,12 +91,12 @@ export default function OTPInput({ value, onChange, disabled, error }) {
             onPaste={index === 0 ? handlePaste : undefined}
             disabled={disabled}
             autoComplete="one-time-code"
-            className={`w-10 h-12 sm:w-12 sm:h-14 md:w-14 md:h-16 text-center text-xl sm:text-2xl font-bold text-text-primary bg-surface backdrop-blur-glass border-2 rounded-xl transition-colors duration-200 outline-none ${
+            className={`w-10 h-12 sm:w-12 sm:h-14 md:w-14 md:h-16 text-center text-xl sm:text-2xl font-bold text-text-primary dark:text-text-primary-dark bg-surface dark:bg-surface-dark backdrop-blur-glass border-2 rounded-xl transition-colors duration-200 outline-none ${
               error
-                ? 'border-danger text-danger focus:border-danger focus:ring-2 focus:ring-[var(--theme-danger)]/20'
+                ? 'border-danger dark:border-danger-dark text-danger dark:text-danger-dark focus:border-danger dark:focus:border-danger-dark focus:ring-2 focus:ring-danger/20 dark:ring-danger-dark/20'
                 : digit
-                  ? 'border-primary text-text-primary focus:border-primary focus:ring-2 focus:ring-focus/20'
-                  : 'border-border text-text-primary focus:border-primary focus:ring-2 focus:ring-focus/20'
+                  ? 'border-primary dark:border-primary-dark text-text-primary dark:text-text-primary-dark focus:border-primary dark:focus:border-primary-dark focus:ring-2 focus:ring-focus/20 dark:focus:ring-focus-dark/20'
+                  : 'border-border dark:border-border-dark text-text-primary dark:text-text-primary-dark focus:border-primary dark:focus:border-primary-dark focus:ring-2 focus:ring-focus/20 dark:focus:ring-focus-dark/20'
             } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             aria-label={`Digit ${index + 1}`}
           />

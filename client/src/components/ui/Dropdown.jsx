@@ -21,7 +21,7 @@ export default function Dropdown({ trigger, children, align = 'left', className 
     <div ref={ref} className={cn('relative inline-block', className)}>
       <div onClick={() => setIsOpen((open) => !open)}>
         {trigger || (
-          <button className="interactive flex items-center gap-1 rounded-md px-2 py-1 text-body text-text-secondary hover:text-text-primary" type="button" aria-expanded={isOpen}>
+          <button className="interactive flex items-center gap-1 rounded-md px-2 py-1 text-body text-text-secondary dark:text-text-secondary-dark hover:text-text-primary dark:hover:text-text-primary-dark" type="button" aria-expanded={isOpen}>
             Options <FiChevronDown size={14} />
           </button>
         )}

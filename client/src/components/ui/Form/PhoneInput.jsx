@@ -41,22 +41,22 @@ const PhoneInput = memo(function PhoneInput({
   }, [dialCode, onPhoneChange]);
 
   const borderClass = state === 'error'
-    ? 'border-border-error ring-2 ring-danger/20'
+    ? 'border-border-error dark:border-border-error-dark ring-2 ring-danger/20 dark:ring-danger-dark/20'
     : state === 'focused'
-    ? 'border-border-focus ring-2 ring-focus/20 shadow-xs'
-    : 'border-border';
+    ? 'border-border-focus dark:border-border-focus-dark ring-2 ring-focus/20 dark:ring-focus-dark/20 shadow-xs'
+    : 'border-border dark:border-border-dark';
 
   return (
-    <div className={`relative flex items-stretch rounded-2xl bg-surface-glass backdrop-blur-glass border ${borderClass} transition-colors duration-normal overflow-hidden`}>
-      <div className="relative flex items-stretch flex-shrink-0 border-r border-border/60">
-        <FiGlobe className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none z-10" size={16} />
+    <div className={`relative flex items-stretch rounded-2xl bg-surface-glass dark:bg-surface-glass-dark backdrop-blur-glass border ${borderClass} transition-colors duration-normal overflow-hidden`}>
+      <div className="relative flex items-stretch flex-shrink-0 border-r border-border/60 dark:border-border-dark/60">
+        <FiGlobe className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary dark:text-text-secondary-dark pointer-events-none z-10" size={16} />
         <select
           id={countryId}
           value={countryCode}
           onChange={onCountryChange}
           onFocus={onFocus}
           onBlur={onBlur}
-          className="h-full pl-10 pr-6 py-3.5 bg-transparent text-[13px] text-text-primary font-medium focus:outline-none appearance-none cursor-pointer min-w-[95px]"
+          className="h-full pl-10 pr-6 py-3.5 bg-transparent text-[13px] text-text-primary dark:text-text-primary-dark font-medium focus:outline-none appearance-none cursor-pointer min-w-[95px]"
           aria-label="Country code"
         >
           {COUNTRIES.map((cc) => (
@@ -67,7 +67,7 @@ const PhoneInput = memo(function PhoneInput({
         </select>
       </div>
       <div className="relative flex-1">
-        <FiPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none z-10" size={16} />
+        <FiPhone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary dark:text-text-secondary-dark pointer-events-none z-10" size={16} />
         <input
           id={id}
           type="tel"
@@ -79,7 +79,7 @@ const PhoneInput = memo(function PhoneInput({
           placeholder={placeholder || `${dialCode} 555 123 4567`}
           inputMode="tel"
           autoComplete="tel"
-          className="w-full h-full pl-10 pr-4 py-3.5 bg-transparent text-[14px] text-text-primary placeholder:text-text-muted focus:outline-none"
+          className="w-full h-full pl-10 pr-4 py-3.5 bg-transparent text-[14px] text-text-primary dark:text-text-primary-dark placeholder:text-text-muted dark:placeholder:text-text-muted-dark focus:outline-none"
           aria-label="Phone number"
         />
       </div>

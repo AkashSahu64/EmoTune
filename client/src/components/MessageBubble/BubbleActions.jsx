@@ -7,7 +7,7 @@ const ActionButton = memo(function ActionButton({ label, onClick, expanded = fal
       type="button"
       data-bubble-action="true"
       data-bubble-trigger="true"
-      className="grid h-[25px] w-[25px] place-items-center rounded-full text-text-secondary transition-[color,background-color,border-color,opacity] duration-fast ease-[var(--motion-ease)] hover:bg-hover/[.12] hover:text-text-primary active:bg-hover/[.11] focus-visible:bg-hover/[.12] focus-visible:text-text-primary focus-visible:outline-none"
+      className="grid h-[25px] w-[25px] place-items-center rounded-full text-text-secondary dark:text-text-secondary-dark transition-[color,background-color,border-color,opacity] duration-fast ease-premium hover:bg-hover/[.12] dark:hover:bg-hover-dark/[.12] hover:text-text-primary dark:hover:text-text-primary-dark active:bg-hover/[.11] dark:active:bg-hover-dark/[.11] focus-visible:bg-hover/[.12] dark:focus-visible:bg-hover-dark/[.12] focus-visible:text-text-primary dark:focus-visible:text-text-primary-dark focus-visible:outline-none"
       aria-label={label}
       aria-expanded={expanded}
       aria-haspopup={hasPopup || undefined}
@@ -26,7 +26,7 @@ const ActionButton = memo(function ActionButton({ label, onClick, expanded = fal
 function BubbleActions({ isOwn, visible, menuOpen, reactionOpen, menuId, reactionId, onMouseEnter, onReact, onReply, onForward, onMore }) {
   return (
     <div
-      className={`absolute z-[100000] flex items-center gap-0.5 rounded-full border border-border/[.72] bg-surface-elevated/[.98] p-1 text-text-primary shadow-[0_10px_24px_rgb(3_7_18_/_0.2)] transition-[opacity,visibility] duration-[120ms] ease ${isOwn ? "right-[calc(100%+5px)]" : "left-[calc(100%+5px)]"} top-1/2 -translate-y-1/2 ${visible ? "visible opacity-100" : "invisible opacity-0"}`}
+      className={`absolute z-[100000] flex items-center gap-0.5 rounded-full border border-border/[.72] dark:border-border-dark/[.72] bg-surface-elevated dark:bg-surface-elevated-dark/[.98] p-1 text-text-primary dark:text-text-primary-dark shadow-lg transition-[opacity,visibility] duration-[120ms] ease ${isOwn ? "right-[calc(100%+5px)]" : "left-[calc(100%+5px)]"} top-1/2 -translate-y-1/2 ${visible ? "visible opacity-100" : "invisible opacity-0"}`}
       role="toolbar"
       aria-label="Message actions"
       onMouseEnter={onMouseEnter}

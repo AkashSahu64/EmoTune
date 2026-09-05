@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { createContext, useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '../../theme/utilities';
 
 const sizes = {
@@ -6,9 +7,30 @@ const sizes = {
   '2xl': 'max-w-2xl', '3xl': 'max-w-3xl', '4xl': 'max-w-4xl',
 };
 
+export const ModalCloseContext = createContext(null);
+
 export default function Modal({ isOpen, onClose, children, className = '', size = 'md' }) {
   const dialogRef = useRef(null);
   const previousFocusRef = useRef(null);
+  const closeTimerRef = useRef(null);
+  const [rendered, setRendered] = useState(isOpen);
+
+  useEffect(() => {
+    if (isOpen) setRendered(true);
+  }, [isOpen]);
+
+  useEffect(() => () => {
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+  }, []);
+
+  const requestClose = () => {
+    if (!rendered || closeTimerRef.current) return;
+    setRendered(false);
+    closeTimerRef.current = window.setTimeout(() => {
+      closeTimerRef.current = null;
+      onClose?.();
+    }, 180);
+  };
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -35,14 +57,33 @@ export default function Modal({ isOpen, onClose, children, className = '', size 
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-      <button className="absolute inset-0 cursor-default bg-black/55 backdrop-blur-sm" onClick={onClose} aria-label="Close dialog" type="button" />
-      <div ref={dialogRef} className={cn('glass-dialog relative max-h-[85vh] w-full overflow-hidden rounded-2xl', sizes[size] || sizes.md, className)}>
-        {children}
-      </div>
-    </div>
+    <ModalCloseContext.Provider value={requestClose}>
+      <AnimatePresence>
+        {rendered && isOpen && (
+          <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: 'easeOut' }}
+          >
+            <button className="absolute inset-0 cursor-default bg-black/55 backdrop-blur-sm" onClick={requestClose} aria-label="Close dialog" type="button" />
+            <motion.div
+            ref={dialogRef}
+            className={cn('glass-dialog relative max-h-[85vh] w-full overflow-hidden rounded-2xl', sizes[size] || sizes.md, className)}
+            initial={{ opacity: 0, y: 12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 360, damping: 30 }}
+            >
+              {children}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </ModalCloseContext.Provider>
   );
 }

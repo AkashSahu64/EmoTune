@@ -1,7 +1,19 @@
 export const STICKER_CANVAS_SIZE = 512;
+// One definition of the alignment grid, in canvas units, so the grid the
+// workspace paints and the grid a drag snaps to are provably the same grid.
+export const STICKER_GRID_STEP = 32;
 export const MAX_STICKER_OBJECTS = 80;
 export const MAX_ANIMATION_DURATION = 10000;
 export const DEFAULT_FPS = 30;
+// The brush configurations the studio offers, defined once beside the renderer
+// that interprets them: `drawSmoothPath` reads `brushType` for grain, weight and
+// blending, so a preset is only the size and opacity a style starts at. Two
+// copies of this list is how a style ended up clearing the opacity it set.
+export const BRUSH_PRESETS = [
+  { id: "pencil", label: "Pencil", size: 5, opacity: 1 },
+  { id: "marker", label: "Marker", size: 12, opacity: 1 },
+  { id: "highlighter", label: "Highlighter", size: 24, opacity: 0.45 },
+];
 
 export const EASINGS = {
   linear: (t) => t,
@@ -332,6 +344,50 @@ function clipMask(ctx, object) {
   if (object.mask === "star") { ctx.beginPath(); for (let i = 0; i < 10; i += 1) { const angle = -Math.PI / 2 + (i * Math.PI) / 5; const radius = i % 2 ? Math.min(object.width, object.height) * .22 : Math.min(object.width, object.height) * .5; const px = Math.cos(angle) * radius; const py = Math.sin(angle) * radius; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); } ctx.closePath(); ctx.clip(); }
 }
 
+/**
+ * The object's filters and blur as one canvas filter string.
+ *
+ * Filters live on the object rather than being baked into the bitmap, so the
+ * same values drive the preview and the export - there is only one renderer.
+ */
+export function objectFilterString(object) {
+  const filters = object.filters && typeof object.filters === "object" ? object.filters : {};
+  const parts = [];
+  const scale = (key, name, neutral) => {
+    const value = filters[key];
+    if (Number.isFinite(value) && value !== neutral) parts.push(`${name}(${Math.max(0, value)})`);
+  };
+  scale("brightness", "brightness", 1);
+  scale("contrast", "contrast", 1);
+  scale("saturation", "saturate", 1);
+  scale("grayscale", "grayscale", 0);
+  scale("sepia", "sepia", 0);
+  const blur = (Number.isFinite(filters.blur) ? filters.blur : 0)
+    + (Number.isFinite(object.blur) ? object.blur : 0);
+  if (blur > 0) parts.push(`blur(${blur}px)`);
+  return parts.join(" ");
+}
+
+/**
+ * A crop as source-rectangle pixels, or null when it is not usable.
+ *
+ * Stored normalised (0-1) so the same crop survives a source image being
+ * replaced by a different resolution.
+ */
+export function objectCropRect(crop, image) {
+  if (!crop || typeof crop !== "object") return null;
+  const values = ["x", "y", "width", "height"].map((key) => crop[key]);
+  if (!values.every((value) => Number.isFinite(value) && value >= 0 && value <= 1)) return null;
+  const [x, y, width, height] = values;
+  if (width <= 0 || height <= 0) return null;
+  return {
+    sx: x * image.naturalWidth,
+    sy: y * image.naturalHeight,
+    sw: Math.max(1, width * image.naturalWidth),
+    sh: Math.max(1, height * image.naturalHeight),
+  };
+}
+
 function drawObject(ctx, object, imageCache, time) {
   if (!object.visible || object.opacity <= 0) return;
   if (Number.isFinite(object.startTime) && time < object.startTime) return;
@@ -344,16 +400,27 @@ function drawObject(ctx, object, imageCache, time) {
   ctx.translate(evaluated.x, evaluated.y);
   ctx.rotate((evaluated.rotation * Math.PI) / 180);
   ctx.scale((evaluated.flipX ? -1 : 1) * (evaluated.scaleX || 1), (evaluated.flipY ? -1 : 1) * (evaluated.scaleY || 1));
-  if (evaluated.blur) ctx.filter = `blur(${evaluated.blur}px)`;
+  const filter = objectFilterString(evaluated);
+  if (filter) ctx.filter = filter;
   if (evaluated.type === "group") {
     evaluated.children?.forEach((child) => drawObject(ctx, { ...child, x: child.x, y: child.y }, imageCache, time));
   } else if (evaluated.type === "image") {
     const image = imageCache.get(evaluated.src);
-    if (image?.complete && image.naturalWidth) { clipMask(ctx, evaluated); ctx.drawImage(image, -evaluated.width / 2, -evaluated.height / 2, evaluated.width, evaluated.height); }
+    if (image?.complete && image.naturalWidth) {
+      clipMask(ctx, evaluated);
+      const rect = objectCropRect(evaluated.crop, image);
+      if (rect) ctx.drawImage(image, rect.sx, rect.sy, rect.sw, rect.sh, -evaluated.width / 2, -evaluated.height / 2, evaluated.width, evaluated.height);
+      else ctx.drawImage(image, -evaluated.width / 2, -evaluated.height / 2, evaluated.width, evaluated.height);
+    }
   } else if (evaluated.type === "text") {
-    ctx.font = `${evaluated.fontWeight || 800} ${evaluated.fontSize || 52}px ${evaluated.fontFamily || "system-ui"}`;
+    ctx.font = `${evaluated.fontStyle === "italic" ? "italic " : ""}${evaluated.fontWeight || 800} ${evaluated.fontSize || 52}px ${evaluated.fontFamily || "system-ui"}`;
     ctx.textAlign = evaluated.textAlign || "center"; ctx.textBaseline = "middle";
-    const lines = String(evaluated.text || "").split("\n"); const lineHeight = evaluated.fontSize || 52;
+    // letterSpacing is ignored by browsers that do not support it, which only
+    // costs tracking - never a missing glyph.
+    if (Number.isFinite(evaluated.letterSpacing)) ctx.letterSpacing = `${evaluated.letterSpacing}px`;
+    const fontSize = evaluated.fontSize || 52;
+    const lineHeight = fontSize * (Number.isFinite(evaluated.lineHeight) && evaluated.lineHeight > 0 ? evaluated.lineHeight : 1);
+    const lines = String(evaluated.text || "").split("\n");
     lines.forEach((line, index) => { const offset = (index - (lines.length - 1) / 2) * lineHeight; if (evaluated.textStrokeWidth) { ctx.strokeStyle = evaluated.textStroke || "#ffffff"; ctx.lineWidth = evaluated.textStrokeWidth; ctx.strokeText(line, 0, offset); } ctx.fillStyle = evaluated.color || "#ffffff"; ctx.fillText(line, 0, offset); });
   } else if (evaluated.type === "shape") drawShape(ctx, evaluated);
   else if (evaluated.type === "drawing") {
@@ -367,12 +434,15 @@ export function drawSmoothPath(ctx, points = [], style = {}, composite = "source
   if (!points.length) return;
   ctx.save();
   ctx.globalCompositeOperation = composite;
-  ctx.globalAlpha = Math.min(1, Math.max(0, style.opacity ?? 1));
+  const brushType = style.brushType || "marker";
+  const brushAlpha = brushType === "pencil" ? 0.72 : 1;
+  const brushScale = brushType === "pencil" ? 0.78 : brushType === "highlighter" ? 1.35 : 1;
+  ctx.globalAlpha = Math.min(1, Math.max(0, (style.opacity ?? 1) * brushAlpha));
   ctx.strokeStyle = style.color || "#3b5bff";
-  ctx.lineWidth = Math.max(1, style.size || 8);
+  ctx.lineWidth = Math.max(1, (style.size || 8) * brushScale);
   ctx.lineCap = style.lineCap || "round";
   ctx.lineJoin = style.lineJoin || "round";
-  if (style.brushType === "highlighter") ctx.globalCompositeOperation = "multiply";
+  if (brushType === "highlighter" && composite !== "destination-out") ctx.globalCompositeOperation = "multiply";
   if (points.length === 1) {
     ctx.beginPath();
     ctx.arc(points[0][0], points[0][1], Math.max(0.5, ctx.lineWidth / 2), 0, Math.PI * 2);
@@ -451,7 +521,7 @@ export function renderCompositionAtTime(ctx, project, time = 0, options = {}) {
     const radius = Math.min(24, Math.max(1, Math.round(outline.width))); for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 8) ctx.drawImage(mask, Math.cos(angle) * radius, Math.sin(angle) * radius);
   } else if (project.effects?.shadow?.enabled) { ctx.save(); const s = project.effects.shadow; ctx.globalAlpha = s.opacity; ctx.shadowColor = s.color; ctx.shadowBlur = s.blur; ctx.shadowOffsetX = s.offsetX; ctx.shadowOffsetY = s.offsetY; ctx.drawImage(content, 0, 0); ctx.restore(); }
   ctx.drawImage(content, 0, 0);
-  if (options.selectedIds?.length) options.selectedIds.forEach((id) => { const object = project.objects.find((item) => item.id === id); if (!object) return; ctx.save(); ctx.translate(object.x, object.y); ctx.rotate((object.rotation * Math.PI) / 180); ctx.strokeStyle = "#3b5bff"; ctx.setLineDash([6, 4]); ctx.strokeRect(-object.width / 2 - 8, -object.height / 2 - 8, object.width + 16, object.height + 16); ctx.setLineDash([]); ctx.fillStyle = "#3b5bff"; ctx.beginPath(); ctx.arc(object.width / 2 + 2, object.height / 2 + 2, 6, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(0, -object.height / 2 - 14, 5, 0, Math.PI * 2); ctx.fill(); ctx.restore(); });
+  if (options.selectedIds?.length) options.selectedIds.forEach((id) => { const object = project.objects.find((item) => item.id === id); if (!object) return; const handles = selectionHandlePositions(object); ctx.save(); ctx.translate(object.x, object.y); ctx.rotate((object.rotation * Math.PI) / 180); ctx.strokeStyle = "#3b5bff"; ctx.setLineDash([6, 4]); ctx.strokeRect(-object.width / 2 - 8, -object.height / 2 - 8, object.width + 16, object.height + 16); ctx.setLineDash([]); ctx.fillStyle = "#3b5bff"; ctx.beginPath(); ctx.arc(handles.resize.x, handles.resize.y, handles.resize.radius, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(handles.rotate.x, handles.rotate.y, handles.rotate.radius, 0, Math.PI * 2); ctx.fill(); ctx.restore(); });
 }
 
 export function createPngBlob(canvas) {
@@ -505,10 +575,55 @@ export async function validatePngBlob(blob, expectedWidth = STICKER_CANVAS_SIZE,
   } finally { bitmap.close?.(); }
 }
 
+/**
+ * A point expressed in one object's own rotated frame.
+ *
+ * Everything an object draws happens after `translate(x, y)` and
+ * `rotate(rotation)`, so geometry compared in canvas space is wrong for any
+ * rotated layer.
+ */
+export function toObjectSpace(point, object) {
+  const dx = point.x - object.x;
+  const dy = point.y - object.y;
+  const radians = (-(object.rotation || 0) * Math.PI) / 180;
+  return {
+    x: dx * Math.cos(radians) - dy * Math.sin(radians),
+    y: dx * Math.sin(radians) + dy * Math.cos(radians),
+  };
+}
+
+/**
+ * Where the selection overlay's handles sit, in the object's own frame.
+ *
+ * The renderer draws from this and the editor hit-tests against it, so a handle
+ * can never be painted somewhere the pointer cannot grab it.
+ */
+export function selectionHandlePositions(object) {
+  return {
+    resize: { x: object.width / 2 + 2, y: object.height / 2 + 2, radius: 6 },
+    rotate: { x: 0, y: -object.height / 2 - 14, radius: 5 },
+  };
+}
+
+/**
+ * Which selection handle a point grabs, or null for none.
+ *
+ * Resize is tested first so an overlap on a very short object still resizes,
+ * which is the gesture users reach for far more often.
+ */
+export function hitTestHandle(point, object, tolerance = 12) {
+  const local = toObjectSpace(point, object);
+  const handles = selectionHandlePositions(object);
+  return (
+    ["resize", "rotate"].find(
+      (name) => Math.hypot(local.x - handles[name].x, local.y - handles[name].y) <= tolerance,
+    ) || null
+  );
+}
+
 export function hitTestObject(point, object, padding = 10) {
   const dx = point.x - object.x; const dy = point.y - object.y;
-  const radians = -(object.rotation || 0) * Math.PI / 180;
-  const rotatedX = dx * Math.cos(radians) - dy * Math.sin(radians);
+  const radians = -(object.rotation || 0) * Math.PI / 180;  const rotatedX = dx * Math.cos(radians) - dy * Math.sin(radians);
   const rotatedY = dx * Math.sin(radians) + dy * Math.cos(radians);
   const localX = rotatedX / Math.max(0.001, Math.abs(object.scaleX || 1));
   const localY = rotatedY / Math.max(0.001, Math.abs(object.scaleY || 1));

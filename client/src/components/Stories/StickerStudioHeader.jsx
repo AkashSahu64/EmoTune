@@ -2,6 +2,7 @@ import {
   IoArrowBack,
   IoCheckmarkCircle,
   IoClose,
+  IoCloudDoneOutline,
   IoCloudDownloadOutline,
   IoCloudUploadOutline,
   IoPlay,
@@ -25,6 +26,11 @@ export default function StickerStudioHeader({
   onRedo,
   onPreview,
   onSave,
+  onSaveToLibrary,
+  savingToLibrary = false,
+  libraryProgress = 0,
+  libraryStickerId = null,
+  canSaveToLibrary = false,
   onCreateSticker,
   onRename,
   menuOpen,
@@ -34,6 +40,10 @@ export default function StickerStudioHeader({
   onLoadSaved,
   onNewProject,
 }) {
+  const libraryLabel = libraryStickerId ? "Update sticker" : "Save to library";
+  const librarySaving = savingToLibrary
+    ? `Saving${libraryProgress ? ` ${libraryProgress}%` : ""}`
+    : libraryLabel;
   return (
     <>
       <header className="relative flex max-h-[45px] shrink-0 items-center justify-between gap-3 border-b border-border bg-background px-5 py-2 dark:border-border-dark dark:bg-background-dark md:col-span-4 md:row-start-1">
@@ -61,7 +71,8 @@ export default function StickerStudioHeader({
           <div className="flex min-w-0 items-center gap-2 rounded-lg border border-border bg-surface px-2 py-1.5 dark:border-border-dark dark:bg-surface-dark">
             <input
               ref={projectNameRef}
-              value={project.name || "Untitled Sticker"}
+              value={project.name ?? ""}
+              placeholder="Untitled Sticker"
               onChange={(event) => onRename(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === "Enter") event.currentTarget.blur();
@@ -141,12 +152,34 @@ export default function StickerStudioHeader({
           <button
             type="button"
             onClick={onSave}
-            aria-label="Save project"
-            title="Save project"
+            aria-label="Save project on this device"
+            title="Save project on this device"
             className="hidden h-10 items-center rounded-lg border border-border bg-surface px-3 text-sm font-medium hover:bg-primary/5 md:inline-flex dark:border-border-dark dark:bg-surface-dark"
           >
             <IoSaveOutline size={14} className="mr-2" />
             Save
+          </button>
+          <button
+            type="button"
+            onClick={onSaveToLibrary}
+            disabled={
+              savingToLibrary || !canSaveToLibrary || project.objects.length === 0
+            }
+            aria-label={
+              canSaveToLibrary
+                ? `${libraryLabel} in My Stickers`
+                : "Sign in to save stickers to your library"
+            }
+            aria-busy={savingToLibrary}
+            title={
+              canSaveToLibrary
+                ? `${libraryLabel} in My Stickers`
+                : "Sign in to save stickers to your library"
+            }
+            className="hidden h-10 items-center rounded-lg border border-primary/40 bg-primary/10 px-3 text-sm font-semibold text-primary hover:bg-primary/20 disabled:opacity-50 md:inline-flex"
+          >
+            <IoCloudDoneOutline size={15} className="mr-2" />
+            {librarySaving}
           </button>
           <button
             type="button"
@@ -163,6 +196,8 @@ export default function StickerStudioHeader({
             type="button"
             onClick={onToggleMenu}
             aria-label="More editor actions"
+            aria-haspopup="true"
+            aria-expanded={menuOpen}
             title="More editor actions"
             className="rounded-full w-10 flex items-center justify-center h-10 p-1 border border-border dark:border-border-dark bg-surface dark:bg-surface-dark hover:bg-primary/10"
           >
@@ -179,6 +214,43 @@ export default function StickerStudioHeader({
           </button>
           {menuOpen && (
             <div className="absolute right-5 top-[48px] text-sm z-50 w-48 rounded-xl border border-border bg-background p-1.5 shadow-md dark:border-border-dark dark:bg-background-dark">
+              <button
+                type="button"
+                onClick={() => {
+                  onSaveToLibrary?.();
+                  onToggleMenu();
+                }}
+                disabled={
+                  savingToLibrary || !canSaveToLibrary || project.objects.length === 0
+                }
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left hover:bg-primary/10 disabled:opacity-40 md:hidden"
+              >
+                <IoCloudDoneOutline />
+                {librarySaving}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onSave?.();
+                  onToggleMenu();
+                }}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left hover:bg-primary/10 md:hidden"
+              >
+                <IoSaveOutline />
+                Save on device
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onCreateSticker?.();
+                  onToggleMenu();
+                }}
+                disabled={project.objects.length === 0}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left hover:bg-primary/10 disabled:opacity-40 md:hidden"
+              >
+                <IoSparklesOutline />
+                Create sticker
+              </button>
               <button
                 type="button"
                 onClick={onLoadSaved}

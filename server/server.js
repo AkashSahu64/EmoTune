@@ -122,13 +122,25 @@ app.use('/api/analytics', require('./routes/analyticsRoutes'));
 app.use('/api/dna', require('./routes/dnaRoutes'));
 app.use('/api/orchestrator', require('./routes/orchestratorRoutes'));
 app.use('/api/stories', require('./routes/storyRoutes'));
+app.use('/api/stickers', require('./routes/stickerRoutes'));
 app.use('/api/groups', require('./routes/groupIntelligenceRoutes'));
 app.use('/api/communities', require('./routes/communityRoutes'));
 app.use('/api/identity/auth', require('./identity/routes/authRoutes'));
 app.use('/api/identity/sessions', require('./identity/routes/sessionRoutes'));
 app.use('/api/identity/devices', require('./identity/routes/deviceRoutes'));
 app.use('/api/identity/admin', require('./identity/routes/adminRoutes'));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Uploaded files are user content: never sniffed, and only media is allowed to
+// render inline. Everything else downloads instead of being interpreted.
+const INLINE_UPLOAD_TYPES = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.mp4', '.webm', '.mov', '.mp3', '.wav', '.ogg', '.oga', '.m4a']);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  setHeaders: (res, filePath) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
+    if (!INLINE_UPLOAD_TYPES.has(path.extname(filePath).toLowerCase())) {
+      res.setHeader('Content-Disposition', 'attachment');
+    }
+  },
+}));
 
 app.get('/api/health', async (req, res) => {
   const { metrics } = require('./core/logger');

@@ -32,7 +32,12 @@ function MediaPreviewModal({ message, messages, onClose }) {
     type === "gif"
       ? current?.metadata?.gifUrl || current?.mediaUrl
       : current?.mediaUrl;
-  const isImage = type === "image" || type === "gif" || type === "sticker";
+  // An animated sticker is a video file, so it must not take the image branch
+  // (zoom/rotate) that a static sticker uses.
+  const isVideoSticker =
+    type === "sticker" && String(current?.mediaType || "").startsWith("video/");
+  const isImage =
+    type === "image" || type === "gif" || (type === "sticker" && !isVideoSticker);
   const canNavigate = items.length > 1;
 
   const resetTransform = useCallback(() => {
@@ -88,7 +93,7 @@ function MediaPreviewModal({ message, messages, onClose }) {
           style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
         />
       );
-    if (type === "video")
+    if (type === "video" || isVideoSticker)
       return (
         <video
           className="max-h-[82vh] max-w-[92vw]"

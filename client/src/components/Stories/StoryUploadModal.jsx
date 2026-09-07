@@ -27,6 +27,7 @@ import {
   getStickerPreview,
 } from "../MessageInput/MessageInput";
 import StickerMaker from "./StickerMaker";
+import StickerLibrary from "../Stickers/StickerLibrary";
 import { drawSmoothPath } from "./stickerStudioEngine";
 
 const COLORS = [
@@ -398,6 +399,18 @@ function StoryUploadModal({ onClose, onCreated, audienceUsers = [], chatId }) {
     toast.success("Sticker created");
   };
 
+  // Picking a sticker replaces one just built in the studio: submit prefers the
+  // custom file, so leaving it in place would make the click look ignored.
+  const handleSelectSticker = (sticker) => {
+    setSelectedSticker(sticker);
+    if (customStickerPreview) {
+      URL.revokeObjectURL(customStickerPreview);
+      previewUrlsRef.current.delete(customStickerPreview);
+    }
+    setCustomStickerFile(null);
+    setCustomStickerPreview("");
+  };
+
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) {
       setLocationStatus("Location is not supported by this browser.");
@@ -468,7 +481,9 @@ function StoryUploadModal({ onClose, onCreated, audienceUsers = [], chatId }) {
         voiceUrl = r.url || r.data?.url || "";
       }
 
-      let stickerUrl = selectedSticker?.url || "";
+      // Catalogue entries expose `preview`, saved library stickers expose `url`;
+      // reading only one of them silently dropped the user's choice.
+      let stickerUrl = selectedSticker ? getStickerPreview(selectedSticker) : "";
       if (customStickerFile) {
         const r = await upload(customStickerFile);
         stickerUrl = r.url || r.data?.url || "";
@@ -836,7 +851,7 @@ function StoryUploadModal({ onClose, onCreated, audienceUsers = [], chatId }) {
                       stickerEmoji={stickerEmoji}
                       setStickerEmoji={setStickerEmoji}
                       selectedSticker={selectedSticker}
-                      setSelectedSticker={setSelectedSticker}
+                      setSelectedSticker={handleSelectSticker}
                       stickerCategory={stickerCategory}
                       setStickerCategory={setStickerCategory}
                       stickerSearch={stickerSearch}
@@ -1658,6 +1673,9 @@ function InteractiveEditor({
   drawingData,
   setDrawingData,
 }) {
+  // The shared Emotune catalogue and the user's own saved stickers are two
+  // different collections, so the picker names which one it is showing.
+  const [stickerSource, setStickerSource] = useState("catalog");
   const label = {
     poll: "Poll",
     question: "Question",
@@ -1810,7 +1828,9 @@ function InteractiveEditor({
         <div className="space-y-1">
           <div className="flex items-center justify-between gap-2 -mt-2">
             <p className="text-xs text-text-secondary dark:text-text-secondary-dark">
-              Choose from the same Emotune sticker set used in chat
+              {stickerSource === "library"
+                ? "Reuse a sticker you already saved"
+                : "Choose from the same Emotune sticker set used in chat"}
             </p>
             <button
               type="button"
@@ -1820,52 +1840,93 @@ function InteractiveEditor({
               Create sticker
             </button>
           </div>
-          <input
-            value={stickerSearch}
-            onChange={(event) => setStickerSearch(event.target.value)}
-            placeholder="Search stickers"
-            aria-label="Search stickers"
-            className="h-9 w-full rounded-full border border-border bg-surface px-3 text-sm text-text-primary outline-none focus:border-primary dark:border-border-dark dark:bg-surface-dark dark:text-text-primary-dark"
-          />
-          {stickersLoading && (
-            <p className="text-center text-xs text-text-secondary">
-              Loading stickers…
-            </p>
-          )}
-          <div className="flex w-full min-w-0 gap-2 overflow-x-auto overflow-y-hidden whitespace-nowrap pb-1 scrollbar-hide">
-            {STICKER_CATEGORIES.map((category) => (
+          <div className="flex gap-1.5">
+            {[
+              ["catalog", "Catalog"],
+              ["library", "My Stickers"],
+            ].map(([value, label]) => (
               <button
                 type="button"
-                key={category}
-                onClick={() => setStickerCategory(category)}
-                className={`flex-none rounded-full border px-3 py-1 text-[11px] ${stickerCategory === category ? "border-primary bg-primary/10 text-primary" : "border-border"}`}
+                key={value}
+                onClick={() => setStickerSource(value)}
+                aria-pressed={stickerSource === value}
+                className={`rounded-full border px-3 py-1 text-[11px] font-semibold ${stickerSource === value ? "border-primary bg-primary/10 text-primary" : "border-border dark:border-border-dark"}`}
               >
-                {category}
+                {label}
               </button>
             ))}
           </div>
-          <div className="grid max-h-44 grid-cols-5 gap-2 overflow-y-auto scrollbar-hide">
-            {(apiStickers.length
-              ? apiStickers
-              : getFallbackStickers(stickerCategory, 100)
-            ).map((sticker) => {
-              const url = getStickerPreview(sticker);
-              return (
-                <button
-                  type="button"
-                  key={sticker.id}
-                  onClick={() => setSelectedSticker(sticker)}
-                  className={`rounded-xl border p-1 ${selectedSticker?.id === sticker.id ? "border-primary bg-primary/10" : "border-border dark:border-border-dark"}`}
-                >
-                  <img
-                    src={url}
-                    alt={sticker.title}
-                    className="aspect-square w-full object-contain"
-                  />
-                </button>
-              );
-            })}
-          </div>
+          {stickerSource === "library" ? (
+            // A saved sticker already lives on the server, so the story points
+            // straight at its stored URL instead of re-uploading the bytes.
+            <div className="max-h-52 overflow-y-auto scrollbar-hide">
+              <StickerLibrary
+                columns={4}
+                onUse={(sticker) =>
+                  setSelectedSticker({
+                    id: sticker._id,
+                    url: sticker.assetUrl || sticker.thumbnailUrl,
+                    title: sticker.title,
+                    mediaType: sticker.mimeType || "image/png",
+                  })
+                }
+              />
+            </div>
+          ) : (
+            <>
+              <input
+                value={stickerSearch}
+                onChange={(event) => setStickerSearch(event.target.value)}
+                placeholder="Search stickers"
+                aria-label="Search stickers"
+                className="h-9 w-full rounded-full border border-border bg-surface px-3 text-sm text-text-primary outline-none focus:border-primary dark:border-border-dark dark:bg-surface-dark dark:text-text-primary-dark"
+              />
+              {stickersLoading && (
+                <p className="text-center text-xs text-text-secondary">
+                  Loading stickers…
+                </p>
+              )}
+              <div className="flex w-full min-w-0 gap-2 overflow-x-auto overflow-y-hidden whitespace-nowrap pb-1 scrollbar-hide">
+                {STICKER_CATEGORIES.map((category) => (
+                  <button
+                    type="button"
+                    key={category}
+                    onClick={() => setStickerCategory(category)}
+                    className={`flex-none rounded-full border px-3 py-1 text-[11px] ${stickerCategory === category ? "border-primary bg-primary/10 text-primary" : "border-border"}`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+              <div className="grid max-h-44 grid-cols-5 gap-2 overflow-y-auto scrollbar-hide">
+                {(apiStickers.length
+                  ? apiStickers
+                  : getFallbackStickers(stickerCategory, 100)
+                ).map((sticker) => {
+                  const url = getStickerPreview(sticker);
+                  return (
+                    <button
+                      type="button"
+                      key={sticker.id}
+                      onClick={() => setSelectedSticker(sticker)}
+                      className={`rounded-xl border p-1 ${selectedSticker?.id === sticker.id ? "border-primary bg-primary/10" : "border-border dark:border-border-dark"}`}
+                    >
+                      <img
+                        src={url}
+                        alt={sticker.title}
+                        className="aspect-square w-full object-contain"
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+          {selectedSticker?.url && stickerSource === "library" && (
+            <p className="text-center text-[11px] font-medium text-primary">
+              Using “{selectedSticker.title || "saved sticker"}”
+            </p>
+          )}
           {customStickerPreview && (
             <img
               src={customStickerPreview}
@@ -1876,7 +1937,22 @@ function InteractiveEditor({
         </div>
       )}
       {type === "drawing" && (
-        <DrawingPad value={drawingData} onChange={setDrawingData} />
+        <div className="space-y-2">
+          <DrawingPad value={drawingData} onChange={setDrawingData} />
+          {/* The pad stays what it is - a quick freehand story - and says where
+              the real editor is, so the two are related instead of competing. */}
+          <p className="text-xs text-text-secondary dark:text-text-secondary-dark">
+            Need layers, text, shapes or animation?{" "}
+            <button
+              type="button"
+              onClick={onOpenStickerMaker}
+              className="font-semibold text-primary underline"
+            >
+              Open Sticker Studio
+            </button>{" "}
+            and save it as a reusable sticker.
+          </p>
+        </div>
       )}
     </div>
   );

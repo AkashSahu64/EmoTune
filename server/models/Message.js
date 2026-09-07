@@ -23,7 +23,7 @@ const messageSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['text', 'emoji', 'gif', 'shayari', 'song', 'video', 'image', 'audio', 'file', 'system', 'poll', 'decision', 'story_reply', 'story_share', 'reaction', 'event', 'voice_note', 'scheduled'],
+    enum: ['text', 'emoji', 'gif', 'sticker', 'shayari', 'song', 'video', 'image', 'audio', 'file', 'system', 'poll', 'decision', 'story_reply', 'story_share', 'reaction', 'event', 'voice_note', 'scheduled'],
     default: 'text',
   },
   mediaUrl: { type: String, default: '' },

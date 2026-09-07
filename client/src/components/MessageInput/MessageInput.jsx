@@ -28,6 +28,7 @@ import { aiService, uploadFile } from "../../services/api";
 import Picker from "@emoji-mart/react";
 import emojiData from "@emoji-mart/data";
 import { useTheme } from "../../hooks/useTheme";
+import StickerLibrary from "../Stickers/StickerLibrary";
 
 const FILE_ICONS = {
   image: FiImage,
@@ -233,6 +234,7 @@ function MessageInput({
   const [stickerSearch, setStickerSearch] = useState("");
   const [gifCategory, setGifCategory] = useState("Trending");
   const [stickerCategory, setStickerCategory] = useState("Trending");
+  const [stickerSource, setStickerSource] = useState("catalog");
   const [gifs, setGifs] = useState([]);
   const [stickers, setStickers] = useState([]);
   const [loadingGifs, setLoadingGifs] = useState(false);
@@ -513,6 +515,30 @@ function MessageInput({
         stickerTitle: sticker.title || "Sticker",
         mediaUrl: stickerUrl,
         fileType: sticker.type || "image/webp",
+      });
+      setShowEmoji(false);
+      setEmojiPanelTab("emoji");
+    },
+    [onSend],
+  );
+
+  /**
+   * Sends one of the user's own saved stickers.
+   *
+   * The asset is already stored server-side, so the message points at that URL
+   * instead of re-uploading it. An animated sticker keeps its real mime type so
+   * the bubble renders it as video rather than a broken image.
+   */
+  const handleLibraryStickerSelect = useCallback(
+    (sticker) => {
+      const mediaUrl = sticker?.assetUrl || sticker?.thumbnailUrl || "";
+      if (!mediaUrl) return;
+      onSend(sticker.title || "Sticker", "sticker", {
+        stickerId: String(sticker._id),
+        provider: "library",
+        stickerTitle: sticker.title || "Sticker",
+        mediaUrl,
+        fileType: sticker.mimeType || "image/png",
       });
       setShowEmoji(false);
       setEmojiPanelTab("emoji");
@@ -897,6 +923,38 @@ function MessageInput({
                 </div>
               ) : emojiPanelTab === "sticker" ? (
                 <>
+                  {/* Two different collections: the shared Emotune catalogue and
+                      the stickers this user saved. Named tabs rather than one
+                      merged grid, so it is clear which is which. */}
+                  <div className="flex shrink-0 gap-1 border-b border-border bg-surface-muted/90 px-2 py-1.5 dark:border-border-dark dark:bg-surface-muted-dark/90">
+                    {[
+                      ["catalog", "Catalog"],
+                      ["mine", "My Stickers"],
+                    ].map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setStickerSource(value)}
+                        aria-pressed={stickerSource === value}
+                        className={`rounded-full border border-border px-2.5 py-1 text-[10px] font-semibold transition dark:border-border-dark ${
+                          stickerSource === value
+                            ? "bg-primary text-white dark:bg-primary-dark"
+                            : "bg-surface text-text-secondary dark:bg-surface-dark dark:text-text-secondary-dark"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {stickerSource === "mine" ? (
+                    <div className="min-h-0 flex-1 overflow-y-auto bg-surface-muted/90 p-2 scrollbar-hide dark:bg-surface-muted-dark/90">
+                      <StickerLibrary
+                        columns={4}
+                        onUse={handleLibraryStickerSelect}
+                      />
+                    </div>
+                  ) : (
+                    <>
                   <div className="flex shrink-0 items-center bg-surface-muted/90 dark:bg-surface-muted-dark/90 gap-2 border-b border-border dark:border-border-dark px-2 py-1.5">
                     <div className="min-w-0 flex-1">
                       <input
@@ -965,6 +1023,8 @@ function MessageInput({
                     <div className="flex min-h-0 flex-1 items-center justify-center px-5 text-center text-xs text-text-secondary dark:text-text-secondary-dark">
                       No stickers available.
                     </div>
+                  )}
+                    </>
                   )}
                 </>
               ) : (

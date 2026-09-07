@@ -7,26 +7,40 @@ import { getStickerPreview } from "../MessageInput/MessageInput";
 import {
   MAX_STICKER_OBJECTS,
   STICKER_CANVAS_SIZE,
+  STICKER_GRID_STEP,
   animationPreset,
   createPngBlob,
   createDrawingObjectFromPoints,
   createStudioObject,
   createStudioProject,
   deserializeStickerProject,
+  hitTestHandle,
   hitTestObject,
   makeStudioId,
   renderCompositionAtTime,
   renderSelectionToPng,
   serializeStickerProject,
+  toObjectSpace,
   validatePngBlob,
 } from "./stickerStudioEngine";
 import {
   restoreProjectAssets,
   saveProjectWithAssets,
 } from "./stickerStudioPersistence";
+import { buildStickerSavePayload, countUnavailableLayers, fromServerEditorState } from "./stickerSaveService";
+import stickerApi from "../../services/stickerService";
+import {
+  newClientMutationId,
+  useCurrentUserId,
+  useSaveSticker,
+} from "../../hooks/useStickers";
 import StickerStudioHeader from "./StickerStudioHeader";
 import StickerStudioSidebar from "./StickerStudioSidebar";
 import StickerStudioWorkspace from "./StickerStudioWorkspace";
+import {
+  StickerEditorProvider,
+  useStickerEditor,
+} from "./StickerEditorProvider";
 
 const PROJECT_KEY = "emotune-sticker-studio-project-v1";
 const EMOJIS = [
@@ -47,11 +61,16 @@ const EMOJIS = [
   "🤠",
   "🙊",
 ];
-const PEN_STYLES = [
-  { id: "pencil", label: "Pencil", size: 5, opacity: 1 },
-  { id: "marker", label: "Marker", size: 12, opacity: 1 },
-  { id: "highlighter", label: "Highlighter", size: 24, opacity: 0.45 },
-];
+// Undo depth, coalescing and the decoded-bitmap budget live with the state they
+// bound, in StickerEditorProvider.
+// Nudging the selection by keyboard is the only way to place a layer precisely
+// without a mouse, so the canvas is not pointer-only.
+const ARROW_NUDGE = {
+  ArrowLeft: [-1, 0],
+  ArrowRight: [1, 0],
+  ArrowUp: [0, -1],
+  ArrowDown: [0, 1],
+};
 
 function loadImage(src, cache) {
   if (cache.has(src)) return Promise.resolve(cache.get(src));
@@ -75,29 +94,58 @@ function bounds(item) {
   };
 }
 
-export default function StickerMaker({ onClose, onCreated }) {
+/**
+ * The Sticker Studio shell: one editor state provider wrapping one studio.
+ *
+ * Keeping the provider outside the studio is what lets the studio itself be a
+ * consumer, so there is no second copy of the project to keep in step.
+ */
+export default function StickerMaker(props) {
+  return (
+    <StickerEditorProvider>
+      <StickerStudio {...props} />
+    </StickerEditorProvider>
+  );
+}
+
+function StickerStudio({ onClose, onCreated, stickerId = null, onSavedToLibrary }) {
+  const {
+    project,
+    projectRef,
+    selectedIds,
+    setSelectedIds,
+    history,
+    future,
+    dirty,
+    markSaved,
+    recentImages,
+    setRecentImages,
+    imageCache,
+    blobUrls,
+    snapshot,
+    commit,
+    previewChange,
+    endGesture,
+    replaceProject,
+    updateObjects,
+    undo,
+    redo,
+  } = useStickerEditor();
   const canvasRef = useRef(null);
   const imageInputRef = useRef(null);
   const projectInputRef = useRef(null);
   const projectNameRef = useRef(null);
   const emojiButtonRef = useRef(null);
-  const imageCache = useRef(new Map());
-  const blobUrls = useRef(new Set());
   const interaction = useRef(null);
-  const projectRef = useRef(null);
   const drawingFrame = useRef(0);
   const drawingDraft = useRef(null);
   const recorder = useRef(null);
   const cancelExport = useRef(false);
-  const [project, setProject] = useState(() => createStudioProject());
-  const [selectedIds, setSelectedIds] = useState([]);
   const [tool, setTool] = useState("select");
   const [activeSidebarSection, setActiveSidebarSection] = useState("Image");
   const [panel, setPanel] = useState("layers");
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [history, setHistory] = useState([]);
-  const [future, setFuture] = useState([]);
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [error, setError] = useState("");
@@ -109,50 +157,47 @@ export default function StickerMaker({ onClose, onCreated }) {
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const [emojiPickerPosition, setEmojiPickerPosition] = useState(null);
   const [recentEmojis] = useState(EMOJIS.slice(0, 14));
-  const [recentImages, setRecentImages] = useState([]);
   const [stockResults, setStockResults] = useState([]);
   const [stockLoading, setStockLoading] = useState(false);
   const [stockError, setStockError] = useState("");
   const stockSearchRef = useRef(null);
   const [canvasZoom, setCanvasZoom] = useState(1);
+  // Where the canvas sits in the viewport, in screen pixels. View state, not
+  // document state: panning is not something to undo.
+  const [pan, setPan] = useState({ x: 0, y: 0 });
   const [gridVisible, setGridVisible] = useState(false);
   const [guidesVisible, setGuidesVisible] = useState(false);
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
-  const [drawColor, setDrawColor] = useState("#3b5bff");
-  const [penStyle, setPenStyle] = useState("pencil");
-  const [drawSize, setDrawSize] = useState(5);
-  const [drawOpacity, setDrawOpacity] = useState(1);
-  const [eraserSize, setEraserSize] = useState(26);
-  const [eraserOpacity, setEraserOpacity] = useState(1);
+  const [drawingState, setDrawingState] = useState({
+    color: "#3b5bff",
+    brushType: "pencil",
+    brushSize: 5,
+    opacity: 1,
+    eraserSize: 26,
+    eraserOpacity: 1,
+  });
+  const setDrawingSetting = useCallback((key, value) => {
+    setDrawingState((current) => ({ ...current, [key]: value }));
+  }, []);
   const [stickers, setStickers] = useState([]);
   const [stickerLoading, setStickerLoading] = useState(false);
   const [saved, setSaved] = useState("");
-  const [dirty, setDirty] = useState(false);
+  // Server-side library save. libraryId present means "this project is already a
+  // sticker", so the next save updates it instead of creating a second copy.
+  const [libraryId, setLibraryId] = useState(stickerId);
+  const [libraryProgress, setLibraryProgress] = useState(0);
+  const currentUserId = useCurrentUserId();
+  const saveSticker = useSaveSticker();
+  const savingLibrary = saveSticker.isPending;
+  const libraryInFlight = useRef(false);
+  // One id per attempt, reused by a retry so a timed-out save cannot become two
+  // stickers, and rotated once a save actually lands.
+  const mutationId = useRef(newClientMutationId());
   const selected = useMemo(
     () => project.objects.filter((item) => selectedIds.includes(item.id)),
     [project.objects, selectedIds],
   );
   const one = selected[0];
-  projectRef.current = project;
-  const snapshot = useCallback(() => JSON.stringify(projectRef.current), []);
-  const commit = useCallback(
-    (updater) => {
-      setHistory((items) => [...items.slice(-39), JSON.stringify(projectRef.current)]);
-      setFuture([]);
-      setDirty(true);
-      setProject((current) =>
-        typeof updater === "function" ? updater(current) : updater,
-      );
-    },
-    [],
-  );
-  const updateObjects = (fn) =>
-    commit((current) => ({
-      ...current,
-      objects: current.objects.map((item) =>
-        selectedIds.includes(item.id) && !item.locked ? fn(item) : item,
-      ),
-    }));
 
   const redraw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -191,10 +236,6 @@ export default function StickerMaker({ onClose, onCreated }) {
     id = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(id);
   }, [playing, project.duration]);
-  useEffect(
-    () => () => blobUrls.current.forEach((url) => URL.revokeObjectURL(url)),
-    [],
-  );
   useEffect(() => () => {
     if (drawingFrame.current) cancelAnimationFrame(drawingFrame.current);
   }, []);
@@ -241,7 +282,35 @@ export default function StickerMaker({ onClose, onCreated }) {
         event.preventDefault();
         removeSelected();
       }
-      if (event.key === "Escape") onClose();
+      // Arrow keys move the selection, unless a control that reads them itself
+      // has focus - the timeline scrubber is also driven by arrows.
+      if (
+        ARROW_NUDGE[event.key] &&
+        selectedIds.length &&
+        !event.target?.closest?.("[role='slider']")
+      ) {
+        event.preventDefault();
+        const [dx, dy] = ARROW_NUDGE[event.key];
+        const step = event.shiftKey ? 10 : 1;
+        updateObjects(
+          (item) => ({ ...item, x: item.x + dx * step, y: item.y + dy * step }),
+          "nudge",
+        );
+      }
+      if (!event.ctrlKey && !event.metaKey && !event.altKey) {
+        if (event.key.toLowerCase() === "v") setTool("select");
+        if (event.key.toLowerCase() === "h") setTool("pan");
+      }
+      if (event.key === "Escape") {
+        // Escape peels one layer at a time, so leaving fullscreen or closing the
+        // menu never throws away the project as a side effect.
+        if (document.fullscreenElement) return;
+        if (headerMenuOpen) {
+          setHeaderMenuOpen(false);
+          return;
+        }
+        onClose();
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
@@ -267,22 +336,18 @@ export default function StickerMaker({ onClose, onCreated }) {
     });
   }, [panel, selectedIds, project.objects, exporting, playing]);
 
-  function undo() {
-    const previous = history.at(-1);
-    if (!previous) return;
-    setHistory((items) => items.slice(0, -1));
-    setFuture((items) => [snapshot(), ...items]);
-    setProject(JSON.parse(previous));
-    setSelectedIds([]);
-  }
-  function redo() {
-    const next = future[0];
-    if (!next) return;
-    setFuture((items) => items.slice(1));
-    setHistory((items) => [...items, snapshot()]);
-    setProject(JSON.parse(next));
-    setSelectedIds([]);
-  }
+  // Opening the studio straight onto an existing sticker: fetch that record's
+  // project once so the editor starts where the caller asked, and so a save
+  // updates it instead of creating a second copy.
+  const requestedStickerLoaded = useRef(false);
+  useEffect(() => {
+    if (!stickerId || requestedStickerLoaded.current) return;
+    requestedStickerLoaded.current = true;
+    openLibrarySticker({ _id: stickerId });
+  }, [stickerId]);
+
+  // Stepping through history is owned by the editor provider, so the shortcuts
+  // and the header buttons drive exactly the same undo stack.
   function handlePreview() {
     setTime(0);
     setPlaying(true);
@@ -297,6 +362,9 @@ export default function StickerMaker({ onClose, onCreated }) {
     const item = createStudioObject(values.type || "shape", values);
     commit((current) => ({ ...current, objects: [...current.objects, item] }));
     setSelectedIds([item.id]);
+    // A new layer is selected, so hand back the tool that can actually move it
+    // instead of leaving the pointer stuck in pan, draw or erase.
+    setTool("select");
     return item;
   }
   function openEmojiPicker() {
@@ -317,9 +385,16 @@ export default function StickerMaker({ onClose, onCreated }) {
     });
     setEmojiPickerOpen(true);
   }
-  async function addImages(event) {
-    const files = [...(event.target.files || [])];
-    event.target.value = "";
+  /**
+   * Adds uploaded images, from either the file picker or a drop.
+   *
+   * Both entry points hand over the same list, so a dropped file goes through
+   * exactly the same type and size checks as a picked one.
+   */
+  async function addImages(input) {
+    const event = input?.target ? input : null;
+    const files = [...(event ? event.target.files || [] : input || [])];
+    if (event) event.target.value = "";
     for (const file of files) {
       if (
         !/^image\/(png|jpeg|webp|gif)$/.test(file.type) ||
@@ -348,6 +423,8 @@ export default function StickerMaker({ onClose, onCreated }) {
         });
       } catch {
         URL.revokeObjectURL(src);
+        blobUrls.current.delete(src);
+        imageCache.current.delete(src);
         toast.error("Could not decode image");
       }
     }
@@ -492,9 +569,12 @@ export default function StickerMaker({ onClose, onCreated }) {
     }));
   }
   function handleClearDrawing() {
-    const hasDrawing = project.objects.some((item) => item.type === "drawing");
-    if (!hasDrawing) return;
+    const strokes = project.objects.filter((item) => item.type === "drawing").length;
+    if (!strokes) return;
+    // Through commit(), so the whole clear is one undo step rather than a
+    // silent deletion of every stroke.
     commit((current) => ({ ...current, objects: current.objects.filter((item) => item.type !== "drawing") }));
+    toast.success(`Cleared ${strokes} stroke${strokes === 1 ? "" : "s"} - undo with Ctrl+Z`);
   }
   function group() {
     if (selected.length < 2) {
@@ -672,9 +752,29 @@ export default function StickerMaker({ onClose, onCreated }) {
       .reverse()
       .find((item) => item.visible && hitTestObject(p, item));
   }
+  /**
+   * A handle has to stay the same size under the finger at every zoom level, so
+   * the canvas-space tolerance is derived from the live display scale.
+   */
+  function handleTolerance() {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    const scale = rect?.width ? rect.width / STICKER_CANVAS_SIZE : 1;
+    return Math.max(10, 20 / scale);
+  }
   function pointerDown(event) {
     event.currentTarget.setPointerCapture?.(event.pointerId);
     const p = point(event);
+    // Middle-drag pans from any tool, the way every canvas editor behaves.
+    if (tool === "pan" || event.button === 1) {
+      event.preventDefault();
+      interaction.current = {
+        mode: "pan",
+        pointerId: event.pointerId,
+        origin: { x: event.clientX, y: event.clientY },
+        pan,
+      };
+      return;
+    }
     if (tool === "draw" || tool === "erase") {
       interaction.current = {
         mode: tool,
@@ -683,10 +783,10 @@ export default function StickerMaker({ onClose, onCreated }) {
       };
       drawingDraft.current = {
         points: [[p.x, p.y]],
-        color: tool === "erase" ? "#000000" : drawColor,
-        size: tool === "erase" ? eraserSize : drawSize,
-        opacity: tool === "erase" ? eraserOpacity : drawOpacity,
-        brushType: tool === "erase" ? "eraser" : penStyle,
+        color: tool === "erase" ? "#000000" : drawingState.color,
+        size: tool === "erase" ? drawingState.eraserSize : drawingState.brushSize,
+        opacity: tool === "erase" ? drawingState.eraserOpacity : drawingState.opacity,
+        brushType: tool === "erase" ? "eraser" : drawingState.brushType,
         lineCap: "round",
         lineJoin: "round",
         erase: tool === "erase",
@@ -706,16 +806,12 @@ export default function StickerMaker({ onClose, onCreated }) {
       : [item.id];
     setSelectedIds(ids);
     if (item.locked) return;
-    const handleResize =
-      ids.length === 1 &&
-      Math.abs(p.x - (item.x + item.width / 2)) < 18 &&
-      Math.abs(p.y - (item.y + item.height / 2)) < 18;
-    const handleRotate =
-      ids.length === 1 &&
-      Math.abs(p.x - item.x) < 18 &&
-      Math.abs(p.y - (item.y - item.height / 2 - 14)) < 18;
+    // The handles are matched where the renderer draws them, in the object's own
+    // frame, so they stay grabbable however far the layer is rotated.
+    const handle = ids.length === 1 ? hitTestHandle(p, item, handleTolerance()) : null;
     interaction.current = {
-      mode: handleResize ? "resize" : handleRotate ? "rotate" : "move",
+      mode: handle || "move",
+      pointerId: event.pointerId,
       start: snapshot(),
       point: p,
       item,
@@ -730,6 +826,15 @@ export default function StickerMaker({ onClose, onCreated }) {
     const active = interaction.current;
     if (!active) return;
     if (active.pointerId !== undefined && event.pointerId !== active.pointerId) return;
+    // Pan is measured in raw screen pixels: converting through the canvas box
+    // would feed the pan back into its own coordinate system.
+    if (active.mode === "pan") {
+      setPan({
+        x: active.pan.x + (event.clientX - active.origin.x),
+        y: active.pan.y + (event.clientY - active.origin.y),
+      });
+      return;
+    }
     const p = point(event);
     if (active.mode === "draw" || active.mode === "erase") {
       const points = drawingDraft.current?.points || [];
@@ -740,9 +845,17 @@ export default function StickerMaker({ onClose, onCreated }) {
       return;
     }
     if (active.mode === "resize") {
-      const width = Math.max(24, Math.abs(p.x - active.item.x) * 2);
-      const height = Math.max(24, Math.abs(p.y - active.item.y) * 2);
-      setProject((current) => ({
+      // Resizing follows the object's own axes, so a rotated layer grows along
+      // its width and height rather than along the screen's.
+      const local = toObjectSpace(p, active.item);
+      let width = Math.max(24, Math.round(Math.abs(local.x) * 2));
+      let height = Math.max(24, Math.round(Math.abs(local.y) * 2));
+      if (event.shiftKey) {
+        const ratio = active.item.width / Math.max(1, active.item.height);
+        if (width / Math.max(1, height) > ratio) height = Math.max(24, Math.round(width / ratio));
+        else width = Math.max(24, Math.round(height * ratio));
+      }
+      previewChange((current) => ({
         ...current,
         objects: current.objects.map((item) =>
           item.id === active.item.id ? { ...item, width, height } : item,
@@ -751,14 +864,16 @@ export default function StickerMaker({ onClose, onCreated }) {
       return;
     }
     if (active.mode === "rotate") {
-      const angle =
-        (Math.atan2(p.y - active.item.y, p.x - active.item.x) * 180) / Math.PI +
-        90;
-      setProject((current) => ({
+      const raw =
+        (Math.atan2(p.y - active.item.y, p.x - active.item.x) * 180) / Math.PI + 90;
+      // Shift snaps to 15 degrees, which is how a straight or square-on angle
+      // becomes reachable by hand.
+      const angle = event.shiftKey ? Math.round(raw / 15) * 15 : Math.round(raw);
+      previewChange((current) => ({
         ...current,
         objects: current.objects.map((item) =>
           item.id === active.item.id
-            ? { ...item, rotation: Math.round(angle) }
+            ? { ...item, rotation: ((angle % 360) + 360) % 360 }
             : item,
         ),
       }));
@@ -766,11 +881,17 @@ export default function StickerMaker({ onClose, onCreated }) {
     }
     const dx = p.x - active.point.x;
     const dy = p.y - active.point.y;
-    setProject((current) => ({
+    // Showing the grid is the request to align to it, so a drag lands on it.
+    // Alt is the escape hatch for the one placement that has to sit off-grid.
+    const snap = (value) =>
+      gridVisible && !event.altKey
+        ? Math.round(value / STICKER_GRID_STEP) * STICKER_GRID_STEP
+        : value;
+    previewChange((current) => ({
       ...current,
       objects: current.objects.map((item) => {
         const pos = active.positions.find((entry) => entry.id === item.id);
-        return pos ? { ...item, x: pos.x + dx, y: pos.y + dy } : item;
+        return pos ? { ...item, x: snap(pos.x + dx), y: snap(pos.y + dy) } : item;
       }),
     }));
   }
@@ -778,6 +899,12 @@ export default function StickerMaker({ onClose, onCreated }) {
     const active = interaction.current;
     if (!active) return;
     if (active.pointerId !== undefined && event?.pointerId !== undefined && event.pointerId !== active.pointerId) return;
+    // Panning is view state, so it ends without touching the history stack.
+    if (active.mode === "pan") {
+      event?.currentTarget?.releasePointerCapture?.(active.pointerId);
+      interaction.current = null;
+      return;
+    }
     if (active.mode === "draw" || active.mode === "erase") {
       if (event?.type === "pointercancel") {
         drawingDraft.current = null;
@@ -802,13 +929,7 @@ export default function StickerMaker({ onClose, onCreated }) {
       interaction.current = null;
       return;
     }
-    const currentSnapshot = snapshot();
-    if (active.start !== currentSnapshot) {
-      const previousSnapshot = active.start;
-      setHistory((items) => [...items.slice(-39), previousSnapshot]);
-      setFuture([]);
-      setDirty(true);
-    }
+    endGesture(active.start);
     interaction.current = null;
   }
   async function removeBackground() {
@@ -909,14 +1030,30 @@ export default function StickerMaker({ onClose, onCreated }) {
       ),
     }));
   }
+  // Every image layer must be decoded before a render, or an export silently
+  // drops the layers the canvas has not loaded yet.
+  async function ensureImagesLoaded(target = project) {
+    const sources = new Set();
+    (target?.objects || []).forEach((item) => {
+      if (item.type === "image" && item.src) sources.add(item.src);
+      (item.children || []).forEach((child) => {
+        if (child.type === "image" && child.src) sources.add(child.src);
+      });
+    });
+    for (const src of sources) {
+      try {
+        await loadImage(src, imageCache.current);
+      } catch {
+        /* a missing layer is reported by the render, not by the preload */
+      }
+    }
+  }
   async function exportPng() {
     setExporting(true);
     setError("");
     setExportProgress(10);
     try {
-      for (const item of project.objects)
-        if (item.type === "image" && item.src)
-          await loadImage(item.src, imageCache.current);
+      await ensureImagesLoaded();
       const canvas = document.createElement("canvas");
       canvas.width = STICKER_CANVAS_SIZE;
       canvas.height = STICKER_CANVAS_SIZE;
@@ -938,78 +1075,93 @@ export default function StickerMaker({ onClose, onCreated }) {
       setExporting(false);
     }
   }
-  function exportAnimated() {
-    if (!canvasRef.current?.captureStream || !window.MediaRecorder) {
-      setError("Animated export is not supported by this browser");
-      return;
-    }
-    const mimeType = [
-      "video/webm;codecs=vp9",
-      "video/webm;codecs=vp8",
-      "video/webm",
-    ].find(
-      (type) =>
-        !MediaRecorder.isTypeSupported || MediaRecorder.isTypeSupported(type),
-    );
-    if (!mimeType) {
-      setError("This browser cannot export animated stickers");
-      return;
-    }
-    setExporting(true);
-    setExportProgress(0);
-    cancelExport.current = false;
-    try {
+  // One MediaRecorder path, shared by "use this sticker now" and "save it to my
+  // library", so an animated sticker is captured identically either way.
+  function recordAnimatedWebm() {
+    return new Promise((resolve, reject) => {
       const canvas = document.createElement("canvas");
-      canvas.width = STICKER_CANVAS_SIZE;
-      canvas.height = STICKER_CANVAS_SIZE;
-      const stream = canvas.captureStream(project.fps);
-      const chunks = [];
-      const media = new MediaRecorder(stream, { mimeType });
-      recorder.current = media;
-      const cleanup = () => {
-        stream.getTracks().forEach((track) => track.stop());
-        recorder.current = null;
-        setExporting(false);
-      };
-      media.ondataavailable = (event) =>
-        event.data.size && chunks.push(event.data);
-      media.onerror = () => {
-        setError("Animated sticker export failed");
-        cleanup();
-      };
-      media.onstop = () => {
-        const blob = new Blob(chunks, { type: mimeType });
-        if (!blob.size || cancelExport.current) {
-          if (!cancelExport.current)
-            setError("Animated sticker export produced no data");
+      if (!canvas.captureStream || !window.MediaRecorder) {
+        reject(new Error("Animated export is not supported by this browser"));
+        return;
+      }
+      const mimeType = [
+        "video/webm;codecs=vp9",
+        "video/webm;codecs=vp8",
+        "video/webm",
+      ].find(
+        (type) =>
+          !MediaRecorder.isTypeSupported || MediaRecorder.isTypeSupported(type),
+      );
+      if (!mimeType) {
+        reject(new Error("This browser cannot export animated stickers"));
+        return;
+      }
+      setExporting(true);
+      setExportProgress(0);
+      cancelExport.current = false;
+      try {
+        canvas.width = STICKER_CANVAS_SIZE;
+        canvas.height = STICKER_CANVAS_SIZE;
+        const stream = canvas.captureStream(project.fps);
+        const chunks = [];
+        const media = new MediaRecorder(stream, { mimeType });
+        recorder.current = media;
+        const cleanup = () => {
+          stream.getTracks().forEach((track) => track.stop());
+          recorder.current = null;
+          setExporting(false);
+        };
+        media.ondataavailable = (event) =>
+          event.data.size && chunks.push(event.data);
+        media.onerror = () => {
           cleanup();
-          return;
-        }
-        onCreated?.(
-          new File([blob], `sticker-${Date.now()}.webm`, { type: mimeType }),
-        );
-        cleanup();
-      };
-      media.start(100);
-      const started = performance.now();
-      const frame = (now) => {
-        if (cancelExport.current) {
-          if (media.state !== "inactive") media.stop();
-          return;
-        }
-        const elapsed = Math.min(project.duration, now - started);
-        renderCompositionAtTime(canvas.getContext("2d"), project, elapsed, {
-          imageCache: imageCache.current,
-        });
-        setExportProgress(Math.round((elapsed / project.duration) * 100));
-        if (elapsed >= project.duration) media.stop();
-        else requestAnimationFrame(frame);
-      };
-      requestAnimationFrame(frame);
+          reject(new Error("Animated sticker export failed"));
+        };
+        media.onstop = () => {
+          const blob = new Blob(chunks, { type: mimeType });
+          cleanup();
+          if (cancelExport.current) {
+            reject(Object.assign(new Error("Export cancelled"), { cancelled: true }));
+            return;
+          }
+          if (!blob.size) {
+            reject(new Error("Animated sticker export produced no data"));
+            return;
+          }
+          resolve(
+            new File([blob], `sticker-${Date.now()}.webm`, { type: mimeType }),
+          );
+        };
+        media.start(100);
+        const started = performance.now();
+        const frame = (now) => {
+          if (cancelExport.current) {
+            if (media.state !== "inactive") media.stop();
+            return;
+          }
+          const elapsed = Math.min(project.duration, now - started);
+          renderCompositionAtTime(canvas.getContext("2d"), project, elapsed, {
+            imageCache: imageCache.current,
+          });
+          setExportProgress(Math.round((elapsed / project.duration) * 100));
+          if (elapsed >= project.duration) media.stop();
+          else requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      } catch (err) {
+        setExporting(false);
+        recorder.current = null;
+        reject(err instanceof Error ? err : new Error("Animated sticker export failed"));
+      }
+    });
+  }
+  async function exportAnimated() {
+    setError("");
+    try {
+      await ensureImagesLoaded();
+      onCreated?.(await recordAnimatedWebm());
     } catch (err) {
-      setError(err.message || "Animated sticker export failed");
-      setExporting(false);
-      recorder.current = null;
+      if (!err?.cancelled) setError(err.message || "Animated sticker export failed");
     }
   }
   async function save() {
@@ -1019,10 +1171,140 @@ export default function StickerMaker({ onClose, onCreated }) {
         await saveProjectWithAssets(project, serializeStickerProject),
       );
       setSaved("Project saved");
-      setDirty(false);
+      markSaved();
       setTimeout(() => setSaved(""), 2000);
     } catch {
       toast.error("Could not save project");
+    }
+  }
+  /**
+   * Saves the sticker into the signed-in user's library. MongoDB owns the
+   * result; the local project in localStorage stays a separate, device-only copy.
+   */
+  async function saveToLibrary() {
+    if (libraryInFlight.current) return;
+    if (!currentUserId) {
+      toast.error("Sign in to save stickers to your library");
+      return;
+    }
+    if (!project.objects.length) {
+      toast.error("Add something to the canvas before saving a sticker");
+      return;
+    }
+    libraryInFlight.current = true;
+    setError("");
+    setLibraryProgress(0);
+    try {
+      await ensureImagesLoaded();
+      // An animated project is stored as the WebM the recorder produces plus a
+      // rendered still; saving only a PNG would drop the animation for good.
+      const animated = project.objects.some(
+        (item) =>
+          item.animation?.enabled &&
+          (item.animation.keyframes?.length || 0) > 1,
+      );
+      let assetFile = null;
+      if (animated) {
+        try {
+          assetFile = await recordAnimatedWebm();
+        } catch (err) {
+          if (err?.cancelled) return;
+          toast.warning("Animated capture failed - saving a still sticker instead");
+        }
+      }
+      const payload = await buildStickerSavePayload({
+        project,
+        imageCache: imageCache.current,
+        assetFile,
+        time,
+        clientMutationId: mutationId.current,
+      });
+      const data = await saveSticker.mutateAsync({
+        stickerId: libraryId,
+        payload,
+        onProgress: setLibraryProgress,
+      });
+      mutationId.current = newClientMutationId();
+      setSaved(libraryId ? "Sticker updated" : "Saved to My Stickers");
+      setTimeout(() => setSaved(""), 2500);
+      if (data?.sticker?._id) setLibraryId(String(data.sticker._id));
+      (data?.warnings || []).forEach((warning) => toast.warning(warning));
+      onSavedToLibrary?.(data?.sticker);
+    } catch (err) {
+      if (err.name === "CanceledError" || err.code === "ERR_CANCELED") return;
+      const message =
+        err.response?.data?.error || err.message || "Could not save this sticker";
+      setError(message);
+      toast.error(message);
+    } finally {
+      libraryInFlight.current = false;
+      setLibraryProgress(0);
+    }
+  }
+  /**
+   * Adds a sticker the user already saved onto the canvas as an image layer.
+   *
+   * The stored asset URL is server-owned, so the save path recognises it and
+   * does not re-upload the same bytes. An animated sticker is a WebM, which a
+   * canvas cannot draw, so its rendered still is used and the user is told.
+   */
+  async function addLibrarySticker(sticker) {
+    const still = sticker?.assetType === "animated"
+      ? sticker?.thumbnailUrl || sticker?.assetUrl
+      : sticker?.assetUrl || sticker?.thumbnailUrl;
+    if (!still) {
+      toast.error("This sticker has no usable image");
+      return;
+    }
+    try {
+      const image = await loadImage(still, imageCache.current);
+      const ratio = image.width / image.height;
+      add({
+        type: "image",
+        src: still,
+        originalSrc: still,
+        width: ratio >= 1 ? 220 : 170,
+        height: ratio >= 1 ? 170 : 220,
+        name: sticker.title || "Saved sticker",
+      });
+      if (sticker.assetType === "animated")
+        toast.info("Animated stickers are placed as a still frame");
+    } catch {
+      toast.error("This sticker could not be loaded");
+    }
+  }
+  /**
+   * Reopens a saved sticker's editor project.
+   *
+   * The studio stays pointed at the same record, so the next library save
+   * updates that sticker instead of creating a copy. History is cleared because
+   * the previous project's undo stack no longer describes what is on screen.
+   */
+  async function openLibrarySticker(sticker) {
+    const id = sticker?._id ? String(sticker._id) : "";
+    if (!id) return;
+    try {
+      const data = await stickerApi.get(id);
+      const editorState = data?.sticker?.editorState;
+      if (!data?.canEdit || !editorState?.objects?.length) {
+        toast.error("This sticker has no editable project saved with it");
+        return;
+      }
+      const restored = fromServerEditorState(editorState);
+      await ensureImagesLoaded(restored);
+      replaceProject(restored);
+      setTime(0);
+      setPlaying(false);
+      markSaved();
+      setLibraryId(id);
+      mutationId.current = newClientMutationId();
+      const missing = countUnavailableLayers(restored);
+      if (missing)
+        toast.warning(`${missing} image layer(s) could not be restored - replace them before saving`);
+      setSaved(`Editing “${data.sticker.title || "sticker"}”`);
+      setTimeout(() => setSaved(""), 2500);
+    } catch (err) {
+      toast.error(err.response?.data?.error || err.message || "Could not open this sticker");
     }
   }
   async function load(value) {
@@ -1034,17 +1316,16 @@ export default function StickerMaker({ onClose, onCreated }) {
           return url;
         },
       );
-      setProject(restored);
-      setSelectedIds([]);
-      setDirty(false);
+      replaceProject(restored);
+      markSaved();
       setSaved("Project loaded");
     } catch (error) {
       toast.error(error?.message || "Unable to load Sticker Studio project");
     }
   }
 
-  function handleProjectChange(updater) {
-    setProject(updater);
+  function handleProjectChange(updater, options) {
+    commit(updater, options);
   }
   function handleProjectNameChange(name) {
     commit((current) => ({ ...current, name: name.slice(0, 60) }));
@@ -1063,9 +1344,10 @@ export default function StickerMaker({ onClose, onCreated }) {
     setHeaderMenuOpen(false);
   }
   function handleNewProject() {
-    setProject(createStudioProject());
+    // Undoable rather than a hard reset: starting over by accident should be
+    // recoverable with one Ctrl+Z.
+    commit(() => createStudioProject());
     setSelectedIds([]);
-    setDirty(true);
     setSaved("");
     setHeaderMenuOpen(false);
   }
@@ -1076,6 +1358,15 @@ export default function StickerMaker({ onClose, onCreated }) {
   function handleNextFrame() {
     setTime(Math.min(project.duration, time + 1000 / project.fps));
     setPlaying(false);
+  }
+  // Scrubbing the timeline stops playback, otherwise the animation loop would
+  // fight the pointer and snap the playhead straight back.
+  function handleSeek(next) {
+    setPlaying(false);
+    setTime(Math.min(project.duration, Math.max(0, next)));
+  }
+  function handleSetFps(fps) {
+    commit((current) => ({ ...current, fps }));
   }
 
   return createPortal(
@@ -1098,6 +1389,11 @@ export default function StickerMaker({ onClose, onCreated }) {
           onRedo={redo}
           onPreview={handlePreview}
           onSave={save}
+          onSaveToLibrary={saveToLibrary}
+          savingToLibrary={savingLibrary}
+          libraryProgress={libraryProgress}
+          libraryStickerId={libraryId}
+          canSaveToLibrary={Boolean(currentUserId)}
           onCreateSticker={exportPng}
           menuOpen={headerMenuOpen}
           onToggleMenu={() => setHeaderMenuOpen((value) => !value)}
@@ -1142,24 +1438,16 @@ export default function StickerMaker({ onClose, onCreated }) {
             stickers={stickers}
             stickerLoading={stickerLoading}
             onAddSticker={addSticker}
+            onUseSavedSticker={addLibrarySticker}
+            onEditSavedSticker={openLibrarySticker}
             onUpdateObjects={updateObjects}
             onProjectChange={handleProjectChange}
             onRemoveBackground={removeBackground}
             backgroundRemoving={backgroundRemoving}
             backgroundError={backgroundError}
-            drawColor={drawColor}
-            onSetDrawColor={setDrawColor}
-            penStyle={penStyle}
-            onSetPenStyle={setPenStyle}
-            drawSize={drawSize}
-            onSetDrawSize={setDrawSize}
-            drawOpacity={drawOpacity}
-            onSetDrawOpacity={setDrawOpacity}
-            eraserSize={eraserSize}
-            onSetEraserSize={setEraserSize}
-            eraserOpacity={eraserOpacity}
-            onSetEraserOpacity={setEraserOpacity}
-            hasDrawing={project.objects.some((item) => item.type === "drawing")}
+            drawingState={drawingState}
+            onSetDrawingSetting={setDrawingSetting}
+            drawingCount={project.objects.filter((item) => item.type === "drawing").length}
             onClearDrawing={handleClearDrawing}
             onMoveLayer={moveLayer}
             onToggleLayerLock={toggleLayerLock}
@@ -1186,6 +1474,8 @@ export default function StickerMaker({ onClose, onCreated }) {
             onSetTool={setTool}
             canvasZoom={canvasZoom}
             onSetCanvasZoom={setCanvasZoom}
+            pan={pan}
+            onSetPan={setPan}
             gridVisible={gridVisible}
             onSetGridVisible={setGridVisible}
             guidesVisible={guidesVisible}
@@ -1193,6 +1483,9 @@ export default function StickerMaker({ onClose, onCreated }) {
             onPointerDown={pointerDown}
             onPointerMove={pointerMove}
             onPointerUp={pointerUp}
+            drawingSize={
+              tool === "erase" ? drawingState.eraserSize : drawingState.brushSize
+            }
             onDuplicate={duplicate}
             onDelete={removeSelected}
             onGroup={group}
@@ -1202,6 +1495,8 @@ export default function StickerMaker({ onClose, onCreated }) {
             playing={playing}
             onTogglePlaying={() => setPlaying((value) => !value)}
             onNextFrame={handleNextFrame}
+            onSeek={handleSeek}
+            onSetFps={handleSetFps}
             onSelectIds={setSelectedIds}
             onExportAnimated={exportAnimated}
             exporting={exporting}
